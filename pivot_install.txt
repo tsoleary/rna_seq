@@ -1,0 +1,26 @@
+
+
+# dependecies that needs to be manually installed 
+
+# First run this line alone then paste rest.
+install.packages("devtools") 
+
+library("devtools")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(c(
+"GO.db",
+"HSMMSingleCell",
+"org.Mm.eg.db",
+"org.Hs.eg.db",
+"DESeq2",
+"SingleCellExperiment",
+"scater",
+"BiocGenerics"))
+
+# Install PIVOT
+install_github("qinzhu/PIVOT")
+
+# launch
+library(PIVOT)
+pivot()

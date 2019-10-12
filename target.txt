@@ -1,0 +1,10 @@
+label	files	treat
+cold_1	SRR103708_yes.cnt	COLD
+cold_2	SRR103709_yes.cnt	COLD
+cold_3	SRR103711_yes.cnt	COLD
+hot_1	SRR103723_yes.cnt	HOT
+hot_2	SRR103724_yes.cnt	HOT
+con_1	SRR166807.cnt	CON
+con_2	SRR166808.cnt	CON
+con_3	SRR166809.cnt	CON
+con_4	SRR166810.cnt	CON

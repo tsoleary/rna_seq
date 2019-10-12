@@ -3,3 +3,5 @@
 .RData
 .Ruserdata
 *.Rproj
+DM6_counts/*
+.DS_Store
