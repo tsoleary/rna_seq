@@ -4,26 +4,23 @@ library(dplyr)
 
 samples <- read.delim("/Users/tsoleary/R/rna_seq/target.txt")
 
-getwd()
-
 setwd("/Users/tsoleary/R/rna_seq/DM6_counts")
 
 list.files()
-all_files <- as.character(samples$files)
-all_labels <-  as.character(samples$label)
 
 x <- data.frame()
 
-for (i in 1:length(all_files)){
-  t <- read.table(all_files[i])
+for (i in 1:length(as.character(samples$files))){
+  t <- read.table(as.character(samples$files)[i])
   if (i == 1){
     x <- t 
-    colnames(x) <- c("gene", all_labels[i])
+    colnames(x) <- c("gene", as.character(samples$label)[i])
   } else{
-    colnames(t) <- c("gene", all_labels[i])
+    colnames(t) <- c("gene", as.character(samples$label)[i])
     x <- full_join(x, t, by = "gene")
   }
 }
+
 
 write.csv(x, "dm_rna_seq_counts.csv", row.names = FALSE)
 
@@ -32,13 +29,15 @@ pivot()
 
 # Try DEseq2 normalization by hand later
 
-## Principle Component Analysis ------------------------------------------------
+# Principle Component Analysis -------------------------------------------------
 setwd("/Users/tsoleary/R/rna_seq")
 list.files()
 norm_counts <- read.csv("dm_counts_norm.csv")
 
 # matrix of values
-data.matrix <- norm_counts[, -1]
+data.matrix <- as.matrix(norm_counts[, -1])
+
+data.matrix <- data.matrix[apply(data.matrix, 1, var) != 0, ]
 
 pca <- prcomp(t(data.matrix), scale = TRUE) 
 
@@ -49,14 +48,17 @@ plot(pca$x[,1], pca$x[,2])
 pca.var <- pca$sdev^2
 pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
 
-barplot(pca.var.per, main="Scree Plot", xlab="Principal Component", ylab="Percent Variation")
+barplot(pca.var.per, main = "Scree Plot", 
+        xlab = "Principal Component", 
+        ylab = "Percent Variation")
 
 ## now make a fancy looking plot that shows the PCs and the variation:
 library(ggplot2)
 
-pca.data <- data.frame(Sample=rownames(pca$x),
-                       X=pca$x[,1],
-                       Y=pca$x[,2])
+pca.data <- data.frame(Sample = rownames(pca$x),
+                       X = pca$x[,1],
+                       Y = pca$x[,2])
+
 pca.data$group <- gsub("_[[:alnum:]]", "",  pca.data$Sample)
 
 # plot with sample labels
@@ -94,3 +96,34 @@ pca$rotation[top_10_genes, 1] ## show the scores (and +/- sign)
 norm_counts <- select(norm_counts, -c("con_3", "con_4"))
 
 # re-run above PCA code
+
+
+# differentially expressed genes -----------------------------------------------
+
+genes <- read.csv("dm_sig_genes.csv")
+
+colnames(genes)[1] <- "gene"
+
+plot(genes$padj, genes$log2FoldChange)
+
+sort(abs(genes$log2FoldChange), decreasing = TRUE)[1:59]
+
+fun_genes <- genes[which(abs(genes$log2FoldChange) >= 13.31385), ]
+
+list_genes <- c()
+
+for (i in 1:length(fun_genes$gene)) {
+  
+  x <- which(norm_counts$X == as.character(fun_genes$gene)[i])
+
+  list_genes[i] <- x
+  
+}
+
+asdf <- norm_counts[list_genes, ]
+
+jkl <- as.matrix(asdf[asdf$X == "Sgs7", 2:10])
+
+barplot(jkl)
+
+
