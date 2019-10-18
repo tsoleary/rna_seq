@@ -127,3 +127,24 @@ jkl <- as.matrix(asdf[asdf$X == "Sgs7", 2:10])
 barplot(jkl)
 
 
+# chromosomal locations ------------------
+library(org.Dm.eg.db)
+
+
+
+x <- org.Dm.egSYMBOL
+# Get the entrez gene identifiers that are mapped to chromosome locations
+mapped_genes <- mappedkeys(x)
+# Convert to a list
+xx <- as.list(x[mapped_genes])
+# Get the CHRLOC for the first five genes
+xx[1:5]
+# Get the first one
+xx[[1]]
+
+columns(org.Dm.eg.db)
+
+ann <- biomaRt::select(org.Dm.eg.db, keys = as.character(norm_counts$X), 
+                       columns = c("ENTREZID", "SYMBOL", "GENENAME"), keytype = )
+
+norm_counts$X
