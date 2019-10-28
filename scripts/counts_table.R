@@ -2,7 +2,7 @@
 library(dplyr)
 
 # sample, group, filename information dataframe
-samples <- read.delim("/Users/tsoleary/R/rna_seq/target.txt")
+samples <- read.delim("/Users/tsoleary/R/rna_seq/DM6_counts/target.txt")
 
 # working directory containg the .cnt files
 setwd("/Users/tsoleary/R/rna_seq/DM6_counts")
