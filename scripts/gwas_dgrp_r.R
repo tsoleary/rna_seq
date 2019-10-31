@@ -27,3 +27,30 @@ write.table(snps_flybase,
             col.names = FALSE,
             quote = FALSE)
 
+# maybe consider making this whole thing into a function
+
+# copy and paste into flybase feature mapper website ---------------------------
+# create a new dataframe from the GFF file
+
+gff <- read.delim("snps_flybase_features.txt", header = FALSE)
+
+
+# maybe just try it from the GeneAnnotation from the gwas.top.annot files ------
+
+# get the FBgn# for all the snps
+min_gwas_top$FBgn <- str_extract(min_gwas_top$GeneAnnotation, "FBgn[[:digit:]]+")
+
+library("AnnotationDbi")
+library("org.Dm.eg.db")
+
+# FBgn to gene_symbol
+min_gwas_top$gene_symbol <- mapIds(org.Dm.eg.db, 
+                                   keys = min_gwas_top$FBgn, 
+                                   column = "SYMBOL", 
+                                   keytype = "FLYBASE",
+                                   multiVals = "first")
+
+# get the 
+str_replace(min_gwas_top$GeneAnnotation[1], "^TranscriptAnnot\\[", "")
+
+
