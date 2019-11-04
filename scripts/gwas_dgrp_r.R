@@ -1,56 +1,71 @@
 # gwas dgrp --------------------------------------------------------------------
 
-library(dplyr)
-library(stringr)
+require(AnnotationDbi)
+require(org.Dm.eg.db)
+require(tidyverse)
 
-max_gwas_top <- read.table(
-  "/Users/tsoleary/R/rna_seq/DRGP_GWAS/CTmax/gwas.top.annot", header = TRUE)
+# directories
+gwas_directory <- "/Users/tsoleary/R/rna_seq/DRGP_GWAS/"
+deg_directory <- "/Users/tsoleary/R/rna_seq/results/"
 
-min_gwas_top <- read.table(
-  "/Users/tsoleary/R/rna_seq/DRGP_GWAS/CTmin/gwas.top.annot", header = TRUE)
+# import GWAS data
+setwd(gwas_directory)
+gwas_hot <- read.table("CTmax/gwas.top.annot", header = TRUE)
+gwas_cold <- read.table("CTmin/gwas.top.annot", header = TRUE)
 
-snps <- min_gwas_top$ID
-
-# fly base requires the SNPs in a certain format
-chromosome <-  str_extract(snps, "[[:digit:]]?[[:alpha:]]")
-position <- str_replace(snps, "[[:digit:]]?[[:alpha:]]_", "") %>%
-  str_replace("_[[:alnum:]]+", "")
-
-snps_flybase <- str_c(chromosome, 
-                      str_c(position, position, sep = "-"), sep = ":")
-
-# save to a .csv file to copy into flybase feature mapper 
-write.table(snps_flybase, 
-            file = "snps.csv", 
-            sep = ",", 
-            row.names = FALSE, 
-            col.names = FALSE,
-            quote = FALSE)
-
-# maybe consider making this whole thing into a function
-
-# copy and paste into flybase feature mapper website ---------------------------
-# create a new dataframe from the GFF file
-
-gff <- read.delim("snps_flybase_features.txt", header = FALSE)
+# import DEG data
+setwd("/Users/tsoleary/R/rna_seq/results/")
+deg_hot <- read.csv("Dm_DESeq2_hot_ctrl_results_with_normalized.csv")
+deg_cold <- read.csv("Dm_DESeq2_cold_ctrl_results_with_normalized.csv")
 
 
-# maybe just try it from the GeneAnnotation from the gwas.top.annot files ------
+# snps <- min_gwas_top$ID
+# 
+# # fly base requires the SNPs in a certain format
+# chromosome <-  str_extract(snps, "[[:digit:]]?[[:alpha:]]")
+# position <- str_replace(snps, "[[:digit:]]?[[:alpha:]]_", "") %>%
+#   str_replace("_[[:alnum:]]+", "")
+# 
+# snps_flybase <- str_c(chromosome, 
+#                       str_c(position, position, sep = "-"), sep = ":")
 
 # get the FBgn# for all the snps
-min_gwas_top$FBgn <- str_extract(min_gwas_top$GeneAnnotation, "FBgn[[:digit:]]+")
-
-library("AnnotationDbi")
-library("org.Dm.eg.db")
+gwas_cold$FBgn <- str_extract(gwas_cold$GeneAnnotation, 
+                                 "FBgn[[:digit:]]+")
+gwas_hot$FBgn <- str_extract(gwas_hot$GeneAnnotation, 
+                             "FBgn[[:digit:]]+")
 
 # FBgn to gene_symbol
-min_gwas_top$gene_symbol <- mapIds(org.Dm.eg.db, 
-                                   keys = min_gwas_top$FBgn, 
-                                   column = "SYMBOL", 
-                                   keytype = "FLYBASE",
-                                   multiVals = "first")
+gwas_cold$gene <- as.character(mapIds(org.Dm.eg.db, 
+                               keys = gwas_cold$FBgn, 
+                               column = "SYMBOL", 
+                               keytype = "FLYBASE",
+                               multiVals = "first"))
 
-# get the 
-str_replace(min_gwas_top$GeneAnnotation[1], "^TranscriptAnnot\\[", "")
+gwas_hot$gene <- as.character(mapIds(org.Dm.eg.db, 
+                                     keys = gwas_hot$FBgn, 
+                                     column = "SYMBOL", 
+                                     keytype = "FLYBASE",
+                                     multiVals = "first"))
 
+comb_cold <- full_join(deg_cold, gwas_cold, by = "gene")
 
+comb_hot <- full_join(deg_hot, gwas_hot, by = "gene")
+
+# get the median or average for each treatment then do the 
+cold <- comb_cold %>% 
+  dplyr::select(contains("_"), gene, ID) %>%
+  pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
+  mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
+  group_by(gene, group, ID) %>%
+  summarize(expression = median(expression, na.rm = TRUE)) %>%
+  filter(expression > 0) %>%
+  pivot_wider(names_from = group, values_from = expression) %>%
+
+ggplot(cold) + 
+  geom_point(aes(x = con, y = cold)) + 
+  scale_x_log10() +
+  scale_y_log10()
+  
+
+         
