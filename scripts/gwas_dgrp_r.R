@@ -54,18 +54,28 @@ comb_hot <- full_join(deg_hot, gwas_hot, by = "gene")
 
 # get the median or average for each treatment then do the 
 cold <- comb_cold %>% 
-  dplyr::select(contains("_"), gene, ID) %>%
+  dplyr::select(contains("_"), gene, ID, padj) %>%
   pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
   mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
-  group_by(gene, group, ID) %>%
+  group_by(gene, group, ID, padj) %>%
   summarize(expression = median(expression, na.rm = TRUE)) %>%
   filter(expression > 0) %>%
-  pivot_wider(names_from = group, values_from = expression) %>%
+  pivot_wider(names_from = group, values_from = expression)
 
-ggplot(cold) + 
-  geom_point(aes(x = con, y = cold)) + 
+cold <- cold %>%
+  mutate(g = case_when(is.na(ID) & padj < 0.05 ~ "DEG",
+                       is.na(ID) & padj >= 0.05 ~ "all",
+                       is.na(ID) & is.na(padj) ~ "all",
+                       !is.na(ID) ~ "GWAS")) %>%
+  arrange(g) 
+
+ggplot(cold, aes(x= con, y = cold)) + 
+  geom_point(aes(x = con, y = cold, color = g), alpha = 0.5) +
+  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000")) +
   scale_x_log10() +
   scale_y_log10()
+
+
   
 
          
