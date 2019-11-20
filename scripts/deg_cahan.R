@@ -1,14 +1,16 @@
 # Cahan Lab DEG ----------------------------------------------------------------
 
-require(dplyr)
+require(tidyverse)
 require(DESeq2)
 require(ggpubr)
-require(ggplot2)
 require(VennDiagram)
+require(AnnotationDbi)
+require(org.Dm.eg.db)
 
 directory_counts <- here::here("cahan/counts")
 directory_results <- here::here("cahan/results")
 directory_plots <- here::here("cahan/plots")
+directory_gwas <- here::here("DRGP_GWAS")
 
 prefix <- "Dm_cahan_deg"
 
@@ -235,4 +237,111 @@ venn.diagram(x = list(HOT = hot_deg_down, COLD = cold_deg_down),
              cat.fontface = "bold", 
              cat.dist = c(0.05, 0.03), 
              cat.pos = c(220, 160))
+
+
+
+# GWAS DGRP --------------------------------------------------------------------
+
+# cold =======
+# import GWAS data
+setwd(directory_gwas)
+gwas <- read.table("CTmin/gwas.top.annot", header = TRUE)
+
+# import DEG data
+setwd(directory_results)
+deg <- read.csv(list.files()[grepl("cold", list.files())])
+
+# get the FBgn# for all the snps
+gwas$FBgn <- str_extract(gwas$GeneAnnotation, 
+                         "FBgn[[:digit:]]+") 
+
+# FBgn to gene_symbol
+gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
+                                 keys = gwas$FBgn, 
+                                 column = "SYMBOL", 
+                                 keytype = "FLYBASE",
+                                 multiVals = "first")) 
+comb <- full_join(deg, gwas, by = "gene")
+
+# get the median or average for each treatment 
+comb_avg <- comb %>% 
+  dplyr::select(contains("_"), gene, ID, padj) %>%
+  pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
+  mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
+  group_by(gene, group, ID, padj) %>%
+  summarize(expression = median(expression, na.rm = TRUE)) %>%
+  filter(expression > 0) %>%
+  pivot_wider(names_from = group, values_from = expression)
+
+comb_sort <- comb_avg %>%
+  mutate(g = case_when(is.na(ID) & padj < 0.05 ~ "DEG",
+                       is.na(ID) & padj >= 0.05 ~ "all",
+                       is.na(ID) & is.na(padj) ~ "all",
+                       !is.na(ID) & padj < 0.5 ~ "GWAS",
+                       !is.na(ID) & padj >= 0.5 ~ "GWAS-NS")) %>%
+  arrange(g) 
+
+ggplot(comb_sort, aes(x= ctrl, y = cold)) + 
+  geom_point(aes(x = ctrl, y = cold, color = g), alpha = 0.7) +
+  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000"), 
+                     breaks = c("DEG", "GWAS", "GWAS-NS")) +
+  scale_x_log10() +
+  scale_y_log10() + 
+  ylab("Cold (log10 expression)") +
+  xlab("Control (log10 expression)") +
+  theme_classic() +
+  theme(legend.title = element_blank())
+
+# hot =======
+# import GWAS data
+setwd(directory_gwas)
+gwas <- read.table("CTmax/gwas.top.annot", header = TRUE)
+
+# import DEG data
+setwd(directory_results)
+deg <- read.csv(list.files()[grepl("hot", list.files())])
+
+# get the FBgn# for all the snps
+gwas$FBgn <- str_extract(gwas$GeneAnnotation, 
+                         "FBgn[[:digit:]]+") 
+
+# FBgn to gene_symbol
+gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
+                                 keys = gwas$FBgn, 
+                                 column = "SYMBOL", 
+                                 keytype = "FLYBASE",
+                                 multiVals = "first")) 
+comb <- full_join(deg, gwas, by = "gene")
+
+# get the median or average for each treatment 
+comb_avg <- comb %>% 
+  dplyr::select(contains("_"), gene, ID, padj) %>%
+  pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
+  mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
+  group_by(gene, group, ID, padj) %>%
+  summarize(expression = median(expression, na.rm = TRUE)) %>%
+  filter(expression > 0) %>%
+  pivot_wider(names_from = group, values_from = expression)
+
+comb_sort <- comb_avg %>%
+  mutate(g = case_when(is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1.5 ~ "DEG",
+                       is.na(ID) & padj >= 0.05 & abs(log2FoldChange) > 1.5 ~ "all",
+                       is.na(ID) & is.na(padj) ~ "all",
+                       !is.na(ID) & padj < 0.5 ~ "GWAS",
+                       !is.na(ID) & padj >= 0.5 ~ "GWAS-NS")) %>%
+  arrange(g) 
+
+# need to add log fold change critera to this sorting!!!
+
+ggplot(comb_sort, aes(x= ctrl, y = )) + 
+  geom_point(aes(x = ctrl, y = cold, color = g), alpha = 0.7) +
+  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000"), 
+                     breaks = c("DEG", "GWAS", "GWAS-NS")) +
+  scale_x_log10() +
+  scale_y_log10() + 
+  ylab("Cold (log10 expression)") +
+  xlab("Control (log10 expression)") +
+  theme_classic() +
+  theme(legend.title = element_blank())
+
 
