@@ -45,8 +45,6 @@ rownames(counts_table) <- count_df$gene
 # Set the prefix for each output file name
 prefix <- "Dm_DESeq2"
 
-colnames(metadata) <- c("label", "file", "condition")
-
 treatments <- as.character(unique(metadata$condition))
 
 ddsHTSeq <- DESeqDataSetFromMatrix(countData = counts_table,

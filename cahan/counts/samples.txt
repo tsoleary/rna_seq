@@ -1,4 +1,4 @@
-label,file,group
+label,file,condition
 ctrl_1,25_1a.counts,ctrl
 ctrl_2,25_2a.counts,ctrl
 ctrl_3,25_3a.counts,ctrl
