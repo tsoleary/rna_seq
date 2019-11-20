@@ -1,0 +1,7 @@
+"","type","description"
+"baseMean","intermediate","mean of normalized counts for all samples"
+"log2FoldChange","results","log2 fold change (MLE): condition CON vs COLD"
+"lfcSE","results","standard error: condition CON vs COLD"
+"stat","results","Wald statistic: condition CON vs COLD"
+"pvalue","results","Wald test p-value: condition CON vs COLD"
+"padj","results","BH adjusted p-values"
