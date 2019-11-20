@@ -10,50 +10,27 @@ deg_directory <- "/Users/tsoleary/R/rna_seq/results/"
 
 # import GWAS data
 setwd(gwas_directory)
-gwas_hot <- read.table("CTmax/gwas.top.annot", header = TRUE)
-gwas_cold <- read.table("CTmin/gwas.top.annot", header = TRUE)
+gwas<- read.table("CTmin/gwas.top.annot", header = TRUE)
 
 # import DEG data
 setwd("/Users/tsoleary/R/rna_seq/results/")
-deg_hot <- read.csv("Dm_DESeq2_hot_ctrl_results_with_normalized.csv")
-deg_cold <- read.csv("Dm_DESeq2_cold_ctrl_results_with_normalized.csv")
-
-
-# snps <- min_gwas_top$ID
-# 
-# # fly base requires the SNPs in a certain format
-# chromosome <-  str_extract(snps, "[[:digit:]]?[[:alpha:]]")
-# position <- str_replace(snps, "[[:digit:]]?[[:alpha:]]_", "") %>%
-#   str_replace("_[[:alnum:]]+", "")
-# 
-# snps_flybase <- str_c(chromosome, 
-#                       str_c(position, position, sep = "-"), sep = ":")
+deg <- read.csv("Dm_DESeq2_cold_ctrl_results_with_normalized.csv")
 
 # get the FBgn# for all the snps
-gwas_cold$FBgn <- str_extract(gwas_cold$GeneAnnotation, 
-                                 "FBgn[[:digit:]]+")
-gwas_hot$FBgn <- str_extract(gwas_hot$GeneAnnotation, 
-                             "FBgn[[:digit:]]+")
+gwas$FBgn <- str_extract(gwas$GeneAnnotation, 
+                         "FBgn[[:digit:]]+") 
 
 # FBgn to gene_symbol
-gwas_cold$gene <- as.character(mapIds(org.Dm.eg.db, 
-                               keys = gwas_cold$FBgn, 
-                               column = "SYMBOL", 
-                               keytype = "FLYBASE",
-                               multiVals = "first"))
+gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
+                          keys = gwas$FBgn, 
+                          column = "SYMBOL", 
+                          keytype = "FLYBASE",
+                          multiVals = "first"))
 
-gwas_hot$gene <- as.character(mapIds(org.Dm.eg.db, 
-                                     keys = gwas_hot$FBgn, 
-                                     column = "SYMBOL", 
-                                     keytype = "FLYBASE",
-                                     multiVals = "first"))
-
-comb_cold <- full_join(deg_cold, gwas_cold, by = "gene")
-
-comb_hot <- full_join(deg_hot, gwas_hot, by = "gene")
+comb <- full_join(deg, gwas, by = "gene")
 
 # get the median or average for each treatment then do the 
-cold <- comb_cold %>% 
+comb_avg <- comb %>% 
   dplyr::select(contains("_"), gene, ID, padj) %>%
   pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
   mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
@@ -62,18 +39,20 @@ cold <- comb_cold %>%
   filter(expression > 0) %>%
   pivot_wider(names_from = group, values_from = expression)
 
-cold <- cold %>%
+comb_sort <- comb_avg %>%
   mutate(g = case_when(is.na(ID) & padj < 0.05 ~ "DEG",
                        is.na(ID) & padj >= 0.05 ~ "all",
                        is.na(ID) & is.na(padj) ~ "all",
-                       !is.na(ID) ~ "GWAS")) %>%
+                       !is.na(ID) & padj < 0.5 ~ "GWAS",
+                       !is.na(ID) & padj >= 0.5 ~ "GWAS-NS")) %>%
   arrange(g) 
 
-ggplot(cold, aes(x= con, y = cold)) + 
+ggplot(comb_sort, aes(x= con, y = cold)) + 
   geom_point(aes(x = con, y = cold, color = g), alpha = 0.5) +
-  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000")) +
+  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000"), breaks = "all") +
   scale_x_log10() +
-  scale_y_log10()
+  scale_y_log10() + 
+  theme(legend.title = element_blank())
 
 
   
