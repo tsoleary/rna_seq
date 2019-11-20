@@ -6,9 +6,9 @@ require(ggpubr)
 require(ggplot2)
 require(VennDiagram)
 
-directory_counts <- here::here("cahan_counts")
-directory_results <- here::here("cahan_results")
-directory_plots <- here::here("cahan_plots")
+directory_counts <- here::here("cahan/counts")
+directory_results <- here::here("cahan/results")
+directory_plots <- here::here("cahan/plots")
 
 prefix <- "Dm_cahan_deg"
 
