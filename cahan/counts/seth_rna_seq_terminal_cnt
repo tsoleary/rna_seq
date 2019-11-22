@@ -1,0 +1,78 @@
+Last login: Tue Nov 19 11:37:02 on ttys000
+(base) tsoleary@ip0af52e09:~$ ls
+Applications/           Grad School Class/      Pictures/
+Comparative Physiology/ Library/                Previs/
+Desktop/                Lockwood/               Public/
+Documents/              Movies/                 R/
+Downloads/              Music/
+Food/                   Papers/
+(base) tsoleary@ip0af52e09:~$ cd R/
+(base) tsoleary@ip0af52e09:~/R$ mkdir raw
+(base) tsoleary@ip0af52e09:~/R$ ls
+found_quant/  latex/        previs/       raw/          season_adapt/
+fqr_prob_3/   play/         proteomixr/   rna_seq/
+(base) tsoleary@ip0af52e09:~/R$ lcp rna_seq/
+.DS_Store                  README.md
+.RData                     brown/
+.Rhistory                  cahan/
+.Rproj.user/               rna_seq.Rproj
+.git/                      scripts/
+.gitignore                 snps.csv
+DRGP_GWAS/                 snps_flybase_features.txt
+(base) tsoleary@ip0af52e09:~/R$ lcp rna_seq/cahan/
+.DS_Store  counts/    plots/     results/   
+(base) tsoleary@ip0af52e09:~/R$ cd rna_seq/counts
+-bash: cd: rna_seq/counts: No such file or directory
+(base) tsoleary@ip0af52e09:~/R$ cd rna_seq/cahan/counts/
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ ls
+25_1a.counts             37_2a.counts             4_3a.counts
+25_2a.counts             37_3a.counts             Dm_cahan_deg_counts.csv
+25_3a.counts             4_1a.counts              samples.txt
+37_1a.counts             4_2a.counts
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed '1d' 25_1a.counts | cut -f 1,7 > 25_1.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ head 25_1.cnt 
+Geneid	25_1.Aligned.sortedByCoord.out.bam
+CG11023	71
+l(2)gl	5874
+Ir21a	99
+CR43609	154
+Cda5	1376
+CR45339	3
+CR45340	4
+dbr	1490
+CR44987	100
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed '2d' 25_1a.counts | cut -f 1,7 > 25_1.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ head 25_1.cnt 
+# Program:featureCounts v1.6.3; Command:"featureCounts" "-g" "gene_name" "-t" "exon" "-s" "1" "-F" "GTF" "-a" "/home/seth/genome_index/annotation/UCSC_dm6.gtf" "-o" "25_1a.counts" "25_1.Aligned.sortedByCoord.out.bam" 
+CG11023	71
+l(2)gl	5874
+Ir21a	99
+CR43609	154
+Cda5	1376
+CR45339	3
+CR45340	4
+dbr	1490
+CR44987	100
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 25_1a.counts | cut -f 1,7 > 25_1.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ head 25_1.cnt 
+CG11023	71
+l(2)gl	5874
+Ir21a	99
+CR43609	154
+Cda5	1376
+CR45339	3
+CR45340	4
+dbr	1490
+CR44987	100
+galectin	2598
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 25_2a.counts | cut -f 1,7 > 25_2.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 25_3a.counts | cut -f 1,7 > 25_3.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 37_1a.counts | cut -f 1,7 > 37_1.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 37_2a.counts | cut -f 1,7 > 37_2.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 37_3a.counts | cut -f 1,7 > 37_3.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 25_1a.counts | cut -f 1,7 > 25_1.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 25_2a.counts | cut -f 1,7 > 25_2.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 4_1a.counts | cut -f 1,7 > 4_1.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 4_2a.counts | cut -f 1,7 > 4_2.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 4_3a.counts | cut -f 1,7 > 4_3.cnt
+(base) tsoleary@ip0af52e09:~/R/rna_seq/cahan/counts$ sed -e '1,2d' 4_3a.counts | cut -f 1,7 > 4_3.cnt
