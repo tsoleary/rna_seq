@@ -3,8 +3,9 @@
 .RData
 .Ruserdata
 *.Rproj
-DM6_counts/*
 .DS_Store
-test/*
 DRGP_GWAS/*
-plots/*
+cahan/tables/*
+cahan/figures/*
+*.RData
+*.Rapp.history
