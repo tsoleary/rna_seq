@@ -18,7 +18,7 @@ prefix <- "Dm_cahan_deg"
 
 # working directory containg the .counts files and metadata file
 setwd(directory_counts)
-metadata <- read.csv("samples.txt")
+metadata <- read.csv("chaos.txt")
 
 # read in each .cnt and compile a dataframe of read counts for each sample
 count_df <- data.frame()
@@ -142,7 +142,7 @@ pca.data <- data.frame(Sample = rownames(pca$x),
                        X = pca$x[,1],
                        Y = pca$x[,2])
 
-pca.data$group <- gsub("_[[:alnum:]]", "",  pca.data$Sample)
+pca.data$group <- gsub("_[[:alnum:]]", "", pca.data$Sample)
 
 # plot with sample labels
 ggplot(data = pca.data, aes(x = X, y = Y, label = Sample)) +
@@ -192,11 +192,11 @@ venn.diagram(x = list(HOT = hot_deg, COLD = cold_deg),
              cat.dist = c(0.05, 0.03), 
              cat.pos = c(220, 160))
 
-# subset to only genes that are significantly upregulated, L2FC > 1.5
+# subset to only genes that are significantly upregulated, L2FC > 1
 hot_deg_up <- row.names(subset(res_hot, res_hot$padj <= 0.05 & 
-                               res_hot$log2FoldChange > 1.5))
+                               res_hot$log2FoldChange > 1))
 cold_deg_up <- row.names(subset(res_cold, res_cold$padj <= 0.05 &
-                                res_cold$log2FoldChange > 1.5))
+                                res_cold$log2FoldChange > 1))
 
 setwd(directory_plots)
 venn.diagram(x = list(HOT = hot_deg_up, COLD = cold_deg_up),
@@ -217,9 +217,9 @@ venn.diagram(x = list(HOT = hot_deg_up, COLD = cold_deg_up),
 
 # subset to only genes that are significantly downregulated, L2FC < -1.5
 hot_deg_down <- row.names(subset(res_hot, res_hot$padj <= 0.05 & 
-                                 res_hot$log2FoldChange < -1.5))
+                                 res_hot$log2FoldChange < -1))
 cold_deg_down <- row.names(subset(res_cold, res_cold$padj <= 0.05 &
-                                  res_cold$log2FoldChange < -1.5))
+                                  res_cold$log2FoldChange < -1))
 
 setwd(directory_plots)
 venn.diagram(x = list(HOT = hot_deg_down, COLD = cold_deg_down),
@@ -243,6 +243,7 @@ venn.diagram(x = list(HOT = hot_deg_down, COLD = cold_deg_down),
 # GWAS DGRP --------------------------------------------------------------------
 
 # cold =======
+outputPrefix <- paste0(prefix, "_cold")
 # import GWAS data
 setwd(directory_gwas)
 gwas <- read.table("CTmin/gwas.top.annot", header = TRUE)
@@ -265,26 +266,27 @@ comb <- full_join(deg, gwas, by = "gene")
 
 # get the median or average for each treatment 
 comb_avg <- comb %>% 
-  dplyr::select(contains("_"), gene, ID, padj) %>%
+  dplyr::select(contains("_"), gene, ID, padj, log2FoldChange) %>%
   pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
   mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
-  group_by(gene, group, ID, padj) %>%
+  group_by(gene, group, ID, padj, log2FoldChange) %>%
   summarize(expression = median(expression, na.rm = TRUE)) %>%
   filter(expression > 0) %>%
   pivot_wider(names_from = group, values_from = expression)
 
 comb_sort <- comb_avg %>%
-  mutate(g = case_when(is.na(ID) & padj < 0.05 ~ "DEG",
-                       is.na(ID) & padj >= 0.05 ~ "all",
-                       is.na(ID) & is.na(padj) ~ "all",
-                       !is.na(ID) & padj < 0.5 ~ "GWAS",
-                       !is.na(ID) & padj >= 0.5 ~ "GWAS-NS")) %>%
+  mutate(g = case_when(is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1 ~ "DEG",
+                       is.na(ID) & padj > 0.05 & abs(log2FoldChange) > 1 ~ "all",
+                       is.na(ID) & abs(log2FoldChange) < 1 ~ "all",
+                       !is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1 ~ "GWAS-DEG",
+                       !is.na(ID) & padj > 0.05 & abs(log2FoldChange) > 1 ~ "GWAS-NS",
+                       !is.na(ID) & abs(log2FoldChange) < 1 ~ "all")) %>%
   arrange(g) 
 
 ggplot(comb_sort, aes(x= ctrl, y = cold)) + 
   geom_point(aes(x = ctrl, y = cold, color = g), alpha = 0.7) +
   scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000"), 
-                     breaks = c("DEG", "GWAS", "GWAS-NS")) +
+                     breaks = c("DEG", "GWAS-DEG", "GWAS-NS")) +
   scale_x_log10() +
   scale_y_log10() + 
   ylab("Cold (log10 expression)") +
@@ -292,7 +294,13 @@ ggplot(comb_sort, aes(x= ctrl, y = cold)) +
   theme_classic() +
   theme(legend.title = element_blank())
 
+setwd(directory_plots)
+dev.copy(png, paste0(outputPrefix, "_expression_and_gwas.png"))
+dev.off()
+
 # hot =======
+outputPrefix <- paste0(prefix, "_hot")
+
 # import GWAS data
 setwd(directory_gwas)
 gwas <- read.table("CTmax/gwas.top.annot", header = TRUE)
@@ -315,33 +323,47 @@ comb <- full_join(deg, gwas, by = "gene")
 
 # get the median or average for each treatment 
 comb_avg <- comb %>% 
-  dplyr::select(contains("_"), gene, ID, padj) %>%
+  dplyr::select(contains("_"), gene, ID, padj, log2FoldChange) %>%
   pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
   mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
-  group_by(gene, group, ID, padj) %>%
+  group_by(gene, group, ID, padj, log2FoldChange) %>%
   summarize(expression = median(expression, na.rm = TRUE)) %>%
   filter(expression > 0) %>%
   pivot_wider(names_from = group, values_from = expression)
 
+# create discrete groups for each category
 comb_sort <- comb_avg %>%
-  mutate(g = case_when(is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1.5 ~ "DEG",
-                       is.na(ID) & padj >= 0.05 & abs(log2FoldChange) > 1.5 ~ "all",
-                       is.na(ID) & is.na(padj) ~ "all",
-                       !is.na(ID) & padj < 0.5 ~ "GWAS",
-                       !is.na(ID) & padj >= 0.5 ~ "GWAS-NS")) %>%
+  mutate(g = case_when(is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1 ~ "DEG",
+                       is.na(ID) & padj > 0.05 & abs(log2FoldChange) > 1 ~ "all",
+                       is.na(ID) & abs(log2FoldChange) < 1 ~ "all",
+                       !is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1 ~ "GWAS-DEG",
+                       !is.na(ID) & padj > 0.05 & abs(log2FoldChange) > 1 ~ "GWAS-NS",
+                       !is.na(ID) & abs(log2FoldChange) < 1 ~ "all")) %>%
   arrange(g) 
 
-# need to add log fold change critera to this sorting!!!
+# count the number of genes in each category
+count_df <- comb_sort %>%
+  group_by(g) %>%
+  summarize(count = n())
 
-ggplot(comb_sort, aes(x= ctrl, y = )) + 
+# plot the expression of the ctrl and hot/cold with each group labeled
+ggplot(comb_sort, aes(x = ctrl, y = hot)) + 
   geom_point(aes(x = ctrl, y = cold, color = g), alpha = 0.7) +
   scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000"), 
-                     breaks = c("DEG", "GWAS", "GWAS-NS")) +
+                     breaks = c("DEG", "GWAS-DEG", "GWAS-NS")) +
   scale_x_log10() +
   scale_y_log10() + 
-  ylab("Cold (log10 expression)") +
+  ylab("Hot (log10 expression)") +
   xlab("Control (log10 expression)") +
   theme_classic() +
   theme(legend.title = element_blank())
+
+# save the plot
+setwd(directory_plots)
+dev.copy(png, paste0(outputPrefix, "_expression_and_gwas.png"))
+dev.off()
+
+
+
 
 
