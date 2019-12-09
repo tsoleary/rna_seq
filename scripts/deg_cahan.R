@@ -238,15 +238,13 @@ venn.diagram(x = list(HOT = hot_deg_down, COLD = cold_deg_down),
              cat.dist = c(0.05, 0.03), 
              cat.pos = c(220, 160))
 
-
-
 # GWAS DGRP --------------------------------------------------------------------
 
 # cold =======
 outputPrefix <- paste0(prefix, "_cold")
 # import GWAS data
 setwd(directory_gwas)
-gwas <- read.table("CTmin/gwas.top.annot", header = TRUE)
+gwas <- read.table("CTmin/gwas.all.assoc", header = TRUE)
 
 # import DEG data
 setwd(directory_results)
@@ -278,8 +276,10 @@ comb_sort <- comb_avg %>%
   mutate(g = case_when(is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1 ~ "DEG",
                        is.na(ID) & padj > 0.05 & abs(log2FoldChange) > 1 ~ "all",
                        is.na(ID) & abs(log2FoldChange) < 1 ~ "all",
-                       !is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1 ~ "GWAS-DEG",
-                       !is.na(ID) & padj > 0.05 & abs(log2FoldChange) > 1 ~ "GWAS-NS",
+                       !is.na(ID) & padj < 0.05 & 
+                         abs(log2FoldChange) > 1 ~ "GWAS-DEG",
+                       !is.na(ID) & padj > 0.05 & 
+                         abs(log2FoldChange) > 1 ~ "GWAS-NS",
                        !is.na(ID) & abs(log2FoldChange) < 1 ~ "all")) %>%
   arrange(g) 
 
@@ -336,8 +336,10 @@ comb_sort <- comb_avg %>%
   mutate(g = case_when(is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1 ~ "DEG",
                        is.na(ID) & padj > 0.05 & abs(log2FoldChange) > 1 ~ "all",
                        is.na(ID) & abs(log2FoldChange) < 1 ~ "all",
-                       !is.na(ID) & padj < 0.05 & abs(log2FoldChange) > 1 ~ "GWAS-DEG",
-                       !is.na(ID) & padj > 0.05 & abs(log2FoldChange) > 1 ~ "GWAS-NS",
+                       !is.na(ID) & padj < 0.05 & 
+                         abs(log2FoldChange) > 1 ~ "GWAS-DEG",
+                       !is.na(ID) & padj > 0.05 & 
+                         abs(log2FoldChange) > 1 ~ "GWAS-NS",
                        !is.na(ID) & abs(log2FoldChange) < 1 ~ "all")) %>%
   arrange(g) 
 
@@ -365,5 +367,87 @@ dev.off()
 
 
 
+# gwas brent stuff -------------------------------------------------------------
 
+# seth unique plot
+
+# import DEG data
+setwd(directory_results)
+deg_cold <- read.csv(list.files()[grepl("cold", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
+
+
+deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+
+deg_grouped <- deg %>%
+  mutate(cold_genes = case_when(padj.cold < 0.05 ~ "sig",
+                                padj.cold >= 0.05 ~ "ns"),
+         hot_genes = case_when(padj.hot < 0.05 ~ "sig",
+                               padj.hot >= 0.05 ~ "ns"),
+         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
+                             log2FoldChange.cold > 0 ~ "up"),
+         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
+                            log2FoldChange.hot > 0 ~ "up")) %>%
+  filter(!is.na(cold_genes) & !is.na(hot_genes) &
+         !is.na(cold_fc) & !is.na(hot_fc)) %>%
+  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
+  mutate(group = case_when(cold_genes == "sig" &
+                           hot_genes == "sig" &
+                           cold_fc == "down" &
+                           hot_fc == "down" | 
+                           cold_genes == "sig" &
+                           hot_genes == "sig" &
+                           cold_fc == "up" &
+                           hot_fc == "up" ~ "shared",
+                           cold_genes == "ns" & 
+                           hot_genes == "sig" |
+                           hot_genes == "ns" &
+                           cold_genes == "sig" ~ "unique",
+                           cold_genes == "ns" &
+                           hot_genes == "ns" ~ "all"))
+
+
+deg_grouped <- deg %>%
+  mutate(cold_genes = case_when(padj.cold < 0.05 ~ "sig",
+                                padj.cold >= 0.05 ~ "ns"),
+         hot_genes = case_when(padj.hot < 0.05 ~ "sig",
+                               padj.hot >= 0.05 ~ "ns"),
+         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
+                             log2FoldChange.cold > 0 ~ "up"),
+         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
+                            log2FoldChange.hot > 0 ~ "up")) %>%
+  filter(!is.na(cold_genes) & !is.na(hot_genes) &
+           !is.na(cold_fc) & !is.na(hot_fc)) %>%
+  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
+  mutate(group = case_when(col == "sig sig up up" |
+                             col == "sig sig down down" ~ "shared",
+                           col == "sig ns up up" |
+                             col == "ns sig up up" |
+                             col == "sig ns down down" |
+                             col == "ns sig down down" ~ "ns",
+                           col == "ns ns down down" |
+                             col == "ns ns down up" |
+                             col == "ns ns up down" |
+                             col == "ns ns up up" ~ "ns",
+                           col == "sig sig down up" |
+                             col == "sig sig up down" ~ "unique",
+                           col == "ns sig up down" |
+                             col == "ns sig down up" |
+                             col == "sig ns down up" |
+                             col == "sig ns up down" ~ "ns")) %>%
+  add_count(group) %>% 
+  mutate(groupn = paste0(group, ' (', n, ')')) %>%
+  arrange(groupn)
+            
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000")) +
+  geom_hline(yintercept = 0, color = "black") +
+  geom_vline(xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_bw()
 
