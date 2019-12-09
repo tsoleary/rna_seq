@@ -367,9 +367,7 @@ dev.off()
 
 
 
-# gwas brent stuff -------------------------------------------------------------
-
-# seth unique plot
+# seth unique plot -------------------------------------------------------------
 
 # import DEG data
 setwd(directory_results)
@@ -423,4 +421,58 @@ ggplot(deg_grouped,
   xlab("Cold vs Ctrl") + 
   theme_classic() + 
   labs(color = "")
+
+# gwas brent stuff  ------------------------------------------------------------
+
+# import GWAS data
+setwd(directory_gwas)
+gwas <- read.table("CTmax/gwas.top.annot", header = TRUE)
+gwas_all <- read.table("CTmin/gwas.all.assoc", header = TRUE)
+
+# import DEG data
+setwd(directory_results)
+deg_cold <- read.csv(list.files()[grepl("cold", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
+
+deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+
+# Gene annotation 
+# Effect ( Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| 
+# Amino_Acid_length | Gene_Name | Gene_BioType | Coding | Transcript | Exon [ | 
+# ERRORS | WARNINGS ] )
+
+# get the FBgn# for all the snps
+gwas_all$FBgn <- str_extract(gwas_all$GeneAnnotation, 
+                             "FBgn[[:digit:]]+")
+
+# FBgn to gene_symbol
+gwas_all$gene <- as.character(mapIds(org.Dm.eg.db, 
+                                 keys = gwas$FBgn, 
+                                 column = "SYMBOL", 
+                                 keytype = "FLYBASE",
+                                 multiVals = "first")) 
+comb <- full_join(deg, gwas, by = "gene")
+
+annot_split <- str_split(gwas$GeneAnnotation, "\\|")
+gwas$grps <- sapply(annot_split, "[[", 3)
+
+unique(gwas$grps)
+
+x <- comb %>%
+  filter(AvgMixedPval < 0.00005)
+
+# 
+ggplot(comb, aes(x = abs(log(AvgMixedPval)), y = abs(log2FoldChange.hot))) +
+  geom_point() 
+
+
+
+ggplot(comb, aes(x = AvgEff, y = -log(padj.hot))) +
+  geom_point() + 
+  ylim(0,25)
+
+
+
+
 
