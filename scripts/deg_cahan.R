@@ -379,35 +379,6 @@ deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
 
 deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
 
-
-deg_grouped <- deg %>%
-  mutate(cold_genes = case_when(padj.cold < 0.05 ~ "sig",
-                                padj.cold >= 0.05 ~ "ns"),
-         hot_genes = case_when(padj.hot < 0.05 ~ "sig",
-                               padj.hot >= 0.05 ~ "ns"),
-         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
-                             log2FoldChange.cold > 0 ~ "up"),
-         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
-                            log2FoldChange.hot > 0 ~ "up")) %>%
-  filter(!is.na(cold_genes) & !is.na(hot_genes) &
-         !is.na(cold_fc) & !is.na(hot_fc)) %>%
-  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
-  mutate(group = case_when(cold_genes == "sig" &
-                           hot_genes == "sig" &
-                           cold_fc == "down" &
-                           hot_fc == "down" | 
-                           cold_genes == "sig" &
-                           hot_genes == "sig" &
-                           cold_fc == "up" &
-                           hot_fc == "up" ~ "shared",
-                           cold_genes == "ns" & 
-                           hot_genes == "sig" |
-                           hot_genes == "ns" &
-                           cold_genes == "sig" ~ "unique",
-                           cold_genes == "ns" &
-                           hot_genes == "ns" ~ "all"))
-
-
 deg_grouped <- deg %>%
   mutate(cold_genes = case_when(padj.cold < 0.05 ~ "sig",
                                 padj.cold >= 0.05 ~ "ns"),
