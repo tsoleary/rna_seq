@@ -9,3 +9,4 @@ cahan/tables/*
 cahan/figures/*
 *.RData
 *.Rapp.history
+*.pptx
