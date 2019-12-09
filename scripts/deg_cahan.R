@@ -392,33 +392,35 @@ deg_grouped <- deg %>%
            !is.na(cold_fc) & !is.na(hot_fc)) %>%
   mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
   mutate(group = case_when(col == "sig sig up up" |
-                             col == "sig sig down down" ~ "shared",
+                             col == "sig sig down down" ~ "Shared",
                            col == "sig ns up up" |
                              col == "ns sig up up" |
                              col == "sig ns down down" |
-                             col == "ns sig down down" ~ "ns",
+                             col == "ns sig down down" ~ "Sig1 Shared",
                            col == "ns ns down down" |
                              col == "ns ns down up" |
                              col == "ns ns up down" |
-                             col == "ns ns up up" ~ "ns",
+                             col == "ns ns up up" ~ "NS",
                            col == "sig sig down up" |
-                             col == "sig sig up down" ~ "unique",
+                             col == "sig sig up down" ~ "Unique",
                            col == "ns sig up down" |
                              col == "ns sig down up" |
                              col == "sig ns down up" |
-                             col == "sig ns up down" ~ "ns")) %>%
+                             col == "sig ns up down" ~ "Sig1 Unique")) %>%
   add_count(group) %>% 
   mutate(groupn = paste0(group, ' (', n, ')')) %>%
   arrange(groupn)
             
+clrs <- c("darkgrey",  "goldenrod4", "goldenrod1", "coral", "coral4")
 
 ggplot(deg_grouped, 
        aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
   geom_point() + 
-  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000")) +
-  geom_hline(yintercept = 0, color = "black") +
-  geom_vline(xintercept = 0, color = "black") +
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
   ylab("Hot vs Ctrl") +
   xlab("Cold vs Ctrl") + 
-  theme_bw()
+  theme_classic() + 
+  labs(color = "")
 
