@@ -409,8 +409,9 @@ deg_grouped <- deg %>%
   mutate(groupn = paste0(group, ' (', n, ')')) %>%
   arrange(groupn)
             
-clrs <- c("darkgrey",  "goldenrod4", "goldenrod1", "coral", "coral4")
+clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
 
+set.seed(1)
 ggplot(deg_grouped, 
        aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
   geom_point() + 
@@ -420,7 +421,17 @@ ggplot(deg_grouped,
   ylab("Hot vs Ctrl") +
   xlab("Cold vs Ctrl") + 
   theme_classic() + 
-  labs(color = "")
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Unique") %>%
+                              top_n(20, wt = baseMean.cold),
+                            aes(label = gene),
+                            fill = "white", 
+                            alpha = 0.75,
+                            color = 'black',
+                            size = 3.5, 
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+
 
 # gwas brent stuff  ------------------------------------------------------------
 
@@ -443,11 +454,11 @@ deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
 # ERRORS | WARNINGS ] )
 
 # get the FBgn# for all the snps
-gwas_all$FBgn <- str_extract(gwas_all$GeneAnnotation, 
-                             "FBgn[[:digit:]]+")
+gwas$FBgn <- str_extract(gwas$GeneAnnotation,
+                         "FBgn[[:digit:]]+")
 
 # FBgn to gene_symbol
-gwas_all$gene <- as.character(mapIds(org.Dm.eg.db, 
+gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
                                  keys = gwas$FBgn, 
                                  column = "SYMBOL", 
                                  keytype = "FLYBASE",
@@ -461,16 +472,17 @@ unique(gwas$grps)
 
 x <- comb %>%
   filter(AvgMixedPval < 0.00005)
-
-# 
-ggplot(comb, aes(x = abs(log(AvgMixedPval)), y = abs(log2FoldChange.hot))) +
+ 
+ggplot(x, aes(x = abs(log(AvgMixedPval)), y = abs(log2FoldChange.hot))) +
   geom_point() 
 
 
 
-ggplot(comb, aes(x = AvgEff, y = -log(padj.hot))) +
+ggplot(x, aes(x = AvgEff, y = -log(padj.hot))) +
   geom_point() + 
   ylim(0,25)
+
+
 
 
 
