@@ -1,37 +1,99 @@
 # gene set enrichment analysis -------------------------------------------------
-# https://pt.coursera.org/lecture/statistical-genomics/gene-set-analysis-in-r-7-43-REPHH
 
-
-library(devtools)
-library(Biobase)
-library(DESeq2)
-library(goseq)
-
-# Set the working directory
-directory <- "/Users/tsoleary/R/rna_seq/DM6_counts"
-setwd(directory)
+#require(msigdbr)
+require(clusterProfiler)
+require(AnnotationDbi)
+require(org.Dm.eg.db)
+require(tidyverse)
 
 # Set the prefix for all output file names
-prefix <- "Dm_DESeq2"
+prefix <- "Dm_cahan_deg"
 
-# need results(dds) object
-# source("/Users/tsoleary/R/rna_seq/scripts/DESeq_r.R")
+# Set the working directory
+directory_results <- here::here("cahan/results")
+setwd(directory_results)
 
-res <- res_hot_con
-# res <- res_cold_con
-# res <- res_hot_cold
+deg_cold <- read.csv(list.files()[grepl("cold", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
 
-genes <- as.integer(res$padj < 0.05)
-not_na <- !is.na(genes)
-names(genes) <- rownames(res)
-genes <- genes[not_na]
 
-pwf <- nullp(genes, "dm3", id = "geneSymbol")
+deg <- deg_cold %>% 
+  filter(deg_cold$padj < 0.05)
 
-GO.genes <- goseq(pwf, "dm3", id = "geneSymbol") 
+# how to convert symbol to another type supported by org.Dm.eg
+gene.df <- bitr(as.character(deg$gene), 
+                fromType = "SYMBOL",
+                toType = "ENTREZID",
+                OrgDb = org.Dm.eg.db,
+                drop = FALSE)
+head(gene.df)
 
-head(GO.genes)
+deg <- full_join(deg, gene.df, by = c("gene" = "SYMBOL"))
 
+# the groupGO defaults to the ENTREZID
+# you can specify the type of key with keyType = "SYMBOL" but it wasn't working
+# ggo <- groupGO(gene = as.character(gene.df$ENTREZID),
+#                OrgDb = org.Dm.eg.db,
+#                ont = "CC",
+#                level = 3,
+#                readable = TRUE)
+# head(ggo)
+# 
+# ego2 <- enrichGO(gene = as.character(gene.df$ENTREZID),
+#                  OrgDb = org.Dm.eg.db,
+#                  ont = "CC",
+#                  pAdjustMethod = "BH",
+#                  pvalueCutoff = 0.01,
+#                  qvalueCutoff = 0.05,
+#                  readable = TRUE)
+
+# does the geneList have to be in ENTREZID format?
+
+
+
+
+
+# the geneList has to have the a decending order of some vector
+
+
+# gene list descending by significant padj
+geneList <- deg %>%
+  dplyr::filter(padj < 0.05) %>%
+  dplyr::select(gene, padj) %>%
+  dplyr::arrange(desc(padj))
+
+
+
+# gene list descending by significant padj
+geneList <- deg %>%
+  dplyr::filter(padj < 0.05 & !is.na(ENTREZID)) %>%
+  dplyr::select(ENTREZID, padj) %>%
+  dplyr::arrange(desc(padj))
+
+# gene list descending by abs(log_fc)
+geneList <- deg %>%
+  dplyr::filter(padj < 0.05) %>%
+  dplyr::mutate(abs_lfc = abs(log2FoldChange)) %>%
+  dplyr::select(gene, abs_lfc) %>%
+  dplyr::arrange(desc(abs_lfc))
+
+geneListMFer <- as.numeric(geneList$abs_lfc) 
+names(geneListMFer) <- geneList$gene
+
+
+# ont	one of "BP", "MF", and "CC" subontologies, or "ALL" for all three
+ego3 <- gseGO(geneList = geneListMFer,
+              OrgDb = org.Dm.eg.db,
+              ont = "CC",
+              nPerm = 1000,
+              minGSSize = 100,
+              maxGSSize = 500,
+              verbose = FALSE)
+# i have no idea what the fuck is going on and imfuckingsickofit
+
+# --> Expected input gene ID: 34974,31518,41836,40966,38327,36654
+# Error in check_gene_id(geneList, geneSets) : 
+#   --> No gene can be mapped....
 
 
 
