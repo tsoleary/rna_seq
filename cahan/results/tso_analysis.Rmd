@@ -1,0 +1,732 @@
+---
+title: "DEG & GWAS Analysis"
+author: "TS O'Leary"
+output:
+  rmarkdown::html_document:
+    theme: lumen
+    number_sections: true
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+require(tidyverse)
+require(ggpubr)
+require(AnnotationDbi)
+require(org.Dm.eg.db)
+require(ggcorrplot)
+
+
+directory_counts <- here::here("cahan/counts")
+directory_results <- here::here("cahan/results")
+directory_plots <- here::here("cahan/plots")
+directory_gwas <- here::here("DRGP_GWAS")
+```
+
+# MA plots {.tabset .tabset-fade .tabset-pills}
+
+## Fold-change cutoff 2
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold}
+# MA plot of RNAseq data for entire dataset ------------------------------------
+
+# groups being compared as how it was saved in the result folder
+comp_cond <- "cold"
+
+# load result file
+setwd(directory_results)
+csv_result_file <- list.files()[grepl(comp_cond, list.files())]
+res <- read.csv(csv_result_file)
+
+# create ma plot
+ggmaplot(res, main = expression("4°C" %->% "25°C"),
+         fdr = 0.05, fc = 2, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot}
+# MA plot of RNAseq data for entire dataset ------------------------------------
+
+# groups being compared as how it was saved in the result folder
+comp_cond <- "hot"
+
+# load result file
+setwd(directory_results)
+csv_result_file <- list.files()[grepl(comp_cond, list.files())]
+res <- read.csv(csv_result_file)
+
+# create ma plot
+ggmaplot(res, main = expression("37°C" %->% "25°C"),
+         fdr = 0.05, fc = 2, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+## No fold-change cutoff
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold_no_fc}
+# MA plot of RNAseq data for entire dataset ------------------------------------
+
+# groups being compared as how it was saved in the result folder
+comp_cond <- "cold"
+
+# load result file
+setwd(directory_results)
+csv_result_file <- list.files()[grepl(comp_cond, list.files())]
+res <- read.csv(csv_result_file)
+
+# create ma plot
+ggmaplot(res, main = expression("4°C" %->% "25°C"),
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot_no_fc}
+# MA plot of RNAseq data for entire dataset ------------------------------------
+
+# groups being compared as how it was saved in the result folder
+comp_cond <- "hot"
+
+# load result file
+setwd(directory_results)
+csv_result_file <- list.files()[grepl(comp_cond, list.files())]
+res <- read.csv(csv_result_file)
+
+# create ma plot
+ggmaplot(res, main = expression("37°C" %->% "25°C"),
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+## No fold-change cutoff (fdr < 0.01)
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold_no_fcP}
+# MA plot of RNAseq data for entire dataset ------------------------------------
+
+# groups being compared as how it was saved in the result folder
+comp_cond <- "cold"
+
+# load result file
+setwd(directory_results)
+csv_result_file <- list.files()[grepl(comp_cond, list.files())]
+res <- read.csv(csv_result_file)
+
+# create ma plot
+ggmaplot(res, main = expression("4°C" %->% "25°C"),
+         fdr = 0.01, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot_no_fcP}
+# MA plot of RNAseq data for entire dataset ------------------------------------
+
+# groups being compared as how it was saved in the result folder
+comp_cond <- "hot"
+
+# load result file
+setwd(directory_results)
+csv_result_file <- list.files()[grepl(comp_cond, list.files())]
+res <- read.csv(csv_result_file)
+
+# create ma plot
+ggmaplot(res, main = expression("37°C" %->% "25°C"),
+         fdr = 0.01, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+# Shared and unique response {.tabset .tabset-fade .tabset-pills}
+
+## No labels
+
+```{r shared_unique}
+# import DEG data
+setwd(directory_results)
+deg_cold <- read.csv(list.files()[grepl("cold", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
+
+
+deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+deg_grouped <- deg %>%
+  mutate(cold_genes = case_when(padj.cold < 0.05 ~ "sig",
+                                padj.cold >= 0.05 ~ "ns"),
+         hot_genes = case_when(padj.hot < 0.05 ~ "sig",
+                               padj.hot >= 0.05 ~ "ns"),
+         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
+                             log2FoldChange.cold > 0 ~ "up"),
+         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
+                            log2FoldChange.hot > 0 ~ "up")) %>%
+  filter(!is.na(cold_genes) & !is.na(hot_genes) &
+           !is.na(cold_fc) & !is.na(hot_fc)) %>%
+  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
+  mutate(group = case_when(col == "sig sig up up" |
+                             col == "sig sig down down" ~ "Shared",
+                           col == "sig ns up up" |
+                             col == "ns sig up up" |
+                             col == "sig ns down down" |
+                             col == "ns sig down down" ~ "Sig1 Shared",
+                           col == "ns ns down down" |
+                             col == "ns ns down up" |
+                             col == "ns ns up down" |
+                             col == "ns ns up up" ~ "NS",
+                           col == "sig sig down up" |
+                             col == "sig sig up down" ~ "Unique",
+                           col == "ns sig up down" |
+                             col == "ns sig down up" |
+                             col == "sig ns down up" |
+                             col == "sig ns up down" ~ "Sig1 Unique")) %>%
+  add_count(group) %>% 
+  mutate(groupn = paste0(group, ' (', n, ')')) %>%
+  arrange(groupn)
+            
+clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  theme(legend.position = "top")
+```
+
+## With unique labeled
+
+```{r shared_unique_labels}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Unique") %>%
+                              top_n(20, wt = baseMean.cold),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
+
+## With shared labeled
+
+```{r shared_shared_labels}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
+                              top_n(20, wt = baseMean.cold),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
+
+## With shared labeled (padj.hot)
+
+```{r shared_shared_padj.hot_labels}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
+                              top_n(20, wt = padj.hot),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
+
+
+# Shared and unique response (padj < 0.01) {.tabset .tabset-fade .tabset-pills}
+
+## No labels
+
+```{r shared_uniqueP}
+# import DEG data
+setwd(directory_results)
+deg_cold <- read.csv(list.files()[grepl("cold", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
+
+
+deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+deg_grouped <- deg %>%
+  mutate(cold_genes = case_when(padj.cold < 0.01 ~ "sig",
+                                padj.cold >= 0.01 ~ "ns"),
+         hot_genes = case_when(padj.hot < 0.01 ~ "sig",
+                               padj.hot >= 0.01 ~ "ns"),
+         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
+                             log2FoldChange.cold > 0 ~ "up"),
+         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
+                            log2FoldChange.hot > 0 ~ "up")) %>%
+  filter(!is.na(cold_genes) & !is.na(hot_genes) &
+           !is.na(cold_fc) & !is.na(hot_fc)) %>%
+  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
+  mutate(group = case_when(col == "sig sig up up" |
+                             col == "sig sig down down" ~ "Shared",
+                           col == "sig ns up up" |
+                             col == "ns sig up up" |
+                             col == "sig ns down down" |
+                             col == "ns sig down down" ~ "Sig1 Shared",
+                           col == "ns ns down down" |
+                             col == "ns ns down up" |
+                             col == "ns ns up down" |
+                             col == "ns ns up up" ~ "NS",
+                           col == "sig sig down up" |
+                             col == "sig sig up down" ~ "Unique",
+                           col == "ns sig up down" |
+                             col == "ns sig down up" |
+                             col == "sig ns down up" |
+                             col == "sig ns up down" ~ "Sig1 Unique")) %>%
+  add_count(group) %>% 
+  mutate(groupn = paste0(group, ' (', n, ')')) %>%
+  arrange(groupn)
+            
+clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  theme(legend.position = "top")
+```
+
+## With unique labeled
+
+```{r shared_unique_labelsP}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Unique") %>%
+                              top_n(20, wt = baseMean.cold),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
+
+## With shared labeled
+
+```{r shared_shared_labelsP}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
+                              top_n(20, wt = baseMean.cold),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
+
+## With shared labeled (padj.hot)
+
+```{r shared_shared_padj.hot_labelsP}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
+                              top_n(20, wt = padj.hot),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
+
+
+# DEG & GWAS {.tabset .tabset-fade .tabset-pills}
+
+## Expression Plots
+
+**Cold vs Ctrl**
+
+```{r DEG_GWAS_cold}
+# import GWAS data
+setwd(directory_gwas)
+gwas <- read.table("CTmin/gwas.top.annot", header = TRUE)
+
+# import DEG data
+setwd(directory_results)
+deg <- read.csv(list.files()[grepl("cold", list.files())])
+
+# get the FBgn# for all the snps
+gwas$FBgn <- str_extract(gwas$GeneAnnotation, 
+                         "FBgn[[:digit:]]+") 
+
+# FBgn to gene_symbol
+gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
+                                 keys = gwas$FBgn, 
+                                 column = "SYMBOL", 
+                                 keytype = "FLYBASE",
+                                 multiVals = "first")) 
+comb <- full_join(deg, gwas, by = "gene")
+
+# get the median or average for each treatment 
+comb_avg <- comb %>% 
+  dplyr::select(contains("_"), gene, ID, padj, log2FoldChange) %>%
+  pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
+  mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
+  group_by(gene, group, ID, padj, log2FoldChange) %>%
+  summarize(expression = median(expression, na.rm = TRUE)) %>%
+  filter(expression > 0) %>%
+  pivot_wider(names_from = group, values_from = expression)
+
+comb_sort <- comb_avg %>%
+  mutate(g = case_when(is.na(ID) & padj < 0.01 ~ "DEG",
+                       is.na(ID) & padj > 0.01 ~ "all",
+                       is.na(ID) ~ "all",
+                       !is.na(ID) & padj < 0.01 ~ "GWAS-DEG",
+                       !is.na(ID) & padj > 0.01 ~ "GWAS-NS")) %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  group_by(g) %>%
+  add_count(g) %>% 
+  mutate(groupn = paste0(g, ' (', n, ')')) %>%
+  arrange(groupn) %>%
+  filter(!is.na(g))  %>%
+  distinct(gene, .keep_all = TRUE)
+
+# plot the expression of the ctrl and hot/cold with each group labeled
+ggplot(comb_sort, aes(x = ctrl, y = hot)) + 
+  geom_point(aes(x = ctrl, y = cold, color = groupn), alpha = 0.7) +
+  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000")) +
+  ggrepel::geom_label_repel(data = filter(comb_sort, g == "GWAS-DEG"),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  scale_x_log10() +
+  scale_y_log10() + 
+  ylab("Hot (log10 expression)") +
+  xlab("Control (log10 expression)") +
+  theme_classic() +
+  theme(legend.title = element_blank())
+```
+
+**Hot vs Ctrl**
+
+```{r DEG_GWAS_hot}
+# import GWAS data
+setwd(directory_gwas)
+gwas <- read.table("CTmax/gwas.top.annot", header = TRUE)
+
+# import DEG data
+setwd(directory_results)
+deg <- read.csv(list.files()[grepl("hot", list.files())])
+
+# get the FBgn# for all the snps
+gwas$FBgn <- str_extract(gwas$GeneAnnotation, 
+                         "FBgn[[:digit:]]+") 
+
+# FBgn to gene_symbol
+gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
+                                 keys = gwas$FBgn, 
+                                 column = "SYMBOL", 
+                                 keytype = "FLYBASE",
+                                 multiVals = "first")) 
+comb <- full_join(deg, gwas, by = "gene")
+
+# get the median or average for each treatment 
+comb_avg <- comb %>% 
+  dplyr::select(contains("_"), gene, ID, padj, log2FoldChange) %>%
+  pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
+  mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
+  group_by(gene, group, ID, padj, log2FoldChange) %>%
+  summarize(expression = median(expression, na.rm = TRUE)) %>%
+  filter(expression > 0) %>%
+  pivot_wider(names_from = group, values_from = expression) 
+
+comb_sort <- comb_avg %>%
+  mutate(g = case_when(is.na(ID) & padj < 0.01 ~ "DEG",
+                       is.na(ID) & padj > 0.01 ~ "all",
+                       is.na(ID) ~ "all",
+                       !is.na(ID) & padj < 0.01 ~ "GWAS-DEG",
+                       !is.na(ID) & padj > 0.01 ~ "GWAS-NS"))  %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  group_by(g) %>%
+  add_count(g) %>% 
+  mutate(groupn = paste0(g, ' (', n, ')')) %>%
+  arrange(groupn) %>%
+  filter(!is.na(g))
+
+# plot the expression of the ctrl and hot/cold with each group labeled
+ggplot(comb_sort, aes(x = ctrl, y = hot)) + 
+  geom_point(aes(x = ctrl, y = cold, color = groupn), alpha = 0.7) +
+  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000")) +
+  ggrepel::geom_label_repel(data = filter(comb_sort, g == "GWAS-DEG"),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  scale_x_log10() +
+  scale_y_log10() + 
+  ylab("Hot (log10 expression)") +
+  xlab("Control (log10 expression)") +
+  theme_classic() +
+  theme(legend.title = element_blank())
+```
+
+## CTmax & DEG Corr
+
+```{r GWAS_CTmax_corr}
+# import GWAS data
+setwd(directory_gwas)
+gwas <- read.table("CTmax/gwas.top.annot", header = TRUE)
+
+# import DEG data
+setwd(directory_results)
+deg_cold <- read.csv(list.files()[grepl("cold", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
+
+deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+# get the FBgn# for all the snps
+gwas$FBgn <- str_extract(gwas$GeneAnnotation,
+                         "FBgn[[:digit:]]+")
+
+# FBgn to gene_symbol
+gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
+                                 keys = gwas$FBgn, 
+                                 column = "SYMBOL", 
+                                 keytype = "FLYBASE",
+                                 multiVals = "first")) 
+annot_split <- str_split(gwas$GeneAnnotation, "\\|")
+gwas$grps <- sapply(annot_split, "[[", 3)
+
+comb <- full_join(deg, gwas, by = "gene")
+
+x <- comb %>%
+  filter(AvgMixedPval < 0.00005)
+
+y <- x[c(3, 7, 18, 22, 39:50)]
+
+corr <- round(cor(y, use = "na.or.complete"), 1)
+ggcorrplot(corr, hc.order = TRUE, outline.col = "white")
+
+```
+
+```{r GWAS_CTmax_corr_pval_fc}
+ggplot(x, aes(x = log(AvgMixedPval), y = abs(log2FoldChange.hot), color = grps)) +
+  geom_point() 
+```
+
+```{r GWAS_CTmax_corr_eff_pval}
+ggplot(x, aes(x = abs(AvgEff), y = -log(padj.hot), color = grps)) +
+  geom_point()
+```
+
+```{r GWAS_CTmax_corr_F_pval_fc}
+ggplot(x, aes(x = log(FemaleMixedPval), y = abs(log2FoldChange.hot), color = grps)) +
+  geom_point() 
+```
+
+```{r GWAS_CTmax_corr_F_eff_pval}
+ggplot(x, aes(x = abs(FemaleEff), y = -log(padj.hot), color = grps)) +
+  geom_point()
+```
+
+```{r GWAS_CTmax_corr_M_pval_fc}
+ggplot(x, aes(x = log(MaleMixedPval), y = abs(log2FoldChange.hot), color = grps)) +
+  geom_point() 
+```
+
+```{r GWAS_CTmax_corr_M_eff_pval}
+ggplot(x, aes(x = abs(MaleEff), y = -log(padj.hot), color = grps)) +
+  geom_point()
+```
+
+
+## CTmin & DEG Corr
+
+```{r GWAS_CTmin_corr}
+# import GWAS data
+setwd(directory_gwas)
+gwas <- read.table("CTmin/gwas.top.annot", header = TRUE)
+
+# import DEG data
+setwd(directory_results)
+deg_cold <- read.csv(list.files()[grepl("cold", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
+
+deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+# get the FBgn# for all the snps
+gwas$FBgn <- str_extract(gwas$GeneAnnotation,
+                         "FBgn[[:digit:]]+")
+
+# FBgn to gene_symbol
+gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
+                                 keys = gwas$FBgn, 
+                                 column = "SYMBOL", 
+                                 keytype = "FLYBASE",
+                                 multiVals = "first")) 
+annot_split <- str_split(gwas$GeneAnnotation, "\\|")
+gwas$grps <- sapply(annot_split, "[[", 3)
+
+comb <- full_join(deg, gwas, by = "gene")
+
+x <- comb %>%
+  filter(AvgMixedPval < 0.00005)
+
+y <- x[c(3, 7, 18, 22, 39:50)]
+
+corr <- round(cor(y, use = "na.or.complete"), 1)
+ggcorrplot(corr, hc.order = TRUE, outline.col = "white")
+```
+
+```{r GWAS_CTmin_corr_pval_fc_mixed}
+ggplot(x, aes(x = log(AvgMixedPval), y = abs(log2FoldChange.cold), color = grps)) +
+  geom_point() 
+```
+
+```{r GWAS_CTmin_corr_eff_pvalP}
+ggplot(x, aes(x = abs(AvgEff), y = -log(padj.cold), color = grps)) +
+  geom_point()
+```
+
+```{r GWAS_CTmin_corr_F_pval_fc}
+ggplot(x, aes(x = log(FemaleMixedPval), y = abs(log2FoldChange.cold), color = grps)) +
+  geom_point() 
+```
+
+```{r GWAS_CTmin_corr_F_eff_pval}
+ggplot(x, aes(x = abs(FemaleEff), y = -log(padj.cold), color = grps)) +
+  geom_point()
+```
+
+```{r GWAS_CTmin_corr_M_pval_fc}
+ggplot(x, aes(x = log(MaleMixedPval), y = abs(log2FoldChange.hot), color = grps)) +
+  geom_point() 
+```
+
+```{r GWAS_CTmin_corr_M_eff_pval}
+ggplot(x, aes(x = abs(MaleEff), y = -log(padj.hot), color = grps)) +
+  geom_point()
+```
