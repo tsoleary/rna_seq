@@ -425,10 +425,9 @@ ggplot(deg_grouped,
   ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Unique") %>%
                               top_n(20, wt = baseMean.cold),
                             aes(label = gene),
-                            fill = "white", 
-                            alpha = 0.75,
+                            fill = "white",
                             color = 'black',
-                            size = 3.5, 
+                            size = 3.5,
                             show.legend = FALSE) +
   theme(legend.position = "top")
 
@@ -481,9 +480,6 @@ ggplot(x, aes(x = abs(log(AvgMixedPval)), y = abs(log2FoldChange.hot))) +
 ggplot(x, aes(x = AvgEff, y = -log(padj.hot))) +
   geom_point() + 
   ylim(0,25)
-
-
-
 
 
 
