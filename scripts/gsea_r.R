@@ -75,7 +75,8 @@ geneList <- deg %>%
   dplyr::filter(padj < 0.05) %>%
   dplyr::mutate(abs_lfc = abs(log2FoldChange)) %>%
   dplyr::select(gene, abs_lfc) %>%
-  dplyr::arrange(desc(abs_lfc))
+  dplyr::arrange(desc(abs_lfc)) %>%
+  dplyr::distinct(abs_lfc, .keep_all = TRUE)
 
 geneListMFer <- as.numeric(geneList$abs_lfc) 
 names(geneListMFer) <- geneList$gene
