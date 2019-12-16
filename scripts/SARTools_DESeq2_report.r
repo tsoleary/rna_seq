@@ -46,14 +46,14 @@ typeTrans <- "VST"
 # "median" (default) or "shorth" to estimate the size factors
 locfunc <- "median"                                  
 # vector of colors of each biological condition on the plots
-colors <- c("springgreen", "dodgerblue","firebrick1")             
+colors <- c("springgreen", "dodgerblue", "firebrick1")             
 
 forceCairoGraph <- FALSE
 
 # run script -------------------------------------------------------------------
 setwd(workDir)
 require(SARTools)
-if (forceCairoGraph) options(bitmapType="cairo")
+if (forceCairoGraph) options(bitmapType = "cairo")
 
 # checking parameters
 checkParameters.DESeq2(projectName = projectName,
@@ -86,7 +86,7 @@ counts <- loadCountData(target = target,
 
 # description plots
 majSequences <- descriptionPlots(counts = counts, 
-                                 group = target[ , varInt], 
+                                 group = target[, varInt], 
                                  col = colors)
 
 # analysis with DESeq2
