@@ -10,3 +10,4 @@ cahan/figures/*
 *.RData
 *.Rapp.history
 *.pptx
+*.gmt
