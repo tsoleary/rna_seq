@@ -164,7 +164,11 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
 ## No labels
 
 ```{r shared_unique}
-deg_grouped <- deg %>%
+
+temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
+total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+deg_grouped <- total %>%
   mutate(cold_genes = case_when(padj.cold < 0.05 ~ "sig",
                                 padj.cold >= 0.05 ~ "ns"),
          hot_genes = case_when(padj.hot < 0.05 ~ "sig",
@@ -208,6 +212,30 @@ ggplot(deg_grouped,
   xlab("Cold vs Ctrl") + 
   theme_classic() + 
   labs(color = "") + 
+  theme(legend.position = "top")
+```
+
+## GWAS hits labeled
+
+```{r shared_unique_gwas_lab}
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl") +
+  xlab("Cold vs Ctrl") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, !is.na(ID.cold) | 
+                                            !is.na(ID.hot)) %>%
+                              distinct(gene, .keep_all = TRUE),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
   theme(legend.position = "top")
 ```
 
@@ -285,103 +313,6 @@ ggplot(deg_grouped,
                             show.legend = FALSE) +
   theme(legend.position = "top")
 ```
-
-
-# Shared and unique response (padj < 0.01) {.tabset .tabset-fade .tabset-pills}
-
-## No labels
-
-```{r shared_uniqueP}
-set.seed(1)
-
-ggplot(deg_grouped, 
-       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
-  geom_point() + 
-  scale_color_manual(values = clrs) +
-  geom_hline(size = 1, yintercept = 0, color = "black") +
-  geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
-  theme_classic() + 
-  labs(color = "") + 
-  theme(legend.position = "top")
-```
-
-## With unique labeled
-
-```{r shared_unique_labelsP}
-set.seed(1)
-
-ggplot(deg_grouped, 
-       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
-  geom_point() + 
-  scale_color_manual(values = clrs) +
-  geom_hline(size = 1, yintercept = 0, color = "black") +
-  geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
-  theme_classic() + 
-  labs(color = "") + 
-  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Unique") %>%
-                              top_n(20, wt = baseMean.cold),
-                            aes(label = gene),
-                            fill = "white",
-                            color = 'black',
-                            size = 3.5,
-                            show.legend = FALSE) +
-  theme(legend.position = "top")
-```
-
-## With shared labeled
-
-```{r shared_shared_labelsP}
-set.seed(1)
-
-ggplot(deg_grouped, 
-       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
-  geom_point() + 
-  scale_color_manual(values = clrs) +
-  geom_hline(size = 1, yintercept = 0, color = "black") +
-  geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
-  theme_classic() + 
-  labs(color = "") + 
-  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
-                              top_n(20, wt = baseMean.cold),
-                            aes(label = gene),
-                            fill = "white",
-                            color = 'black',
-                            size = 3.5,
-                            show.legend = FALSE) +
-  theme(legend.position = "top")
-```
-
-## With shared labeled (padj.hot)
-
-```{r shared_shared_padj.hot_labelsP}
-set.seed(1)
-
-ggplot(deg_grouped, 
-       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
-  geom_point() + 
-  scale_color_manual(values = clrs) +
-  geom_hline(size = 1, yintercept = 0, color = "black") +
-  geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
-  theme_classic() + 
-  labs(color = "") + 
-  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
-                              top_n(20, wt = padj.hot),
-                            aes(label = gene),
-                            fill = "white",
-                            color = 'black',
-                            size = 3.5,
-                            show.legend = FALSE) +
-  theme(legend.position = "top")
-```
-
 
 # DEG & GWAS {.tabset .tabset-fade .tabset-pills}
 
