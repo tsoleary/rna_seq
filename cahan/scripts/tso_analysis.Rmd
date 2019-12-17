@@ -1,5 +1,5 @@
 ---
-title: "DEG & GWAS Analysis"
+title: Genome wide association study and differential gene expression of _Drosophila melaogatster_ under heat and cold stress
 author: "TS O'Leary"
 output:
   rmarkdown::html_document:
