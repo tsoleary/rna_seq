@@ -441,8 +441,8 @@ gwas_all <- read.table("CTmin/gwas.all.assoc", header = TRUE)
 
 # import DEG data
 setwd(directory_results)
-deg_cold <- read.csv(list.files()[grepl("cold", list.files())])
-deg_hot <- read.csv(list.files()[grepl("hot", list.files())])
+deg_cold <- read.csv(list.files()[grepl("cold_results", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot_results", list.files())])
 
 deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
 
@@ -452,34 +452,42 @@ deg <- full_join(deg_cold, deg_hot, by = "gene", suffix = c(".cold", ".hot"))
 # Amino_Acid_length | Gene_Name | Gene_BioType | Coding | Transcript | Exon [ | 
 # ERRORS | WARNINGS ] )
 
-# get the FBgn# for all the snps
-gwas$FBgn <- str_extract(gwas$GeneAnnotation,
-                         "FBgn[[:digit:]]+")
+# # convert fbgn to gene symbol -----
+# # get the FBgn# for all the snps
+# gwas$FBgn <- str_extract(gwas$GeneAnnotation,
+#                          "FBgn[[:digit:]]+")
+# # 
+# # # FBgn to gene_symbol
+# gwas$gene2 <- as.character(mapIds(org.Dm.eg.db,
+#                                  keys = gwas$FBgn,
+#                                  column = "SYMBOL",
+#                                  keytype = "FLYBASE",
+#                                  multiVals = "first"))
+# # this is a worse method there is a way that some of the gene symbols 
+# # are getting lost in translation
 
-# FBgn to gene_symbol
-gwas$gene <- as.character(mapIds(org.Dm.eg.db, 
-                                 keys = gwas$FBgn, 
-                                 column = "SYMBOL", 
-                                 keytype = "FLYBASE",
-                                 multiVals = "first")) 
-comb <- full_join(deg, gwas, by = "gene")
-
+# split up the gene annotation line by the vertical pipe | ---------------------
 annot_split <- str_split(gwas$GeneAnnotation, "\\|")
+
+# the second item is the gene symbol
+gwas$gene <- sapply(annot_split, "[[", 2)
+# the third item is where the snp is located, intron, syn coding etc.
 gwas$grps <- sapply(annot_split, "[[", 3)
 
-unique(gwas$grps)
+# join the two data frames together
+comb <- full_join(deg, gwas, by = "gene")
 
-x <- comb %>%
+comb_filt <- comb %>%
   filter(AvgMixedPval < 0.00005)
  
-ggplot(x, aes(x = abs(log(AvgMixedPval)), y = abs(log2FoldChange.hot))) +
+ggplot(comb_filt, aes(x = abs(log(AvgMixedPval)), y = abs(log2FoldChange.hot))) +
   geom_point() 
 
-
-
-ggplot(x, aes(x = AvgEff, y = -log(padj.hot))) +
+ggplot(comb_filt, aes(x = AvgEff, y = -log(padj.hot))) +
   geom_point() + 
   ylim(0,25)
+
+
 
 
 
