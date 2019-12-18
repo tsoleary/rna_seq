@@ -6,6 +6,8 @@ require(ggpubr)
 require(VennDiagram)
 require(AnnotationDbi)
 require(org.Dm.eg.db)
+require(seqsetvis)
+require(ssvRecipes)
 
 directory_counts <- here::here("cahan/counts")
 directory_results <- here::here("cahan/results")
@@ -487,6 +489,39 @@ ggplot(comb_filt, aes(x = AvgEff, y = -log(padj.hot))) +
   geom_point() + 
   ylim(0,25)
 
+
+
+# seth 17DEC2019 -------
+
+deg_grouped$id <- seq_len(nrow(deg_grouped))
+
+deg_grouped$groupn <- factor(deg_grouped$groupn, levels = c("Shared: 8404", 
+                                                            "Sig1 Shared: 2722", 
+                                                            "Unique: 25",
+                                                            "Sig1 Unique: 158",
+                                                            "NS: 4586"))
+
+
+
+color_set <- c("goldenrod4", "goldenrod1", "coral", "coral4", "grey50")
+
+deg_grouped %>%
+  mutate(gwas_hit = )
+
+plot_scatter_side_density.xy(deg_grouped, 
+                             x_ = "log2FoldChange.cold", 
+                             y_ = "log2FoldChange.hot",
+                             set_ = "groupn",
+                             bg.string = "NS: 4586",
+                             sets.colors = color_set,
+                             n_auto_label = 0)
+
+# make a function to have the plot with another set group to have it just do the 
+# density plot for the gwas stuff
+
+# maybe later also try removing the axis labels on the density plot and make
+# the space between the plots less and have a box around the scatter plot to 
+# make it look like that allele specfic expression paper figure
 
 
 
