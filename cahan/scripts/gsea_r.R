@@ -5,6 +5,7 @@ require(clusterProfiler)
 require(AnnotationDbi)
 require(org.Dm.eg.db)
 require(tidyverse)
+require(DOSE)
 
 # Set the prefix for all output file names
 prefix <- "Dm_cahan_deg"
@@ -97,5 +98,52 @@ ego3 <- gseGO(geneList = geneListMFer,
 #   --> No gene can be mapped....
 
 
+
+
+# test this =------------
+
+geneList <- read_delim(here::here("cahan/results/cold_deg_ranked_lfc.rnk"), 
+                       delim = "\t",
+                       col_names = FALSE)
+
+data(geneList, package = "DOSE")
+
+ego3 <- gseGO(geneList     = geneList,
+              OrgDb        = org.Dm.eg.db,
+              keyType      = "SYMBOL",
+              ont          = "MF",
+              nPerm        = 1000,
+              minGSSize    = 1,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05)
+
+
+gene.df <- bitr(as.character(geneList$X1), 
+                fromType = "SYMBOL",
+                toType = "ENTREZID",
+                OrgDb = org.Dm.eg.db,
+                drop = FALSE)
+head(gene.df)
+
+geneList$X1 <- gene.df$ENTREZID
+
+geneListFilt <- geneList %>%
+  filter(!is.na(X1))
+
+
+kk2 <- gseKEGG(geneList     = geneListFilt,
+               organism     = 'dme',
+               nPerm        = 1000,
+               minGSSize    = 120,
+               pvalueCutoff = 0.05,
+               verbose      = FALSE)
+head(kk2)
+
+
+
+kk <- enrichKEGG(gene         = geneList,
+                 organism     = 'dme',
+                 keyType      = "SYMBOL",  
+                 pvalueCutoff = 0.05)
 
 
