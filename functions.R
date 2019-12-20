@@ -12,9 +12,8 @@ write.rnk <- function(.data, file, padj_cut = 0.05){
 }
 
 
-# plot gwas density on scatter plot
-
-plot_scatter_side_density.xy.TSO = function( xy_data,
+# custom plot_scatter_side_density_xy ------------------------------------------
+plot_scatter_side_density_xy = function( xy_data,
                                          x_ = "x",
                                          y_ = "y",
                                          id_ = "id",
@@ -24,7 +23,7 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
                                          labs_x = x_,
                                          labs_y = y_,
                                          labs_sets = set_,
-                                         labs_sets_density = set_,
+                                         labs_sets_density = set_density_,
                                          main_title = NULL,
                                          main_title.x = .02,
                                          main_title.y = .5,
@@ -267,7 +266,7 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
   
   components = list(scatter = p_scatter, x_density = p_x_density, y_density = p_y_density)
   
-  pg = plot_scatter_side_density.assemble.TSO(components, 
+  pg = plot_scatter_side_density_assemble(components, 
                                           main_title = main_title,
                                           main_title.x = main_title.x,
                                           main_title.y = main_title.y,
@@ -280,21 +279,20 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
 }
 
 
-# assemble ---------
-
-plot_scatter_side_density.assemble.TSO = function(components, 
-                                                  main_title = "", 
-                                                  main_title.x = .02, 
-                                                  main_title.y = .5, 
-                                                  main_title.hjust = 0, 
-                                                  main_title.vjust = .5){
+# custom plot_scatter_side_density_assemble ------------------------------------
+plot_scatter_side_density_assemble = function(components, 
+                                              main_title = "", 
+                                              main_title.x = .02, 
+                                              main_title.y = .5, 
+                                              main_title.hjust = 0, 
+                                              main_title.vjust = .5){
   
   p_scatter = components$scatter
   p_x_density = components$x_density
   p_y_density = components$y_density
   
   
-  p_legend = cowplot::get_legend(p_scatter)
+  #p_legend = cowplot::get_legend(p_scatter)
   d_legend = cowplot::get_legend(p_y_density)
   
   grobs_y = sync_height(list(p_scatter + 
