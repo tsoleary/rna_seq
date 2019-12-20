@@ -23,6 +23,7 @@ require(seqsetvis)
 require(ssvRecipes)
 require(knitr)
 require(kableExtra)
+source(here::here("functions.R"))
 
 # load the differentially expressed genes results
 setwd(here::here("cahan/results"))
@@ -99,8 +100,6 @@ deg_grouped <- total %>%
   add_count(group) %>% 
   mutate(groupn = paste0(group, ': ', n)) %>%
   arrange(groupn)
-
-
 
 # colors for the shared unique scatter plot            
 clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
@@ -205,7 +204,7 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          ggtheme = ggplot2::theme_minimal()) 
 ```
 
-# Top 50 differentially expressed genes by padj
+# Top 50 differentially expressed genes
 
 ## Heat shock
 
@@ -243,6 +242,49 @@ deg_grouped %>%
 ```
 
 # Shared and unique - LFC scatter {.tabset .tabset-fade .tabset-pills}
+
+## GWAS density plots
+
+```{r scatter_and_density_plots}
+
+color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
+
+# the function from seqsetvis requires a sequential column in the data.frame
+deg_grouped$id <- seq_len(nrow(deg_grouped))
+
+deg_simple <- deg_grouped %>%
+  dplyr::select(log2FoldChange.hot, log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
+  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
+                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
+                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
+                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
+
+# order the levels of the factor for plotting purposes to get NS on bottom
+deg_simple$groupn <- as.factor(deg_simple$groupn)
+
+deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6123", 
+                                                          "Sig1 Shared: 3217", 
+                                                          "Unique: 14",
+                                                          "Sig1 Unique: 104",
+                                                          "NS: 6437"))
+
+
+plot_scatter_side_density_xy(deg_simple, 
+                             x_ = "log2FoldChange.cold", 
+                             y_ = "log2FoldChange.hot",
+                             labs_x = "Cold vs Ctrl (L2FC)",
+                             labs_y = "Hot vs Ctrl (L2FC)",
+                             bg.string = "NS: 6437",
+                             bg.density.string = "Other",
+                             labs_sets_density = "GWAS",
+                             id_ = "id", 
+                             set_ = "groupn", 
+                             set_density_ = "gwas_g", 
+                             sets.density.colors = c("red", "blue", "yellow"),
+                             sets.colors = color_set,
+                             n_auto_label = 0)
+```
+
 
 ## No labels
 
@@ -360,12 +402,6 @@ ggplot(deg_grouped,
 ```
 
 
-## With density plots
-
-The ultimate goal is to have the density reflect the location of the GWAS hits for CTmin & CTmax
-
-To be fixed soon...
-
 
 # GWAS
 
@@ -452,7 +488,7 @@ gwas_cold %>%
 ```
 
 
-# DEG & GWAS {.tabset .tabset-fade .tabset-pills}
+# DEG & GWAS correlation plots 
 
 ## Expression Plots
 
