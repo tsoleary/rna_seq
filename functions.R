@@ -19,11 +19,12 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
                                          y_ = "y",
                                          id_ = "id",
                                          set_ = "set",
-                                         set_density = "set",
+                                         set_density_ = set_,
                                          #labels
                                          labs_x = x_,
                                          labs_y = y_,
                                          labs_sets = set_,
+                                         labs_sets_density = set_,
                                          main_title = NULL,
                                          main_title.x = .02,
                                          main_title.y = .5,
@@ -84,8 +85,8 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
   if(is.null(xy_data[[id_]])){
     stop("id_ : '", id_, "' must be valid column in xy_data, not found!")
   }
-  if(is.null(xy_data[[set_density]])){
-    stop("set_density : '", set_density, "' must be valid column in xy_data, not found!")
+  if(is.null(xy_data[[set_density_]])){
+    stop("set_density_ : '", set_density_, "' must be valid column in xy_data, not found!")
   }
   #labels
   if(is.na(main_title) || is.null(main_title)){
@@ -122,12 +123,12 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
     sets.sizes[bg.string] = bg.size
   }
   
-  # set_density check
-  if(!is.factor(xy_data[[set_density]])){
-    xy_data[[set_density]] = factor(xy_data[[set_density]])
+  # set_density_ check
+  if(!is.factor(xy_data[[set_density_]])){
+    xy_data[[set_density_]] = factor(xy_data[[set_density_]])
   }
-  sets.density.names = levels(xy_data[[set_density]])
-  sets.density.len = length(levels(xy_data[[set_density]]))
+  sets.density.names = levels(xy_data[[set_density_]])
+  sets.density.len = length(levels(xy_data[[set_density_]]))
   
   if(is.null(sets.density.colors)){
     sets.density.colors = RColorBrewer::brewer.pal(sets.density.len, "Dark2")
@@ -137,7 +138,7 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
     names(sets.density.colors) = sets.density.names
   }
   if(bg.density.string %in% names(sets.density.colors) & is.character(bg.density.color)){
-    sets.colors[bg.density.string] = bg.density.color
+    sets.density.colors[bg.density.string] = bg.density.color
   }
   if(length(sets.density.sizes == 0)){
     sets.density.sizes = rep(sets.density.sizes, sets.density.len)
@@ -166,7 +167,7 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
   }
   
   xy_data = xy_data[order(get(set_), decreasing = TRUE)]
-  gene_o = xy_data[set != bg.string,][order(get(set_), decreasing = TRUE)][order(abs(get(x_) - get(y_)), decreasing = TRUE)][[id_]]
+  gene_o = xy_data[set_ != bg.string,][order(get(set_), decreasing = TRUE)][order(abs(get(x_) - get(y_)), decreasing = TRUE)][[id_]]
   if(n_auto_label > length(gene_o)) n_auto_label = length(gene_o)
   to_label = c(manual_label, gene_o[seq_len(n_auto_label)])
   
@@ -180,53 +181,45 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
     labs(x = labs_x, y = labs_y, color = labs_sets, size = labs_sets) +
     guides() +
     theme_bw() +
-    theme(plot.margin = margin(t = -4, r = -4, b = 0, l = 0, unit = "pt"))
-  p_x_density = ggplot(mapping = aes_string(x = x_, color = set_density)) +
-    geom_density(data = xy_data, color = bg.density.color) +
-    geom_density(data = xy_data[get(set_density) != bg.density.string]) +
-    geom_hline(yintercept = 0, colour = "white", size = 1) +
+    theme(plot.margin = margin(t = -4, r = -4, b = 2, l = 2, unit = "pt"))
+  p_x_density = ggplot(mapping = aes_string(x = x_, color = set_density_)) +
+    geom_line(data = xy_data, stat = "density", color = bg.density.color) +
+    geom_line(data = xy_data[get(set_density_) != bg.density.string], stat = "density") +
     scale_color_manual(values = sets.density.colors, drop = FALSE) +
     coord_cartesian(xlim = xlim) +
-    labs(x = "")+
+    labs(x = "", color = labs_sets_density) +
     theme_classic() +
-    theme(axis.line=element_blank(),
-          axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          legend.position="none",
-          panel.background=element_blank(),
-          panel.border=element_blank(),
-          panel.grid.major=element_blank(),
-          panel.grid.minor=element_blank(),
-          plot.background=element_blank(),
+    theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank(),
           plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))
-  p_y_density = ggplot(mapping = aes_string(x = y_, color = set_density)) +
-    geom_density(data = xy_data, color = bg.density.color) +
-    geom_density(data = xy_data[get(set_density) != bg.density.string]) +
-    geom_hline(yintercept = 0, colour = "white", size = 1) +
+  p_y_density = ggplot(mapping = aes_string(x = y_, color = set_density_)) +
+    geom_line(data = xy_data, stat = "density", color = bg.density.color) +
+    geom_line(data = xy_data[get(set_density_) != bg.density.string], stat = "density") +
     scale_color_manual(values = sets.density.colors, drop = FALSE) +
     coord_flip(xlim = ylim) +
-    labs(x = "")+
+    labs(x = "", color = labs_sets_density)+
     theme_classic() +
-    theme(axis.line=element_blank(),
-          axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          legend.position="none",
-          panel.background=element_blank(),
-          panel.border=element_blank(),
-          panel.grid.major=element_blank(),
-          panel.grid.minor=element_blank(),
-          plot.background=element_blank(),
+    theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank(),
           plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"))
-  
-  # # grob the panel
-  # p_x_den <- ggplotGrob(p_x_d)
-  # p_x_density <- gtable::gtable_filter(p_x_den, "panel")
   
   #add reference lines
   if(is.numeric(ref_line.x)){
@@ -274,7 +267,7 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
   
   components = list(scatter = p_scatter, x_density = p_x_density, y_density = p_y_density)
   
-  pg = plot_scatter_side_density.assemble(components, 
+  pg = plot_scatter_side_density.assemble.TSO(components, 
                                           main_title = main_title,
                                           main_title.x = main_title.x,
                                           main_title.y = main_title.y,
@@ -284,4 +277,49 @@ plot_scatter_side_density.xy.TSO = function( xy_data,
   if(!suppress_plot)
     plot(pg)
   invisible(list(assembled = pg, components = components))
+}
+
+
+# assemble ---------
+
+plot_scatter_side_density.assemble.TSO = function(components, 
+                                                  main_title = "", 
+                                                  main_title.x = .02, 
+                                                  main_title.y = .5, 
+                                                  main_title.hjust = 0, 
+                                                  main_title.vjust = .5){
+  
+  p_scatter = components$scatter
+  p_x_density = components$x_density
+  p_y_density = components$y_density
+  
+  
+  p_legend = cowplot::get_legend(p_scatter)
+  d_legend = cowplot::get_legend(p_y_density)
+  
+  grobs_y = sync_height(list(p_scatter + 
+                               guides(color = "none", size = "none"), 
+                             p_y_density + 
+                               guides(color = "none")))
+  
+  grobs_x = sync_width(list(grobs_y[[1]], 
+                            p_x_density + 
+                              guides(color = "none")))
+  
+  pg = cowplot::plot_grid(plotlist = c(grobs_x[2], list(d_legend), grobs_y), 
+                          rel_widths = c(2, 1), rel_heights = c(1,2))
+  if(main_title != ""){
+    pg = cowplot::plot_grid(
+      cowplot::ggdraw() + 
+        cowplot::draw_text(main_title, 
+                           x = main_title.x, 
+                           y = main_title.y, 
+                           hjust = main_title.hjust, 
+                           vjust = main_title.vjust),
+      pg,
+      rel_heights = c(1, 15),
+      ncol = 1
+    )
+  }
+  pg
 }
