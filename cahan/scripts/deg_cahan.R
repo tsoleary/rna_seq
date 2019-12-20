@@ -9,6 +9,8 @@ require(org.Dm.eg.db)
 require(seqsetvis)
 require(ssvRecipes)
 
+source(here::here("functions.R"))
+
 directory_counts <- here::here("cahan/counts")
 directory_results <- here::here("cahan/results")
 directory_plots <- here::here("cahan/plots")
@@ -408,7 +410,7 @@ deg_grouped <- deg %>%
                              col == "sig ns down up" |
                              col == "sig ns up down" ~ "Sig1 Unique")) %>%
   add_count(group) %>% 
-  mutate(groupn = paste0(group, ' (', n, ')')) %>%
+  mutate(groupn = paste0(group, ': ', n)) %>%
   arrange(groupn)
             
 clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
@@ -489,32 +491,76 @@ ggplot(comb_filt, aes(x = AvgEff, y = -log(padj.hot))) +
   geom_point() + 
   ylim(0,25)
 
+# create .rnk files for the GSEA in webgesault ---------------------------------
+
+# import DEG data
+setwd(directory_results)
+deg_cold <- read.csv(list.files()[grepl("cold_results", list.files())])
+deg_hot <- read.csv(list.files()[grepl("hot_results", list.files())])
+
+# write files for gsea input
+write.rnk(deg_cold, "cold_deg_p_05_gsea_lfc.rnk", padj_cut = 0.05)
+write.rnk(deg_cold, "cold_deg_p_01_gsea_lfc.rnk", padj_cut = 0.01)
+write.rnk(deg_hot, "hot_deg_p_05_gsea_lfc.rnk", padj_cut = 0.05)
+write.rnk(deg_hot, "hot_deg_p_01_gsea_lfc.rnk", padj_cut = 0.01)
 
 
-# seth 17DEC2019 -------
+# logfoldchange expression scatter and density plot ----------------------------
 
+# the function from seqsetvis requires a sequential column in the data.frame
 deg_grouped$id <- seq_len(nrow(deg_grouped))
 
-deg_grouped$groupn <- factor(deg_grouped$groupn, levels = c("Shared: 8404", 
+# order the levels of the factor for plotting purposes to get NS on bottom
+factor(deg_grouped$groupn, levels = c("Shared: 8404", 
                                                             "Sig1 Shared: 2722", 
                                                             "Unique: 25",
                                                             "Sig1 Unique: 158",
                                                             "NS: 4586"))
 
-
-
 color_set <- c("goldenrod4", "goldenrod1", "coral", "coral4", "grey50")
 
-deg_grouped %>%
-  mutate(gwas_hit = )
+deg_simple <- deg_grouped %>%
+  dplyr::select(log2FoldChange.hot, log2FoldChange.cold, groupn, id, ID.hot, ID.cold)
 
-plot_scatter_side_density.xy(deg_grouped, 
+deg_simple %>%
+  dplyr::mutate(X2 = case_when(!is.na(ID.hot) ~ "CTmax",
+                            is.na(ID.hot)) ~ NA)
+  
+deg_simple$set <- deg_simple$groupn
+
+deg_grouped$groupn <- as.factor(deg_grouped$groupn)
+
+
+
+n = 50
+xy_data = rbind(
+  data.table(x = rnorm(10*n, 0, 1), y = rnorm(10*n, 0, 1), set = "background", set2 = "background"),
+  data.table(x = rnorm(2*n, 2, 1), y = rnorm(2*n, 0, 1), set = "set1", set2 = "test"),
+  data.table(x = rnorm(2*n, 0, 1), y = rnorm(2*n, 2, 1), set = "set2", set2 = "test"),
+  data.table(x = rnorm(2*n, 2, 1), y = rnorm(2*n, 2, 1), set = "set3", set2 = "test")
+)
+xy_data$id = seq_len(nrow(xy_data))
+
+plot_scatter_side_density.xy.TSO(xy_data, x_ = "x", y_ = "y", set_density = "set2",
+                                 sets.density.colors = c("red", "blue"))
+
+plot_scatter_side_density.xy.TSO(deg_simple, 
                              x_ = "log2FoldChange.cold", 
                              y_ = "log2FoldChange.hot",
-                             set_ = "groupn",
                              bg.string = "NS: 4586",
+                             set_ = "groupn",
+                             set_density = "",
                              sets.colors = color_set,
+                             sets.colors.density = color_set,
                              n_auto_label = 0)
+
+plot_scatter_side_density.xy(deg_simple, 
+                                 x_ = "log2FoldChange.cold", 
+                                 y_ = "log2FoldChange.hot",
+                                 bg.string = "NS: 4586",
+                                 sets.colors = color_set,
+                                 n_auto_label = 0)
+
 
 # make a function to have the plot with another set group to have it just do the 
 # density plot for the gwas stuff
@@ -522,7 +568,6 @@ plot_scatter_side_density.xy(deg_grouped,
 # maybe later also try removing the axis labels on the density plot and make
 # the space between the plots less and have a box around the scatter plot to 
 # make it look like that allele specfic expression paper figure
-
 
 
 
