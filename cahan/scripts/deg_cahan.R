@@ -510,7 +510,9 @@ write.rnk(deg_hot, "hot_deg_p_01_gsea_lfc.rnk", padj_cut = 0.01)
 # the function from seqsetvis requires a sequential column in the data.frame
 deg_grouped$id <- seq_len(nrow(deg_grouped))
 
-# order the levels of the factor for plotting purposes to get NS on bottom
+
+
+
 factor(deg_grouped$groupn, levels = c("Shared: 8404", 
                                                             "Sig1 Shared: 2722", 
                                                             "Unique: 25",
@@ -522,10 +524,26 @@ color_set <- c("goldenrod4", "goldenrod1", "coral", "coral4", "grey50")
 deg_simple <- deg_grouped %>%
   dplyr::select(log2FoldChange.hot, log2FoldChange.cold, groupn, id, ID.hot, ID.cold)
 
-deg_simple %>%
-  dplyr::mutate(X2 = case_when(!is.na(ID.hot) ~ "CTmax",
-                            is.na(ID.hot)) ~ NA)
-  
+test <- deg_simple %>%
+  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "background",
+                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
+                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
+                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
+
+# order the levels of the factor for plotting purposes to get NS on bottom
+test$groupn <- as.factor(test$groupn)
+
+test$groupn <- factor(deg_grouped$groupn, levels = c("Shared: 6123", 
+                                      "Sig1 Shared: 3217", 
+                                      "Unique: 14",
+                                      "Sig1 Unique: 104",
+                                      "NS: 6437"))
+
+
+test$gwas_g <- as.factor(test$gwas_g)
+
+
+
 deg_simple$set <- deg_simple$groupn
 
 deg_grouped$groupn <- as.factor(deg_grouped$groupn)
@@ -534,17 +552,19 @@ deg_grouped$groupn <- as.factor(deg_grouped$groupn)
 
 n = 50
 xy_data = rbind(
-  data.table(x = rnorm(10*n, 0, 1), y = rnorm(10*n, 0, 1), set = "background", set2 = "background"),
-  data.table(x = rnorm(2*n, 2, 1), y = rnorm(2*n, 0, 1), set = "set1", set2 = "test"),
-  data.table(x = rnorm(2*n, 0, 1), y = rnorm(2*n, 2, 1), set = "set2", set2 = "test"),
-  data.table(x = rnorm(2*n, 2, 1), y = rnorm(2*n, 2, 1), set = "set3", set2 = "test")
+  data.table(x = rnorm(10*n, 0, 1), y = rnorm(10*n, 0, 1), set = "background", set_density = "background"),
+  data.table(x = rnorm(2*n, 2, 1), y = rnorm(2*n, 0, 1), set = "set1", set_density = "other"),
+  data.table(x = rnorm(2*n, 0, 1), y = rnorm(2*n, 2, 1), set = "set2", set_density = "other"),
+  data.table(x = rnorm(2*n, 2, 1), y = rnorm(2*n, 2, 1), set = "set3", set_density = "other")
 )
 xy_data$id = seq_len(nrow(xy_data))
 
-plot_scatter_side_density.xy.TSO(xy_data, x_ = "x", y_ = "y", set_density = "set2",
+plot_scatter_side_density.xy.TSO(xy_data, x_ = "x", y_ = "y", set_density_ = "set_density",
                                  sets.density.colors = c("red", "blue"))
 
-plot_scatter_side_density.xy.TSO(deg_simple, 
+plot_scatter_side_density.xy.TSO(xy_data, x_ = "x", y_ = "y")
+
+ plot_scatter_side_density.xy.TSO(deg_simple, 
                              x_ = "log2FoldChange.cold", 
                              y_ = "log2FoldChange.hot",
                              bg.string = "NS: 4586",
@@ -553,13 +573,6 @@ plot_scatter_side_density.xy.TSO(deg_simple,
                              sets.colors = color_set,
                              sets.colors.density = color_set,
                              n_auto_label = 0)
-
-plot_scatter_side_density.xy(deg_simple, 
-                                 x_ = "log2FoldChange.cold", 
-                                 y_ = "log2FoldChange.hot",
-                                 bg.string = "NS: 4586",
-                                 sets.colors = color_set,
-                                 n_auto_label = 0)
 
 
 # make a function to have the plot with another set group to have it just do the 
@@ -570,5 +583,20 @@ plot_scatter_side_density.xy(deg_simple,
 # make it look like that allele specfic expression paper figure
 
 
+plot_scatter_side_density.xy.TSO(xy_data, x_ = "x", y_ = "y", id_ = "id", 
+                                 set_ = "set", set_density_ = "set_density", 
+                                 sets.density.colors = c("red", "blue"))
 
-
+plot_scatter_side_density.xy.TSO(test, 
+                                 x_ = "log2FoldChange.cold", 
+                                 y_ = "log2FoldChange.hot",
+                                 bg.string = "NS: 6437",
+                                 bg.density.string = "background",
+                                 labs_sets_density = "",
+                                 id_ = "id", 
+                                 set_ = "groupn", 
+                                 set_density_ = "gwas_g", 
+                                 sets.density.colors = c("yellow", "red", "blue"),
+                                 sets.colors = color_set,
+                                 n_auto_label = 0)
+ 
