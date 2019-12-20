@@ -19,6 +19,10 @@ require(ggpubr)
 require(AnnotationDbi)
 require(org.Dm.eg.db)
 require(ggcorrplot)
+require(seqsetvis)
+require(ssvRecipes)
+require(knitr)
+require(kableExtra)
 
 # load the differentially expressed genes results
 setwd(here::here("cahan/results"))
@@ -58,6 +62,48 @@ gwas_hot$gene <- sapply(annot_split_hot, "[[", 2)
 gwas_hot$grps <- sapply(annot_split_hot, "[[", 3)
 # join the two data frames together
 comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
+
+
+# create a data.frame with all the info for the plotting later -----------------
+temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
+total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+deg_grouped <- total %>%
+  mutate(cold_genes = case_when(padj.cold < 0.01 ~ "sig",
+                                padj.cold >= 0.01 ~ "ns"),
+         hot_genes = case_when(padj.hot < 0.01 ~ "sig",
+                               padj.hot >= 0.01 ~ "ns"),
+         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
+                             log2FoldChange.cold > 0 ~ "up"),
+         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
+                            log2FoldChange.hot > 0 ~ "up")) %>%
+  filter(!is.na(cold_genes) & !is.na(hot_genes) &
+           !is.na(cold_fc) & !is.na(hot_fc)) %>%
+  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
+  mutate(group = case_when(col == "sig sig up up" |
+                             col == "sig sig down down" ~ "Shared",
+                           col == "sig ns up up" |
+                             col == "ns sig up up" |
+                             col == "sig ns down down" |
+                             col == "ns sig down down" ~ "Sig1 Shared",
+                           col == "ns ns down down" |
+                             col == "ns ns down up" |
+                             col == "ns ns up down" |
+                             col == "ns ns up up" ~ "NS",
+                           col == "sig sig down up" |
+                             col == "sig sig up down" ~ "Unique",
+                           col == "ns sig up down" |
+                             col == "ns sig down up" |
+                             col == "sig ns down up" |
+                             col == "sig ns up down" ~ "Sig1 Unique")) %>%
+  add_count(group) %>% 
+  mutate(groupn = paste0(group, ': ', n)) %>%
+  arrange(groupn)
+
+
+
+# colors for the shared unique scatter plot            
+clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
 
 ```
 
@@ -159,57 +205,56 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          ggtheme = ggplot2::theme_minimal()) 
 ```
 
-# Shared and unique response {.tabset .tabset-fade .tabset-pills}
+# Top 50 differentially expressed genes by padj
+
+## Heat shock
+
+```{r table_top_DEG_hot}
+deg_grouped %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  group_by(hot_fc) %>%
+  top_n(n = -50, wt = padj.hot) %>%
+  dplyr::select(gene, hot_fc, log2FoldChange.hot, padj.hot) %>%
+  arrange(hot_fc, padj.hot) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+## Cold shock
+
+```{r table_top_DEG_cold}
+deg_grouped %>%
+  group_by(cold_fc) %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  top_n(n = -50, wt = padj.cold) %>%
+  dplyr::select(gene, cold_fc, log2FoldChange.cold, padj.cold) %>%
+  arrange(cold_fc, padj.cold) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+  
+# kable(full_join(deg_cold_table, deg_hot_table, by = "gene")) %>%
+#   kable_styling() %>%
+#   scroll_box(width = "100%", height = "500px")
+
+```
+
+# Shared and unique - LFC scatter {.tabset .tabset-fade .tabset-pills}
 
 ## No labels
 
 ```{r shared_unique}
-
-temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
-total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
-
-deg_grouped <- total %>%
-  mutate(cold_genes = case_when(padj.cold < 0.05 ~ "sig",
-                                padj.cold >= 0.05 ~ "ns"),
-         hot_genes = case_when(padj.hot < 0.05 ~ "sig",
-                               padj.hot >= 0.05 ~ "ns"),
-         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
-                             log2FoldChange.cold > 0 ~ "up"),
-         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
-                            log2FoldChange.hot > 0 ~ "up")) %>%
-  filter(!is.na(cold_genes) & !is.na(hot_genes) &
-           !is.na(cold_fc) & !is.na(hot_fc)) %>%
-  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
-  mutate(group = case_when(col == "sig sig up up" |
-                             col == "sig sig down down" ~ "Shared",
-                           col == "sig ns up up" |
-                             col == "ns sig up up" |
-                             col == "sig ns down down" |
-                             col == "ns sig down down" ~ "Sig1 Shared",
-                           col == "ns ns down down" |
-                             col == "ns ns down up" |
-                             col == "ns ns up down" |
-                             col == "ns ns up up" ~ "NS",
-                           col == "sig sig down up" |
-                             col == "sig sig up down" ~ "Unique",
-                           col == "ns sig up down" |
-                             col == "ns sig down up" |
-                             col == "sig ns down up" |
-                             col == "sig ns up down" ~ "Sig1 Unique")) %>%
-  add_count(group) %>% 
-  mutate(groupn = paste0(group, ': ', n)) %>%
-  arrange(groupn)
-            
-clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
-
 ggplot(deg_grouped, 
        aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
   geom_point() + 
   scale_color_manual(values = clrs) +
   geom_hline(size = 1, yintercept = 0, color = "black") +
   geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
   theme_classic() + 
   labs(color = "") + 
   theme(legend.position = "top")
@@ -224,8 +269,8 @@ ggplot(deg_grouped,
   scale_color_manual(values = clrs) +
   geom_hline(size = 1, yintercept = 0, color = "black") +
   geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
   theme_classic() + 
   labs(color = "") + 
   ggrepel::geom_label_repel(data = filter(deg_grouped, !is.na(ID.cold) | 
@@ -250,8 +295,8 @@ ggplot(deg_grouped,
   scale_color_manual(values = clrs) +
   geom_hline(size = 1, yintercept = 0, color = "black") +
   geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
   theme_classic() + 
   labs(color = "") + 
   ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Unique") %>%
@@ -275,8 +320,8 @@ ggplot(deg_grouped,
   scale_color_manual(values = clrs) +
   geom_hline(size = 1, yintercept = 0, color = "black") +
   geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
   theme_classic() + 
   labs(color = "") + 
   ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
@@ -300,8 +345,8 @@ ggplot(deg_grouped,
   scale_color_manual(values = clrs) +
   geom_hline(size = 1, yintercept = 0, color = "black") +
   geom_vline(size = 1, xintercept = 0, color = "black") +
-  ylab("Hot vs Ctrl") +
-  xlab("Cold vs Ctrl") + 
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
   theme_classic() + 
   labs(color = "") + 
   ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
@@ -313,6 +358,99 @@ ggplot(deg_grouped,
                             show.legend = FALSE) +
   theme(legend.position = "top")
 ```
+
+
+## With density plots
+
+The ultimate goal is to have the density reflect the location of the GWAS hits for CTmin & CTmax
+
+To be fixed soon...
+
+
+# GWAS
+
+## CTmax
+
+### All hits (pval cutoff 10^-5)
+
+```{r table_top_gwas_hot_all}
+gwas_hot %>%
+  dplyr::select(ID, gene, grps, AvgEff, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Group count
+
+```{r table_top_gwas_hot_grps}
+gwas_hot %>%
+  group_by(grps) %>%
+  count() %>%
+  filter(grps != "") %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+### Gene count (>2)
+
+```{r table_top_gwas_hot_genes}
+gwas_hot %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  count() %>%
+  dplyr::filter(n > 1) %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+## CTmin
+
+### All hits (pval cutoff 10^-5)
+
+```{r table_top_gwas_cold_all}
+gwas_cold %>%
+  dplyr::select(ID, gene, grps, AvgEff, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Group count
+
+```{r table_top_gwas_cold_grps}
+gwas_cold %>%
+  group_by(grps) %>%
+  filter(grps != "") %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+### Gene count (>2)
+
+```{r table_top_gwas_cold_genes}
+gwas_cold %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  count() %>%
+  dplyr::filter(n > 1) %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
 
 # DEG & GWAS {.tabset .tabset-fade .tabset-pills}
 
@@ -341,7 +479,7 @@ comb_sort <- comb_avg %>%
   distinct(gene, .keep_all = TRUE) %>%
   group_by(g) %>%
   add_count(g) %>% 
-  mutate(groupn = paste0(g, ' (', n, ')')) %>%
+  mutate(groupn = paste0(g, ': ', n)) %>%
   arrange(groupn) %>%
   filter(!is.na(g))  %>%
   distinct(gene, .keep_all = TRUE)
@@ -386,7 +524,7 @@ comb_sort <- comb_avg %>%
   distinct(gene, .keep_all = TRUE) %>%
   group_by(g) %>%
   add_count(g) %>% 
-  mutate(groupn = paste0(g, ' (', n, ')')) %>%
+  mutate(groupn = paste0(g, ': ', n)) %>%
   arrange(groupn) %>%
   filter(!is.na(g))
 
@@ -408,6 +546,7 @@ ggplot(comb_sort, aes(x = ctrl, y = hot)) +
   theme(legend.title = element_blank())
 ```
 
+
 ## CTmax & DEG Corr
 
 ```{r GWAS_CTmax_corr}
@@ -416,35 +555,28 @@ y <- comb_hot[c(3, 7, 30:31)]
 corr <- round(cor(y, use = "na.or.complete"), 1)
 ggcorrplot(corr, hc.order = TRUE, outline.col = "white")
 
+comb_hot_filt <- comb_hot %>%
+  filter(!is.na(baseMean) & !is.na(ID))
+
 ```
 
 ```{r GWAS_CTmax_corr_pval_fc}
-ggplot(comb_hot, aes(x = log(AvgMixedPval), y = abs(log2FoldChange), color = grps)) +
+ggplot(comb_hot_filt, aes(x = log(AvgMixedPval), y = abs(log2FoldChange), color = grps)) +
   geom_point() 
 ```
 
 ```{r GWAS_CTmax_corr_eff_pval}
-ggplot(comb_hot, aes(x = abs(AvgEff), y = -log(padj), color = grps)) +
+ggplot(comb_hot_filt, aes(x = abs(AvgEff), y = log(log2FoldChange), color = grps)) +
   geom_point()
 ```
 
 ```{r GWAS_CTmax_corr_F_pval_fc}
-ggplot(comb_hot, aes(x = log(FemaleMixedPval), y = abs(log2FoldChange), color = grps)) +
+ggplot(comb_hot_filt, aes(x = log(FemaleMixedPval), y = abs(log2FoldChange), color = grps)) +
   geom_point() 
 ```
 
 ```{r GWAS_CTmax_corr_F_eff_pval}
-ggplot(comb_hot, aes(x = abs(FemaleEff), y = -log(padj), color = grps)) +
-  geom_point()
-```
-
-```{r GWAS_CTmax_corr_M_pval_fc}
-ggplot(comb_hot, aes(x = log(MaleMixedPval), y = abs(log2FoldChange), color = grps)) +
-  geom_point() 
-```
-
-```{r GWAS_CTmax_corr_M_eff_pval}
-ggplot(comb_hot, aes(x = abs(MaleEff), y = -log(padj), color = grps)) +
+ggplot(comb_hot_filt, aes(x = abs(FemaleEff), y = log(log2FoldChange), color = grps)) +
   geom_point()
 ```
 
@@ -454,36 +586,30 @@ ggplot(comb_hot, aes(x = abs(MaleEff), y = -log(padj), color = grps)) +
 ```{r GWAS_CTmin_corr}
 xcorr <- comb_cold[c(3, 7, 30:31)]
 
+comb_cold_filt <- comb_cold %>%
+  filter(!is.na(baseMean) & !is.na(ID))
+
+
 corr <- round(cor(xcorr, use = "na.or.complete"), 1)
 ggcorrplot(corr, hc.order = TRUE, outline.col = "white")
 ```
 
 ```{r GWAS_CTmin_corr_pval_fc_mixed}
-ggplot(comb_cold, aes(x = log(AvgMixedPval), y = abs(log2FoldChange), color = grps)) +
+ggplot(comb_cold_filt, aes(x = log(AvgMixedPval), y = abs(log2FoldChange), color = grps)) +
   geom_point() 
 ```
 
 ```{r GWAS_CTmin_corr_eff_pvalP}
-ggplot(comb_cold, aes(x = abs(AvgEff), y = -log(padj), color = grps)) +
+ggplot(comb_cold_filt, aes(x = abs(AvgEff), y = log(log2FoldChange), color = grps)) +
   geom_point()
 ```
 
 ```{r GWAS_CTmin_corr_F_pval_fc}
-ggplot(comb_cold, aes(x = log(FemaleMixedPval), y = abs(log2FoldChange), color = grps)) +
+ggplot(comb_cold_filt, aes(x = log(FemaleMixedPval), y = abs(log2FoldChange), color = grps)) +
   geom_point() 
 ```
 
 ```{r GWAS_CTmin_corr_F_eff_pval}
-ggplot(comb_cold, aes(x = abs(FemaleEff), y = -log(padj), color = grps)) +
-  geom_point()
-```
-
-```{r GWAS_CTmin_corr_M_pval_fc}
-ggplot(comb_cold, aes(x = log(MaleMixedPval), y = abs(log2FoldChange), color = grps)) +
-  geom_point() 
-```
-
-```{r GWAS_CTmin_corr_M_eff_pval}
-ggplot(comb_cold, aes(x = abs(MaleEff), y = -log(padj), color = grps)) +
+ggplot(comb_cold_filt, aes(x = abs(FemaleEff), y = log(log2FoldChange), color = grps)) +
   geom_point()
 ```
