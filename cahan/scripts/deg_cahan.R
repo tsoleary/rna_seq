@@ -533,10 +533,22 @@ deg_grouped$id <- seq_len(nrow(deg_grouped))
 
 deg_simple <- deg_grouped %>%
   dplyr::select(log2FoldChange.hot, log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
-  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "background",
+  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
                             !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
                             is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
                             !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
+
+
+ggplot(deg_simple) +
+  geom_line( mapping = aes(x = log2FoldChange.hot, color = gwas_g), data = deg_simple, stat = "density") +
+  geom_line( mapping = aes(x = log2FoldChange.cold, color = gwas_g), linetype = "dashed", data = deg_simple, stat = "density") +
+  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  labs(x = "") +
+  theme_classic()
+
+p + ggplot() +
+  geom_line( data = deg_simple, mapping = aes(x = log2FoldChange.cold, color = gwas_g), data = deg_simple, stat = "density")
+
 
 # order the levels of the factor for plotting purposes to get NS on bottom
 deg_simple$groupn <- as.factor(deg_simple$groupn)
