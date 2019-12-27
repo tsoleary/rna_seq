@@ -1,0 +1,9 @@
+labels	files	treat
+hot_1	NSFR_1.cnt	hot
+hot_3	NSFR_3.cnt	hot
+ctrl_1	NSFR_4.cnt	ctrl
+ctrl_2	NSFR_5.cnt	ctrl
+ctrl_3	NSFR_6.cnt	ctrl
+cold_1	NSFR_7.cnt	cold
+cold_2	NSFR_8.cnt	cold
+cold_3	NSFR_9.cnt	cold

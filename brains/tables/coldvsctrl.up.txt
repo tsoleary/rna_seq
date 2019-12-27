@@ -1,0 +1,2 @@
+Id	ctrl_1	ctrl_2	ctrl_3	cold_1	cold_2	cold_3	hot_1	hot_2	hot_3	norm.ctrl_1	norm.ctrl_2	norm.ctrl_3	norm.cold_1	norm.cold_2	norm.cold_3	norm.hot_1	norm.hot_2	norm.hot_3	baseMean	ctrl	cold	hot	FoldChange	log2FoldChange	stat	pvalue	padj	dispGeneEst	dispFit	dispMAP	dispersion	betaConv	maxCooks
+CG15021	31	145	70	989	4165	327	106	20	49	45	78	92	995	4750	142	59	40	74	697.11	72	1962	58	27.277	4.77	4.637	3.54208781328943e-06	0.0295038204407943	0.7547	0.0596	0.4167	0.7547	TRUE	0.1652

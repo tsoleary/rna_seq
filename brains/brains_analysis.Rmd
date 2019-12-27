@@ -1,0 +1,290 @@
+---
+title: brain tissue differential gene expression under acc
+author: "TS O'Leary"
+output:
+  rmarkdown::html_document:
+    theme: lumen
+    number_sections: true
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+# don't show cose, warnings or messages
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# load these required packages
+require(tidyverse)
+require(ggpubr)
+require(AnnotationDbi)
+require(org.Dm.eg.db)
+require(knitr)
+require(kableExtra)
+source(here::here("functions.R"))
+
+# load the differentially expressed genes results
+setwd(here::here("brains/results"))
+res_cold <- read.csv(list.files(pattern = "cold_results"))
+res_hot <- read.csv(list.files(pattern = "hot_results"))
+deg <- full_join(res_cold, res_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+deg_grouped <- deg %>%
+  mutate(cold_genes = case_when(padj.cold < 0.05 ~ "sig",
+                                padj.cold >= 0.05 ~ "ns"),
+         hot_genes = case_when(padj.hot < 0.05 ~ "sig",
+                               padj.hot >= 0.05 ~ "ns"),
+         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
+                             log2FoldChange.cold > 0 ~ "up"),
+         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
+                            log2FoldChange.hot > 0 ~ "up")) %>%
+  filter(!is.na(cold_genes) & !is.na(hot_genes) &
+           !is.na(cold_fc) & !is.na(hot_fc)) %>%
+  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
+  mutate(group = case_when(col == "sig sig up up" |
+                             col == "sig sig down down" ~ "Shared",
+                           col == "sig ns up up" |
+                             col == "ns sig up up" |
+                             col == "sig ns down down" |
+                             col == "ns sig down down" ~ "Sig1 Shared",
+                           col == "ns ns down down" |
+                             col == "ns ns down up" |
+                             col == "ns ns up down" |
+                             col == "ns ns up up" ~ "NS",
+                           col == "sig sig down up" |
+                             col == "sig sig up down" ~ "Unique",
+                           col == "ns sig up down" |
+                             col == "ns sig down up" |
+                             col == "sig ns down up" |
+                             col == "sig ns up down" ~ "Sig1 Unique")) %>%
+  add_count(group) %>% 
+  mutate(groupn = paste0(group, ': ', n)) %>%
+  arrange(groupn)
+
+# colors for the shared unique scatter plot            
+clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
+
+```
+
+# MA plots {.tabset .tabset-fade .tabset-pills}
+
+## Fold-change cutoff 2
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold}
+ggmaplot(res_cold, main = expression("18°C" %->% "25°C"),
+         fdr = 0.05, fc = 2, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_cold$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot}
+ggmaplot(res_hot, main = expression("30°C" %->% "25°C"),
+         fdr = 0.05, fc = 2, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_hot$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+## No fold-change cutoff
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold_no_fc}
+ggmaplot(res_cold, main = expression("18°C" %->% "25°C"),
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_cold$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot_no_fc}
+ggmaplot(res_hot, main = expression("30°C" %->% "25°C"),
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_hot$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+## No fold-change cutoff (fdr < 0.01)
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold_no_fcP}
+ggmaplot(res_cold, main = expression("18°C" %->% "25°C"),
+         fdr = 0.01, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_cold$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot_no_fcP}
+ggmaplot(res_hot, main = expression("30°C" %->% "25°C"),
+         fdr = 0.01, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_hot$gene),
+         legend = "top", top = 20,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) 
+```
+
+# Differentially expressed genes
+
+## Heat shock
+
+```{r table_top_DEG_hot}
+deg_grouped %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  filter(padj.hot < 0.05) %>%
+  #top_n(n = -50, wt = padj.hot) %>%
+  dplyr::select(gene, hot_fc, log2FoldChange.hot, padj.hot) %>%
+  arrange(hot_fc, padj.hot) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+## Cold shock
+
+```{r table_top_DEG_cold}
+deg_grouped %>%
+  filter(padj.cold < 0.05) %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  top_n(n = -50, wt = padj.cold) %>%
+  dplyr::select(gene, cold_fc, log2FoldChange.cold, padj.cold) %>%
+  arrange(cold_fc, padj.cold) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+# Shared and unique - LFC scatter {.tabset .tabset-fade .tabset-pills}
+
+
+## No labels
+
+```{r shared_unique}
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
+  theme_classic() + 
+  labs(color = "") + 
+  theme(legend.position = "top")
+```
+
+## With unique labeled
+
+```{r shared_unique_labels}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Unique") %>%
+                              top_n(20, wt = baseMean.cold),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
+
+## With shared labeled
+
+```{r shared_shared_labels}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
+                              top_n(20, wt = baseMean.cold),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
+
+## With shared labeled (padj.hot)
+
+```{r shared_shared_padj.hot_labels}
+set.seed(1)
+
+ggplot(deg_grouped, 
+       aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
+  geom_point() + 
+  scale_color_manual(values = clrs) +
+  geom_hline(size = 1, yintercept = 0, color = "black") +
+  geom_vline(size = 1, xintercept = 0, color = "black") +
+  ylab("Hot vs Ctrl (L2FC)") +
+  xlab("Cold vs Ctrl (L2FC)") + 
+  theme_classic() + 
+  labs(color = "") + 
+  ggrepel::geom_label_repel(data = filter(deg_grouped, group == "Shared") %>%
+                              top_n(20, wt = padj.hot),
+                            aes(label = gene),
+                            fill = "white",
+                            color = 'black',
+                            size = 3.5,
+                            show.legend = FALSE) +
+  theme(legend.position = "top")
+```
