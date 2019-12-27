@@ -37,7 +37,7 @@ gwas_cold <- read.table("CTmin/gwas.top.annot", header = TRUE)
 gwas_hot <- read.table("CTmax/gwas.top.annot", header = TRUE)
 
 # filter the gwas so there is only the pvalues that reach the cut off level ----
-pval_cut <- 0.00005
+pval_cut <- 10^-5
 
 gwas_cold <- gwas_cold %>%
   filter(AvgMixedPval < pval_cut)
@@ -64,6 +64,9 @@ gwas_hot$grps <- sapply(annot_split_hot, "[[", 3)
 # join the two data frames together
 comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
 
+# create a data.frame with info for the individual ma_plots --------------------
+deg_gwas_cold <- left_join(res_cold, gwas_cold, by = "gene")
+deg_gwas_hot <- left_join(res_hot, gwas_hot, by = "gene")
 
 # create a data.frame with all the info for the plotting later -----------------
 temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
@@ -108,16 +111,18 @@ clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
 
 # MA plots {.tabset .tabset-fade .tabset-pills}
 
-## Fold-change cutoff 2
+All MA plots now have an FDR cutoff of 0.01 and no fold-change cutoff.
+
+## No gene labels
 
 **Cold v Ctrl MA plot**
 
-```{r ma_plot_cold}
+```{r ma_plot_cold_no_lab}
 ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
-         fdr = 0.05, fc = 2, size = 1,
+         fdr = 0.01, fc = 0, size = 1,
          palette = c("#B31B21", "#1465AC", "#A6A6A680"),
          genenames = as.vector(res_cold$gene),
-         legend = "top", top = 20,
+         legend = "top", top = 0,
          select.top.method = "padj",
          font.label = c("bold", 11), label.rectangle = TRUE,
          font.legend = "bold",
@@ -127,12 +132,12 @@ ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
 
 **Hot v Ctrl MA plot**
 
-```{r ma_plot_hot}
+```{r ma_plot_hot_no_lab}
 ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
-         fdr = 0.05, fc = 2, size = 1,
+         fdr = 0.01, fc = 0, size = 1,
          palette = c("#B31B21", "#1465AC", "#A6A6A680"),
          genenames = as.vector(res_hot$gene),
-         legend = "top", top = 20,
+         legend = "top", top = 0,
          select.top.method = "padj",
          font.label = c("bold", 11), label.rectangle = TRUE,
          font.legend = "bold",
@@ -140,43 +145,11 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          ggtheme = ggplot2::theme_minimal()) 
 ```
 
-## No fold-change cutoff
+## Top 20 genes labeled (by padj)
 
 **Cold v Ctrl MA plot**
 
-```{r ma_plot_cold_no_fc}
-ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
-         fdr = 0.05, fc = 0, size = 1,
-         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
-         genenames = as.vector(res_cold$gene),
-         legend = "top", top = 20,
-         select.top.method = "padj",
-         font.label = c("bold", 11), label.rectangle = TRUE,
-         font.legend = "bold",
-         font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) 
-```
-
-**Hot v Ctrl MA plot**
-
-```{r ma_plot_hot_no_fc}
-ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
-         fdr = 0.05, fc = 0, size = 1,
-         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
-         genenames = as.vector(res_hot$gene),
-         legend = "top", top = 20,
-         select.top.method = "padj",
-         font.label = c("bold", 11), label.rectangle = TRUE,
-         font.legend = "bold",
-         font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) 
-```
-
-## No fold-change cutoff (fdr < 0.01)
-
-**Cold v Ctrl MA plot**
-
-```{r ma_plot_cold_no_fcP}
+```{r ma_plot_cold_lab_padj}
 ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
          fdr = 0.01, fc = 0, size = 1,
          palette = c("#B31B21", "#1465AC", "#A6A6A680"),
@@ -191,7 +164,7 @@ ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
 
 **Hot v Ctrl MA plot**
 
-```{r ma_plot_hot_no_fcP}
+```{r ma_plot_hot_lab_padj}
 ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          fdr = 0.01, fc = 0, size = 1,
          palette = c("#B31B21", "#1465AC", "#A6A6A680"),
@@ -202,6 +175,77 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          font.legend = "bold",
          font.main = "bold",
          ggtheme = ggplot2::theme_minimal()) 
+```
+
+
+## GWAS points (all SNPs counted)
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold_lab_gwas}
+ggmaplot_gwas(deg_gwas_cold, main = expression("4°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
+              genenames = as.vector(deg_gwas_cold$gene),
+              legend = "top", top = 0,
+              select.top.method = "padj",
+              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal())
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot_lab_gwas}
+ggmaplot_gwas(deg_gwas_hot, main = expression("37°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
+              genenames = as.vector(deg_gwas_hot$gene),
+              legend = "top", top = 0,
+              select.top.method = "padj",
+              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) 
+```
+
+## GWAS points (distinct genes)
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold_lab_gwas_distinct}
+deg_gwas_cold_distinct <- deg_gwas_cold %>%
+  distinct(gene, .keep_all = TRUE)
+
+ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
+              genenames = as.vector(deg_gwas_cold_distinct$gene),
+              legend = "top", top = 0,
+              select.top.method = "padj",
+              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal())
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot_lab_gwas_distinct}
+deg_gwas_hot_distinct <- deg_gwas_hot %>%
+  distinct(gene, .keep_all = TRUE)
+
+ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
+              genenames = as.vector(deg_gwas_hot_distinct$gene),
+              legend = "top", top = 0,
+              select.top.method = "padj",
+              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) 
 ```
 
 # Top 50 differentially expressed genes
@@ -234,26 +278,21 @@ deg_grouped %>%
   kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
-  
-# kable(full_join(deg_cold_table, deg_hot_table, by = "gene")) %>%
-#   kable_styling() %>%
-#   scroll_box(width = "100%", height = "500px")
-
 ```
 
 # Shared and unique - LFC scatter {.tabset .tabset-fade .tabset-pills}
 
-## GWAS density plots
+## GWAS scatter & density plots
 
-```{r scatter_and_density_plots}
-
+```{r scatter_and_density_plots, fig.height = 7, fig.width = 7}
 color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
 
 # the function from seqsetvis requires a sequential column in the data.frame
 deg_grouped$id <- seq_len(nrow(deg_grouped))
 
 deg_simple <- deg_grouped %>%
-  dplyr::select(log2FoldChange.hot, log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
+  dplyr::select(gene, log2FoldChange.hot, 
+                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
   mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
                             !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
                             is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
@@ -262,12 +301,11 @@ deg_simple <- deg_grouped %>%
 # order the levels of the factor for plotting purposes to get NS on bottom
 deg_simple$groupn <- as.factor(deg_simple$groupn)
 
-deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6123", 
-                                                          "Sig1 Shared: 3217", 
+deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6113", 
+                                                          "Sig1 Shared: 3216", 
                                                           "Unique: 14",
-                                                          "Sig1 Unique: 104",
-                                                          "NS: 6437"))
-
+                                                          "Sig1 Unique: 103",
+                                                          "NS: 6425"))
 
 plot_scatter_side_density_xy(deg_simple, 
                              x_ = "log2FoldChange.cold", 
@@ -285,6 +323,59 @@ plot_scatter_side_density_xy(deg_simple,
                              n_auto_label = 0)
 ```
 
+## GWAS scatter & density plots (distinct)
+
+```{r scatter_and_density_plots_distinct, fig.height = 7, fig.width = 7}
+
+deg_simple_distinct <- deg_simple %>%
+  distinct(gene, .keep_all = TRUE)
+
+plot_scatter_side_density_xy(deg_simple_distinct, 
+                             x_ = "log2FoldChange.cold", 
+                             y_ = "log2FoldChange.hot",
+                             labs_x = "Cold vs Ctrl (L2FC)",
+                             labs_y = "Hot vs Ctrl (L2FC)",
+                             bg.string = "NS: 6437",
+                             bg.density.string = "Other",
+                             labs_sets_density = "GWAS",
+                             id_ = "id", 
+                             set_ = "groupn", 
+                             set_density_ = "gwas_g", 
+                             sets.density.colors = c("red", "blue", "yellow"),
+                             sets.colors = color_set,
+                             n_auto_label = 0)
+```
+
+
+## GWAS density plots
+
+```{r density_plots}
+ggplot(deg_simple) +
+  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
+            data = deg_simple, stat = "density") +
+  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
+            linetype = "dashed", data = deg_simple, stat = "density") +
+  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  labs(x = "log2FoldChange vs. Ctrl", 
+       color = "GWAS", 
+       caption = "Cold dashed line\nHot solid line") +
+  theme_classic()
+```
+
+## GWAS density plots (distinct)
+
+```{r density_plots_distinct}
+ggplot(deg_simple_distinct) +
+  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
+            data = deg_simple_distinct, stat = "density") +
+  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
+            linetype = "dashed", data = deg_simple_distinct, stat = "density") +
+  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  labs(x = "log2FoldChange vs. Ctrl", 
+       color = "GWAS", 
+       caption = "Cold dashed line\nHot solid line") +
+  theme_classic()
+```
 
 ## No labels
 
@@ -401,8 +492,6 @@ ggplot(deg_grouped,
   theme(legend.position = "top")
 ```
 
-
-
 # GWAS
 
 ## CTmax
@@ -423,7 +512,7 @@ gwas_hot %>%
 ```{r table_top_gwas_hot_grps}
 gwas_hot %>%
   group_by(grps) %>%
-  count() %>%
+  dplyr::count() %>%
   filter(grps != "") %>%
   arrange(desc(n)) %>%
   kable() %>%
@@ -438,7 +527,7 @@ gwas_hot %>%
   dplyr::select(gene) %>%
   group_by(gene) %>%
   filter(gene != "") %>%
-  count() %>%
+  dplyr::count() %>%
   dplyr::filter(n > 1) %>%
   arrange(desc(n)) %>%
   kable() %>%
@@ -465,7 +554,7 @@ gwas_cold %>%
 gwas_cold %>%
   group_by(grps) %>%
   filter(grps != "") %>%
-  count() %>%
+  dplyr::count() %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -479,7 +568,7 @@ gwas_cold %>%
   dplyr::select(gene) %>%
   group_by(gene) %>%
   filter(gene != "") %>%
-  count() %>%
+  dplyr::count() %>%
   dplyr::filter(n > 1) %>%
   arrange(desc(n)) %>%
   kable() %>%
