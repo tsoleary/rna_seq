@@ -539,9 +539,11 @@ deg_simple <- deg_grouped %>%
                             !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
 
 
-ggplot(deg_simple) +
-  geom_line( mapping = aes(x = log2FoldChange.hot, color = gwas_g), data = deg_simple, stat = "density") +
-  geom_line( mapping = aes(x = log2FoldChange.cold, color = gwas_g), linetype = "dashed", data = deg_simple, stat = "density") +
+ggplot(deg_simple_distinct) +
+  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
+            data = deg_simple_distinct, stat = "density") +
+  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
+            linetype = "dashed", data = deg_simple_distinct, stat = "density") +
   scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
   labs(x = "") +
   theme_classic()
