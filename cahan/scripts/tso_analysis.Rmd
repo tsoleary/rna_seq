@@ -188,7 +188,48 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
   theme(legend.text = element_text(size = 10)) 
 ```
 
-## GWAS points (distinct genes)
+## GWAS points without labels
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold_gwas_distinct}
+deg_gwas_cold_distinct <- deg_gwas_cold %>%
+  distinct(gene, .keep_all = TRUE)
+
+ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
+              genenames = as.vector(deg_gwas_cold_distinct$gene),
+              legend = "top", top = 0,
+              select.top.method = "gwas",
+              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10))
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot_gwas_distinct}
+deg_gwas_hot_distinct <- deg_gwas_hot %>%
+  distinct(gene, .keep_all = TRUE)
+
+ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
+              genenames = as.vector(deg_gwas_hot_distinct$gene),
+              legend = "top", top = 0,
+              select.top.method = "gwas",
+              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10)) 
+```
+
+
+## GWAS points with labels
 
 **Cold v Ctrl MA plot**
 
@@ -200,8 +241,8 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               fdr = 0.01, fc = 0, size = 1,
               palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
               genenames = as.vector(deg_gwas_cold_distinct$gene),
-              legend = "top", top = 0,
-              select.top.method = "padj",
+              legend = "top", top = 14,
+              select.top.method = "gwas",
               font.label = c("bold", 11), label.rectangle = TRUE,
               font.legend = "bold",
               font.main = "bold",
@@ -219,8 +260,8 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               fdr = 0.01, fc = 0, size = 1,
               palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
               genenames = as.vector(deg_gwas_hot_distinct$gene),
-              legend = "top", top = 0,
-              select.top.method = "padj",
+              legend = "top", top = 10,
+              select.top.method = "gwas",
               font.label = c("bold", 11), label.rectangle = TRUE,
               font.legend = "bold",
               font.main = "bold",

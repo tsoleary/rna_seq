@@ -350,7 +350,7 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
                       detection_call = NULL, size = NULL,
                       font.label = c(12, "plain", "black"), label.rectangle = FALSE,
                       palette = c("#B31B21", "#1465AC", "gray1", "darkgray"),
-                      top = 15, select.top.method = c("padj", "fc"),
+                      top = 15, select.top.method = c("padj", "fc", "gwas"),
                       main = NULL, xlab = "Log2 mean expression",  ylab = "Log2 fold change",
                       ggtheme = theme_classic(),...)
 {
@@ -419,9 +419,10 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
   select.top.method <- match.arg(select.top.method)
   if(select.top.method == "padj") data <- data[order(data$padj), ]
   else if(select.top.method == "fc") data <- data[order(abs(data$lfc), decreasing = TRUE), ]
+  else if(select.top.method == "gwas") data <- data[order(data$sig, decreasing = TRUE), ]
   # select data for top genes
   labs_data <- stats::na.omit(data)
-  labs_data <- subset(labs_data, padj <= fdr & name!="" & abs(lfc) >= log2(fc))
+  #labs_data <- subset(labs_data, padj <= fdr & name!="" & abs(lfc) >= log2(fc))
   labs_data <- utils::head(labs_data, top)
   
   font.label <- .parse_font(font.label)
