@@ -55,6 +55,13 @@ gwas_cold$grps <- sapply(annot_split_cold, "[[", 3)
 comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
 
 # combine the hot gwas and deg -------------------------------------------------
+# hot_mult_genes <- str_split(gwas_hot$GeneAnnotation, ";")
+# annot_split_hot_mult <- sapply(hot_mult_genes, "str_split", "\\|")
+# annot_split_hot_mult[[21]][[5]]
+# map_chr(annot_split_hot_mult[[17]], 2)
+# 
+# sapply(annot_split_hot_mult, "[[", 2)
+
 # use the GeneAnnotation to get the gene symbol for the gwas
 annot_split_hot <- str_split(gwas_hot$GeneAnnotation, "\\|")
 # the second item is the gene symbol
@@ -127,7 +134,8 @@ ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
          font.label = c("bold", 11), label.rectangle = TRUE,
          font.legend = "bold",
          font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) 
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10))
 ```
 
 **Hot v Ctrl MA plot**
@@ -142,7 +150,8 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          font.label = c("bold", 11), label.rectangle = TRUE,
          font.legend = "bold",
          font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) 
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10))
 ```
 
 ## Top 20 genes labeled (by padj)
@@ -159,7 +168,8 @@ ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
          font.label = c("bold", 11), label.rectangle = TRUE,
          font.legend = "bold",
          font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) 
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10)) 
 ```
 
 **Hot v Ctrl MA plot**
@@ -174,40 +184,8 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          font.label = c("bold", 11), label.rectangle = TRUE,
          font.legend = "bold",
          font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) 
-```
-
-
-## GWAS points (all SNPs counted)
-
-**Cold v Ctrl MA plot**
-
-```{r ma_plot_cold_lab_gwas}
-ggmaplot_gwas(deg_gwas_cold, main = expression("4°C" %->% "25°C"),
-              fdr = 0.01, fc = 0, size = 1,
-              palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
-              genenames = as.vector(deg_gwas_cold$gene),
-              legend = "top", top = 0,
-              select.top.method = "padj",
-              font.label = c("bold", 11), label.rectangle = TRUE,
-              font.legend = "bold",
-              font.main = "bold",
-              ggtheme = ggplot2::theme_minimal())
-```
-
-**Hot v Ctrl MA plot**
-
-```{r ma_plot_hot_lab_gwas}
-ggmaplot_gwas(deg_gwas_hot, main = expression("37°C" %->% "25°C"),
-              fdr = 0.01, fc = 0, size = 1,
-              palette = c("#B31B21", "#1465AC", "#A6A6A680", "black"),
-              genenames = as.vector(deg_gwas_hot$gene),
-              legend = "top", top = 0,
-              select.top.method = "padj",
-              font.label = c("bold", 11), label.rectangle = TRUE,
-              font.legend = "bold",
-              font.main = "bold",
-              ggtheme = ggplot2::theme_minimal()) 
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10)) 
 ```
 
 ## GWAS points (distinct genes)
@@ -227,7 +205,8 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               font.label = c("bold", 11), label.rectangle = TRUE,
               font.legend = "bold",
               font.main = "bold",
-              ggtheme = ggplot2::theme_minimal())
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10))
 ```
 
 **Hot v Ctrl MA plot**
@@ -245,7 +224,8 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               font.label = c("bold", 11), label.rectangle = TRUE,
               font.legend = "bold",
               font.main = "bold",
-              ggtheme = ggplot2::theme_minimal()) 
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10)) 
 ```
 
 # Top 50 differentially expressed genes
