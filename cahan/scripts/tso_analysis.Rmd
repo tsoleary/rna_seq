@@ -549,7 +549,6 @@ gwas_hot %>%
   group_by(gene) %>%
   filter(gene != "") %>%
   dplyr::count() %>%
-  dplyr::filter(n > 1) %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -590,7 +589,6 @@ gwas_cold %>%
   group_by(gene) %>%
   filter(gene != "") %>%
   dplyr::count() %>%
-  dplyr::filter(n > 1) %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
