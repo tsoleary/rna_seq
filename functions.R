@@ -348,7 +348,9 @@ plot_scatter_side_density_assemble = function(components,
 
 ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
                       detection_call = NULL, size = NULL,
-                      font.label = c(12, "plain", "black"), label.rectangle = FALSE,
+                      font.label = c(12, "plain", "black"),
+                      font.label.sig = c(12, "plain", "red"),
+                      label.rectangle = FALSE,
                       palette = c("#B31B21", "#1465AC", "gray1", "darkgray"),
                       top = 15, select.top.method = c("padj", "fc", "gwas"),
                       main = NULL, xlab = "Log2 mean expression",  ylab = "Log2 fold change",
@@ -425,16 +427,29 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
   #labs_data <- subset(labs_data, padj <= fdr & name!="" & abs(lfc) >= log2(fc))
   labs_data <- utils::head(labs_data, top)
   
+  labs_data_sig <- labs_data %>%
+    filter(padj <= fdr)
+  
+  labs_data_ns <- labs_data %>%
+    filter(padj > fdr)
+  
+  
   font.label <- .parse_font(font.label)
   font.label$size <- ifelse(is.null(font.label$size), 12, font.label$size)
   font.label$color <- ifelse(is.null(font.label$color), "black", font.label$color)
   font.label$face <- ifelse(is.null(font.label$face), "plain", font.label$face)
   
+  font.label.sig <- .parse_font(font.label.sig)
+  font.label.sig$size <- ifelse(is.null(font.label.sig$size), 12, font.label.sig$size)
+  font.label.sig$color <- ifelse(is.null(font.label.sig$color), "black", font.label.sig$color)
+  font.label.sig$face <- ifelse(is.null(font.label.sig$face), "plain", font.label.sig$face)
+  
+  
   data <- data %>%
     dplyr::arrange(sig)
   
   # Plot
-  set.seed(42)
+  set.seed(2)
   mean <- lfc <- sig <- name <- padj <-  NULL
   p <- ggplot(data = NULL, aes(x = log2(mean + 1), y = lfc)) +
     geom_point(data = data %>% 
@@ -447,18 +462,34 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
                size = 2)
     
   if(label.rectangle){
-    p <- p + ggrepel::geom_label_repel(data = labs_data, mapping = aes(label = name),
+    p <- p + 
+      
+      ggrepel::geom_label_repel(data = labs_data_sig, mapping = aes(label = name),
                                        box.padding = unit(0.35, "lines"),
                                        point.padding = unit(0.3, "lines"),
-                                       force = 1, fontface = font.label$face,
-                                       size = font.label$size/3, color = font.label$color)
+                                       force = 1, fontface = font.label.sig$face,
+                                       size = font.label.sig$size/3, color = font.label.sig$color) +
+      
+      ggrepel::geom_label_repel(data = labs_data_ns, mapping = aes(label = name),
+                                box.padding = unit(0.35, "lines"),
+                                point.padding = unit(0.3, "lines"),
+                                force = 1, fontface = font.label$face,
+                                size = font.label$size/3, color = font.label$color)
   }
   else{
-    p <- p + ggrepel::geom_text_repel(data = labs_data, mapping = aes(label = name),
+    p <- p + 
+      
+      ggrepel::geom_text_repel(data = labs_data_sig, mapping = aes(label = name),
                                       box.padding = unit(0.35, "lines"),
                                       point.padding = unit(0.3, "lines"),
                                       force = 1, fontface = font.label$face,
-                                      size = font.label$size/3, color = font.label$color)
+                                      size = font.label$size/3, color = "red") +
+      
+      ggrepel::geom_text_repel(data = labs_data_ns, mapping = aes(label = name),
+                               box.padding = unit(0.35, "lines"),
+                               point.padding = unit(0.3, "lines"),
+                               force = 1, fontface = font.label.sig$face,
+                               size = font.label.sig$size/3, color = font.label.sig$color)
   }
   
   p <- p + scale_x_continuous(breaks = seq(0, max(log2(data$mean + 1)), 2))+

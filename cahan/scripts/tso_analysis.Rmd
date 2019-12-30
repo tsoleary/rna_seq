@@ -154,7 +154,7 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
   theme(legend.text = element_text(size = 10))
 ```
 
-## Top 20 genes labeled (by padj)
+## Labeled by padj
 
 **Cold v Ctrl MA plot**
 
@@ -188,7 +188,7 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
   theme(legend.text = element_text(size = 10)) 
 ```
 
-## GWAS points without labels
+## GWAS points
 
 **Cold v Ctrl MA plot**
 
@@ -229,7 +229,7 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
 ```
 
 
-## GWAS points with labels
+## GWAS labels
 
 **Cold v Ctrl MA plot**
 
@@ -243,7 +243,9 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               genenames = as.vector(deg_gwas_cold_distinct$gene),
               legend = "top", top = 14,
               select.top.method = "gwas",
-              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.label = c("bold", 11), 
+              font.label.sig = c(11, "bold", "black"),
+              label.rectangle = TRUE,
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
@@ -262,12 +264,60 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               genenames = as.vector(deg_gwas_hot_distinct$gene),
               legend = "top", top = 10,
               select.top.method = "gwas",
-              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.label = c("bold", 11), 
+              font.label.sig = c(11, "bold", "black"),
+              label.rectangle = TRUE,
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
   theme(legend.text = element_text(size = 10)) 
 ```
+
+
+## GWAS labels colored by DEG sig
+
+**Cold v Ctrl MA plot**
+
+```{r ma_plot_cold_lab_gwas_deg}
+deg_gwas_cold_distinct <- deg_gwas_cold %>%
+  distinct(gene, .keep_all = TRUE)
+
+ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
+              genenames = as.vector(deg_gwas_cold_distinct$gene),
+              legend = "top", top = 14,
+              select.top.method = "gwas",
+              font.label = c("bold", 11), 
+              font.label.sig = c(11, "bold", "firebrick"),
+              label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10))
+```
+
+**Hot v Ctrl MA plot**
+
+```{r ma_plot_hot_lab_gwas_deg}
+deg_gwas_hot_distinct <- deg_gwas_hot %>%
+  distinct(gene, .keep_all = TRUE)
+
+ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
+              genenames = as.vector(deg_gwas_hot_distinct$gene),
+              legend = "top", top = 10,
+              select.top.method = "gwas",
+              font.label = c("bold", 11), 
+              font.label.sig = c(11, "bold", "firebrick"),
+              label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 10)) 
+```
+
 
 # Top 50 differentially expressed genes
 
