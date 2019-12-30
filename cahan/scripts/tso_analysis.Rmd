@@ -114,6 +114,8 @@ deg_grouped <- total %>%
 # colors for the shared unique scatter plot            
 clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
 
+legend.font.size <- 12
+
 ```
 
 # MA plots {.tabset .tabset-fade .tabset-pills}
@@ -135,7 +137,7 @@ ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
          font.legend = "bold",
          font.main = "bold",
          ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10))
+  theme(legend.text = element_text(size = legend.font.size))
 ```
 
 **Hot v Ctrl MA plot**
@@ -151,7 +153,7 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          font.legend = "bold",
          font.main = "bold",
          ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10))
+  theme(legend.text = element_text(size = legend.font.size))
 ```
 
 ## Labeled by padj
@@ -169,7 +171,7 @@ ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
          font.legend = "bold",
          font.main = "bold",
          ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10)) 
+  theme(legend.text = element_text(size = legend.font.size)) 
 ```
 
 **Hot v Ctrl MA plot**
@@ -185,7 +187,7 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
          font.legend = "bold",
          font.main = "bold",
          ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10)) 
+  theme(legend.text = element_text(size = legend.font.size)) 
 ```
 
 ## GWAS points
@@ -206,7 +208,7 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10))
+  theme(legend.text = element_text(size = legend.font.size))
 ```
 
 **Hot v Ctrl MA plot**
@@ -225,7 +227,7 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10)) 
+  theme(legend.text = element_text(size = legend.font.size)) 
 ```
 
 
@@ -249,7 +251,7 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10))
+  theme(legend.text = element_text(size = legend.font.size))
 ```
 
 **Hot v Ctrl MA plot**
@@ -270,7 +272,7 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10)) 
+  theme(legend.text = element_text(size = legend.font.size)) 
 ```
 
 
@@ -294,7 +296,7 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10))
+  theme(legend.text = element_text(size = legend.font.size))
 ```
 
 **Hot v Ctrl MA plot**
@@ -315,7 +317,7 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = 10)) 
+  theme(legend.text = element_text(size = legend.font.size)) 
 ```
 
 
