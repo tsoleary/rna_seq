@@ -436,9 +436,16 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
   # Plot
   set.seed(42)
   mean <- lfc <- sig <- name <- padj <-  NULL
-  p <- ggplot(data, aes(x = log2(mean + 1), y = lfc)) +
-    geom_point(aes(color = sig), size = size)
-  
+  p <- ggplot(data = NULL, aes(x = log2(mean + 1), y = lfc)) +
+    geom_point(data = data %>% 
+                 dplyr::filter(sig != paste0("GWAS: ", gwas_n)), 
+               aes(x = log2(mean + 1), y = lfc, color = sig), 
+                size = size) + 
+    geom_point(data = data %>% 
+                 dplyr::filter(sig == paste0("GWAS: ", gwas_n)),
+               aes(x = log2(mean + 1), y = lfc, color = sig),
+               size = 2)
+    
   if(label.rectangle){
     p <- p + ggrepel::geom_label_repel(data = labs_data, mapping = aes(label = name),
                                        box.padding = unit(0.35, "lines"),
@@ -454,11 +461,11 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
                                       size = font.label$size/3, color = font.label$color)
   }
   
-  p <- p + scale_x_continuous(breaks=seq(0, max(log2(data$mean+1)), 2))+
+  p <- p + scale_x_continuous(breaks = seq(0, max(log2(data$mean + 1)), 2))+
     labs(x = xlab, y = ylab, title = main, color = "")+ # to remove legend title use color = ""
     geom_hline(yintercept = c(0, -log2(fc), log2(fc)), linetype = c(1, 2, 2),
-               color = c("black", "black", "black"))
+               color = c("black", "black", "black")) 
   
-  p <- ggpar(p, palette = palette, ggtheme = ggtheme, ...)
-  p
+  p <- ggpar(p, palette = palette, ggtheme = ggtheme, ...) 
+  p + scale_color_manual(breaks = new.levels, values = palette)
 }
