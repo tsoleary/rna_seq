@@ -55,12 +55,59 @@ gwas_cold$grps <- sapply(annot_split_cold, "[[", 3)
 comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
 
 # combine the hot gwas and deg -------------------------------------------------
-# hot_mult_genes <- str_split(gwas_hot$GeneAnnotation, ";")
-# annot_split_hot_mult <- sapply(hot_mult_genes, "str_split", "\\|")
-# annot_split_hot_mult[[21]][[5]]
-# map_chr(annot_split_hot_mult[[17]], 2)
-# 
-# sapply(annot_split_hot_mult, "[[", 2)
+hot_mult_genes <- str_split(gwas_hot$GeneAnnotation, ";")
+annot_split_hot_mult <- sapply(hot_mult_genes, "str_split", "\\|")
+
+gene_list <- vector(mode = "list", length = length(annot_split_hot_mult))
+
+for (i in 1:length(annot_split_hot_mult)) {
+  
+  list_4  <- which(lengths(annot_split_hot_mult[[i]]) == 4)
+  list_10 <- which(lengths(annot_split_hot_mult[[i]]) == 10)
+  list_13 <- which(lengths(annot_split_hot_mult[[i]]) == 13)
+  
+  sym_4 <- c()
+  sym_10 <- c()
+  sym_13 <- c()
+  
+  if(!is_empty(list_4)){
+      for (k in list_4){
+        x <- annot_split_hot_mult[[i]][[c(k, 2)]]
+        sym_4 <- c(sym_4, x)
+      }
+  }
+  
+  if(!is_empty(list_10)){
+      for (k in list_10){
+        x <- annot_split_hot_mult[[i]][[c(k, 6)]]
+        sym_10 <- c(sym_10, x)
+      }
+  }
+  
+  if(!is_empty(list_13)){
+      for (k in list_13){
+        x <- annot_split_hot_mult[[i]][[c(k, 2)]]
+        sym_13 <- c(sym_13, x)
+      }
+  }
+  
+  all_symbols <- c(sym_4, sym_10, sym_13)
+  
+  unique_symbols <- unique(all_symbols[all_symbols != ""])
+  
+  gene_list[[i]] <- unique_symbols
+  
+}
+
+
+## there is either 10 13 or 4 length for each list!!!!! ahhhhhhhhhhhhh fickkkasklfdj
+
+# if 10 then 6
+# if 13 then 2
+# if 4 then 2
+
+##########
+
 
 # use the GeneAnnotation to get the gene symbol for the gwas
 annot_split_hot <- str_split(gwas_hot$GeneAnnotation, "\\|")
