@@ -380,26 +380,6 @@ deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6113",
                                                           "Sig1 Unique: 103",
                                                           "NS: 6425"))
 
-plot_scatter_side_density_xy(deg_simple, 
-                             x_ = "log2FoldChange.cold", 
-                             y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (L2FC)",
-                             labs_y = "Hot vs Ctrl (L2FC)",
-                             bg.string = "NS: 6437",
-                             bg.density.string = "Other",
-                             labs_sets_density = "GWAS",
-                             id_ = "id", 
-                             set_ = "groupn", 
-                             set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
-                             sets.colors = color_set,
-                             n_auto_label = 0)
-```
-
-## GWAS scatter & density plots (distinct)
-
-```{r scatter_and_density_plots_distinct, fig.height = 7, fig.width = 7}
-
 deg_simple_distinct <- deg_simple %>%
   distinct(gene, .keep_all = TRUE)
 
@@ -417,22 +397,6 @@ plot_scatter_side_density_xy(deg_simple_distinct,
                              sets.density.colors = c("red", "blue", "yellow"),
                              sets.colors = color_set,
                              n_auto_label = 0)
-```
-
-
-## GWAS density plots
-
-```{r density_plots}
-ggplot(deg_simple) +
-  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple, stat = "density") +
-  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple, stat = "density") +
-  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
-  labs(x = "log2FoldChange vs. Ctrl", 
-       color = "GWAS", 
-       caption = "Cold dashed line\nHot solid line") +
-  theme_classic()
 ```
 
 ## GWAS density plots (distinct)
@@ -565,7 +529,83 @@ ggplot(deg_grouped,
   theme(legend.position = "top")
 ```
 
-# GWAS
+# GWAS Tables
+
+## GWAS summary table
+
+```{r gwas_hot_summary}
+
+comb_hot_filt <- comb_hot %>%
+  filter(!is.na(ID))
+
+comb_hot_filt$gwas <- "CTmax"
+
+
+comb_cold_filt <- comb_cold %>%
+  filter(!is.na(ID))
+
+comb_cold_filt$gwas <- "CTmin"
+
+comb_gwas <- rbind(comb_hot_filt, comb_cold_filt)
+
+
+t1 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::count() %>%
+  dplyr::rename("SNPs" = n)
+
+t2 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::count() %>%
+  dplyr::rename("SNPs annotated to genes" = n)
+
+t3 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("Unique genes" = n)
+
+t4 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(padj <= 0.01) %>%
+  dplyr::count() %>%
+  dplyr::rename("Sig DEGs" = n)
+
+t5 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::count() %>%
+  dplyr::rename("NS DEGs" = n)
+
+t6 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "" & is.na(baseMean)) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("No RNAseq data" = n)
+
+t7 <- full_join(t1, t2) %>%
+  full_join(t3) %>%
+  full_join(t4) %>%
+  full_join(t5) %>%
+  full_join(t6)
+
+t7$`No RNAseq data` <- t7$`No RNAseq data` %>% replace_na(0)
+
+table <- t7 %>%
+  dplyr::rename(GWAS = gwas) 
+
+table %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
 
 ## CTmax
 
@@ -607,6 +647,7 @@ gwas_hot %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
+
 ## CTmin
 
 ### All hits (pval cutoff 10^-5)
@@ -645,167 +686,4 @@ gwas_cold %>%
   kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "100%")
-```
-
-
-# DEG & GWAS correlation plots 
-
-## Expression Plots
-
-**Cold vs Ctrl**
-
-```{r DEG_GWAS_cold}
-
-# get the median or average for each treatment 
-comb_avg <- comb_cold %>% 
-  dplyr::select(contains("_"), gene, ID, padj, log2FoldChange) %>%
-  pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
-  mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
-  group_by(gene, group, ID, padj, log2FoldChange) %>%
-  summarize(expression = median(expression, na.rm = TRUE)) %>%
-  filter(expression > 0) %>%
-  pivot_wider(names_from = group, values_from = expression)
-
-comb_sort <- comb_avg %>%
-  mutate(g = case_when(is.na(ID) & padj < 0.01 ~ "DEG",
-                       is.na(ID) & padj > 0.01 ~ "all",
-                       is.na(ID) ~ "all",
-                       !is.na(ID) & padj < 0.01 ~ "GWAS-DEG",
-                       !is.na(ID) & padj > 0.01 ~ "GWAS-NS")) %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  group_by(g) %>%
-  add_count(g) %>% 
-  mutate(groupn = paste0(g, ': ', n)) %>%
-  arrange(groupn) %>%
-  filter(!is.na(g))  %>%
-  distinct(gene, .keep_all = TRUE)
-
-# plot the expression of the ctrl and hot/cold with each group labeled
-ggplot(comb_sort, aes(x = ctrl, y = hot)) + 
-  geom_point(aes(x = ctrl, y = cold, color = groupn), alpha = 0.7) +
-  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000")) +
-  ggrepel::geom_label_repel(data = filter(comb_sort, g == "GWAS-DEG"),
-                            aes(label = gene),
-                            fill = "white",
-                            color = 'black',
-                            size = 3.5,
-                            show.legend = FALSE) +
-  scale_x_log10() +
-  scale_y_log10() + 
-  ylab("Cold (log10 expression)") +
-  xlab("Control (log10 expression)") +
-  theme_classic() +
-  theme(legend.title = element_blank())
-```
-
-**Hot vs Ctrl**
-
-```{r DEG_GWAS_hot}
-# get the median or average for each treatment 
-comb_avg <- comb_hot %>% 
-  dplyr::select(contains("_"), gene, ID, padj, log2FoldChange) %>%
-  pivot_longer(contains("_"), names_to = "group", values_to = "expression") %>%
-  mutate(group = str_replace(group, "_[[:digit:]]*$", "")) %>%
-  group_by(gene, group, ID, padj, log2FoldChange) %>%
-  summarize(expression = median(expression, na.rm = TRUE)) %>%
-  filter(expression > 0) %>%
-  pivot_wider(names_from = group, values_from = expression) 
-
-comb_sort <- comb_avg %>%
-  mutate(g = case_when(is.na(ID) & padj < 0.01 ~ "DEG",
-                       is.na(ID) & padj > 0.01 ~ "all",
-                       is.na(ID) ~ "all",
-                       !is.na(ID) & padj < 0.01 ~ "GWAS-DEG",
-                       !is.na(ID) & padj > 0.01 ~ "GWAS-NS"))  %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  group_by(g) %>%
-  add_count(g) %>% 
-  mutate(groupn = paste0(g, ': ', n)) %>%
-  arrange(groupn) %>%
-  filter(!is.na(g))
-
-# plot the expression of the ctrl and hot/cold with each group labeled
-ggplot(comb_sort, aes(x = ctrl, y = hot)) + 
-  geom_point(aes(x = ctrl, y = cold, color = groupn), alpha = 0.7) +
-  scale_color_manual(values = c("#999999", "#E69F00", "#ff0000", "#000000")) +
-  ggrepel::geom_label_repel(data = filter(comb_sort, g == "GWAS-DEG"),
-                            aes(label = gene),
-                            fill = "white",
-                            color = 'black',
-                            size = 3.5,
-                            show.legend = FALSE) +
-  scale_x_log10() +
-  scale_y_log10() + 
-  ylab("Hot (log10 expression)") +
-  xlab("Control (log10 expression)") +
-  theme_classic() +
-  theme(legend.title = element_blank())
-```
-
-
-## CTmax & DEG Corr
-
-```{r GWAS_CTmax_corr}
-y <- comb_hot[c(3, 7, 30:31)]
-
-corr <- round(cor(y, use = "na.or.complete"), 1)
-ggcorrplot(corr, hc.order = TRUE, outline.col = "white")
-
-comb_hot_filt <- comb_hot %>%
-  filter(!is.na(baseMean) & !is.na(ID))
-
-```
-
-```{r GWAS_CTmax_corr_pval_fc}
-ggplot(comb_hot_filt, aes(x = log(AvgMixedPval), y = abs(log2FoldChange), color = grps)) +
-  geom_point() 
-```
-
-```{r GWAS_CTmax_corr_eff_pval}
-ggplot(comb_hot_filt, aes(x = abs(AvgEff), y = log(log2FoldChange), color = grps)) +
-  geom_point()
-```
-
-```{r GWAS_CTmax_corr_F_pval_fc}
-ggplot(comb_hot_filt, aes(x = log(FemaleMixedPval), y = abs(log2FoldChange), color = grps)) +
-  geom_point() 
-```
-
-```{r GWAS_CTmax_corr_F_eff_pval}
-ggplot(comb_hot_filt, aes(x = abs(FemaleEff), y = log(log2FoldChange), color = grps)) +
-  geom_point()
-```
-
-
-## CTmin & DEG Corr
-
-```{r GWAS_CTmin_corr}
-xcorr <- comb_cold[c(3, 7, 30:31)]
-
-comb_cold_filt <- comb_cold %>%
-  filter(!is.na(baseMean) & !is.na(ID))
-
-
-corr <- round(cor(xcorr, use = "na.or.complete"), 1)
-ggcorrplot(corr, hc.order = TRUE, outline.col = "white")
-```
-
-```{r GWAS_CTmin_corr_pval_fc_mixed}
-ggplot(comb_cold_filt, aes(x = log(AvgMixedPval), y = abs(log2FoldChange), color = grps)) +
-  geom_point() 
-```
-
-```{r GWAS_CTmin_corr_eff_pvalP}
-ggplot(comb_cold_filt, aes(x = abs(AvgEff), y = log(log2FoldChange), color = grps)) +
-  geom_point()
-```
-
-```{r GWAS_CTmin_corr_F_pval_fc}
-ggplot(comb_cold_filt, aes(x = log(FemaleMixedPval), y = abs(log2FoldChange), color = grps)) +
-  geom_point() 
-```
-
-```{r GWAS_CTmin_corr_F_eff_pval}
-ggplot(comb_cold_filt, aes(x = abs(FemaleEff), y = log(log2FoldChange), color = grps)) +
-  geom_point()
 ```
