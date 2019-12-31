@@ -55,10 +55,12 @@ gwas_cold$grps <- sapply(annot_split_cold, "[[", 3)
 comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
 
 # combine the hot gwas and deg -------------------------------------------------
+
+# get all the gene symbols annotated for hot -----
 hot_mult_genes <- str_split(gwas_hot$GeneAnnotation, ";")
 annot_split_hot_mult <- sapply(hot_mult_genes, "str_split", "\\|")
 
-gene_list <- vector(mode = "list", length = length(annot_split_hot_mult))
+gene_list_hot <- vector(mode = "list", length = length(annot_split_hot_mult))
 
 for (i in 1:length(annot_split_hot_mult)) {
   
@@ -95,7 +97,56 @@ for (i in 1:length(annot_split_hot_mult)) {
   
   unique_symbols <- unique(all_symbols[all_symbols != ""])
   
-  gene_list[[i]] <- unique_symbols
+  gene_list_hot[[i]] <- unique_symbols
+  
+}
+
+
+# get all the gene symbols annotated for cold -----
+
+
+####################### fix below to do the cold
+cold_mult_genes <- str_split(gwas_cold$GeneAnnotation, ";")
+annot_split_cold_mult <- sapply(cold_mult_genes, "str_split", "\\|")
+
+gene_list_cold <- vector(mode = "list", length = length(annot_split_hot_mult))
+
+for (i in 1:length(annot_split_cold_mult)) {
+  
+  list_4  <- which(lengths(annot_split_cold_mult[[i]]) == 4)
+  list_10 <- which(lengths(annot_split_cold_mult[[i]]) == 10)
+  list_13 <- which(lengths(annot_split_cold_mult[[i]]) == 13)
+  
+  sym_4 <- c()
+  sym_10 <- c()
+  sym_13 <- c()
+  
+  if(!is_empty(list_4)){
+      for (k in list_4){
+        x <- annot_split_cold_mult[[i]][[c(k, 2)]]
+        sym_4 <- c(sym_4, x)
+      }
+  }
+  
+  if(!is_empty(list_10)){
+      for (k in list_10){
+        x <- annot_split_cold_mult[[i]][[c(k, 6)]]
+        sym_10 <- c(sym_10, x)
+      }
+  }
+  
+  if(!is_empty(list_13)){
+      for (k in list_13){
+        x <- annot_split_cold_mult[[i]][[c(k, 2)]]
+        sym_13 <- c(sym_13, x)
+      }
+  }
+  
+  all_symbols <- c(sym_4, sym_10, sym_13)
+  
+  unique_symbols <- unique(all_symbols[all_symbols != ""])
+  
+  gene_list_cold[[i]] <- unique_symbols
   
 }
 
@@ -105,6 +156,9 @@ for (i in 1:length(annot_split_hot_mult)) {
 # if 10 then 6
 # if 13 then 2
 # if 4 then 2
+
+# figure out how to intgrate it back in to have multiple rows for the unique
+
 
 ##########
 
