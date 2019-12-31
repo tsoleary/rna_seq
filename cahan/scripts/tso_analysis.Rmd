@@ -44,28 +44,6 @@ gwas_cold <- gwas_cold %>%
 gwas_hot <- gwas_hot %>%
   filter(AvgMixedPval < pval_cut)
 
-# combine the cold gwas and deg ------------------------------------------------
-
-# # old way to get gene annotations ----
-# # use the GeneAnnotation to get the gene symbol for the gwas
-# annot_split_cold <- str_split(gwas_cold$GeneAnnotation, "\\|")
-# # the second item is the gene symbol
-# gwas_cold$gene <- sapply(annot_split_cold, "[[", 2)
-# # the third item is where the snp is located, intron, syn coding etc.
-# gwas_cold$grps <- sapply(annot_split_cold, "[[", 3)
-# # join the two data frames together
-# comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
-# 
-# # use the GeneAnnotation to get the gene symbol for the gwas
-# annot_split_hot <- str_split(gwas_hot$GeneAnnotation, "\\|")
-# # the second item is the gene symbol
-# gwas_hot$gene <- sapply(annot_split_hot, "[[", 2)
-# # the third item is where the snp is located, intron, syn coding etc.
-# gwas_hot$grps <- sapply(annot_split_hot, "[[", 3)
-# # join the two data frames together
-# comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
-
-
 # combine the hot gwas and deg -------------------------------------------------
 
 # get all the gene symbols annotated for hot -----
@@ -104,13 +82,9 @@ for (i in 1:length(annot_split_hot_mult)) {
         sym_13 <- c(sym_13, x)
       }
   }
-  
   all_symbols <- c(sym_4, sym_10, sym_13)
-  
   unique_symbols <- unique(all_symbols[all_symbols != ""])
-  
   gene_list_hot[[i]] <- unique_symbols
-  
 }
 
 
@@ -151,46 +125,65 @@ for (i in 1:length(annot_split_cold_mult)) {
         sym_13 <- c(sym_13, x)
       }
   }
-  
   all_symbols <- c(sym_4, sym_10, sym_13)
-  
   unique_symbols <- unique(all_symbols[all_symbols != ""])
-  
   gene_list_cold[[i]] <- unique_symbols
-  
 }
 
 
 
-# figure out how to intgrate it back in to have multiple rows for the unique
+# integrate the multiple genes back to the gwas df -----
 
-# sym_empty <- which(lengths(gene_list_hot) == 0)
-# sym_one <- which(lengths(gene_list_hot) == 1)
-# sym_mult <- which(lengths(gene_list_hot) >= 2)
-
-genes <- c()
-
+# gwas_hot 
+genes_hot <- c()
 for (i in 1:length(gene_list_hot)){
-  
   if (length(gene_list_hot[[i]]) == 0){
-    genes[i] <- ""
+    genes_hot[i] <- ""
   } else {
-    genes[i] <- paste(gene_list_hot[[i]], collapse = " ")
+    genes_hot[i] <- paste(gene_list_hot[[i]], collapse = " ")
   }
-  
 }
-
-gwas_hot$gene <- genes
+gwas_hot$gene <- genes_hot
 
 gwas_hot <- gwas_hot %>% 
   separate(col = gene, into = c("gene", "gene2"), sep = " ") %>%
   pivot_longer(gene:gene2, names_to = "lab", values_to = "gene", 
                values_drop_na = TRUE)
+
+# gwas_cold 
+genes_cold <- c() 
+for (i in 1:length(gene_list_cold)){
+  if (length(gene_list_cold[[i]]) == 0){
+    genes_cold[i] <- ""
+  } else {
+    genes_cold[i] <- paste(gene_list_cold[[i]], collapse = " ")
+  }
+}
+gwas_cold$gene <- genes_cold
+
+gwas_cold <- gwas_cold %>% 
+  separate(col = gene, into = c("gene", "gene2"), sep = " ") %>%
+  pivot_longer(gene:gene2, names_to = "lab", values_to = "gene", 
+               values_drop_na = TRUE)
+
+
+
+# get the grp info and combine back to comb df
+# use the GeneAnnotation to get the gene symbol for the gwas
+annot_split_cold <- str_split(gwas_cold$GeneAnnotation, "\\|")
+# the third item is where the snp is located, intron, syn coding etc.
+gwas_cold$grps <- sapply(annot_split_cold, "[[", 3)
+# join the two data frames together
+comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
+
+# use the GeneAnnotation to get the gene symbol for the gwas
+annot_split_hot <- str_split(gwas_hot$GeneAnnotation, "\\|")
+# the third item is where the snp is located, intron, syn coding etc.
+gwas_hot$grps <- sapply(annot_split_hot, "[[", 3)
+# join the two data frames together
+comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
+
   
-
-# need to add the $gene column before continuing.......
-##########
-
 # create a data.frame with info for the individual ma_plots --------------------
 deg_gwas_cold <- left_join(res_cold, gwas_cold, by = "gene")
 deg_gwas_hot <- left_join(res_hot, gwas_hot, by = "gene")
@@ -316,7 +309,8 @@ ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
 
 ```{r ma_plot_cold_gwas_distinct}
 deg_gwas_cold_distinct <- deg_gwas_cold %>%
-  distinct(gene, .keep_all = TRUE)
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
 
 ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               fdr = 0.01, fc = 0, size = 1,
@@ -335,7 +329,8 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
 
 ```{r ma_plot_hot_gwas_distinct}
 deg_gwas_hot_distinct <- deg_gwas_hot %>%
-  distinct(gene, .keep_all = TRUE)
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
 
 ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               fdr = 0.01, fc = 0, size = 1,
@@ -357,13 +352,14 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
 
 ```{r ma_plot_cold_lab_gwas_distinct}
 deg_gwas_cold_distinct <- deg_gwas_cold %>%
-  distinct(gene, .keep_all = TRUE)
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
 
-ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
+ggmaplot_test(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               fdr = 0.01, fc = 0, size = 1,
-              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
+              color_sig = FALSE,
               genenames = as.vector(deg_gwas_cold_distinct$gene),
-              legend = "top", top = 14,
+              legend = "top", top = 20,
               select.top.method = "gwas",
               font.label = c("bold", 11), 
               font.label.sig = c(11, "bold", "black"),
@@ -378,13 +374,14 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
 
 ```{r ma_plot_hot_lab_gwas_distinct}
 deg_gwas_hot_distinct <- deg_gwas_hot %>%
-  distinct(gene, .keep_all = TRUE)
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
 
-ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
+ggmaplot_test(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               fdr = 0.01, fc = 0, size = 1,
-              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
+              color_sig = FALSE,
               genenames = as.vector(deg_gwas_hot_distinct$gene),
-              legend = "top", top = 10,
+              legend = "top", top = 11,
               select.top.method = "gwas",
               font.label = c("bold", 11), 
               font.label.sig = c(11, "bold", "black"),
@@ -402,13 +399,14 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
 
 ```{r ma_plot_cold_lab_gwas_deg}
 deg_gwas_cold_distinct <- deg_gwas_cold %>%
-  distinct(gene, .keep_all = TRUE)
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
 
-ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
+ggmaplot_test(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               fdr = 0.01, fc = 0, size = 1,
-              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
+              color_sig = TRUE,
               genenames = as.vector(deg_gwas_cold_distinct$gene),
-              legend = "top", top = 14,
+              legend = "top", top = 22,
               select.top.method = "gwas",
               font.label = c("bold", 11), 
               font.label.sig = c(11, "bold", "firebrick"),
@@ -423,13 +421,14 @@ ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
 
 ```{r ma_plot_hot_lab_gwas_deg}
 deg_gwas_hot_distinct <- deg_gwas_hot %>%
-  distinct(gene, .keep_all = TRUE)
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
 
-ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
+ggmaplot_test(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               fdr = 0.01, fc = 0, size = 1,
-              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
+              color_sig = TRUE,
               genenames = as.vector(deg_gwas_hot_distinct$gene),
-              legend = "top", top = 10,
+              legend = "top", top = 11,
               select.top.method = "gwas",
               font.label = c("bold", 11), 
               font.label.sig = c(11, "bold", "firebrick"),
@@ -671,11 +670,13 @@ comb_gwas <- rbind(comb_hot_filt, comb_cold_filt)
 
 t1 <- comb_gwas %>%
   group_by(gwas) %>%
+  distinct(ID, .keep_all = TRUE) %>%
   dplyr::count() %>%
   dplyr::rename("SNPs" = n)
 
 t2 <- comb_gwas %>%
   group_by(gwas) %>%
+  distinct(ID, .keep_all = TRUE) %>%
   dplyr::filter(gene != "") %>%
   dplyr::count() %>%
   dplyr::rename("SNPs annotated to genes" = n)
@@ -705,7 +706,7 @@ t5 <- comb_gwas %>%
 
 t6 <- comb_gwas %>%
   group_by(gwas) %>%
-  dplyr::filter(gene != "" & is.na(baseMean)) %>%
+  dplyr::filter(gene != "" & is.na(baseMean) | baseMean == 0) %>%
   dplyr::distinct(gene, .keep_all = TRUE) %>%
   dplyr::count() %>%
   dplyr::rename("No RNAseq data" = n)
