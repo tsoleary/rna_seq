@@ -45,14 +45,26 @@ gwas_hot <- gwas_hot %>%
   filter(AvgMixedPval < pval_cut)
 
 # combine the cold gwas and deg ------------------------------------------------
-# use the GeneAnnotation to get the gene symbol for the gwas
-annot_split_cold <- str_split(gwas_cold$GeneAnnotation, "\\|")
-# the second item is the gene symbol
-gwas_cold$gene <- sapply(annot_split_cold, "[[", 2)
-# the third item is where the snp is located, intron, syn coding etc.
-gwas_cold$grps <- sapply(annot_split_cold, "[[", 3)
-# join the two data frames together
-comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
+
+# # old way to get gene annotations ----
+# # use the GeneAnnotation to get the gene symbol for the gwas
+# annot_split_cold <- str_split(gwas_cold$GeneAnnotation, "\\|")
+# # the second item is the gene symbol
+# gwas_cold$gene <- sapply(annot_split_cold, "[[", 2)
+# # the third item is where the snp is located, intron, syn coding etc.
+# gwas_cold$grps <- sapply(annot_split_cold, "[[", 3)
+# # join the two data frames together
+# comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
+# 
+# # use the GeneAnnotation to get the gene symbol for the gwas
+# annot_split_hot <- str_split(gwas_hot$GeneAnnotation, "\\|")
+# # the second item is the gene symbol
+# gwas_hot$gene <- sapply(annot_split_hot, "[[", 2)
+# # the third item is where the snp is located, intron, syn coding etc.
+# gwas_hot$grps <- sapply(annot_split_hot, "[[", 3)
+# # join the two data frames together
+# comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
+
 
 # combine the hot gwas and deg -------------------------------------------------
 
@@ -104,8 +116,6 @@ for (i in 1:length(annot_split_hot_mult)) {
 
 # get all the gene symbols annotated for cold -----
 
-
-####################### fix below to do the cold
 cold_mult_genes <- str_split(gwas_cold$GeneAnnotation, ";")
 annot_split_cold_mult <- sapply(cold_mult_genes, "str_split", "\\|")
 
@@ -151,26 +161,35 @@ for (i in 1:length(annot_split_cold_mult)) {
 }
 
 
-## there is either 10 13 or 4 length for each list!!!!! ahhhhhhhhhhhhh fickkkasklfdj
-
-# if 10 then 6
-# if 13 then 2
-# if 4 then 2
 
 # figure out how to intgrate it back in to have multiple rows for the unique
 
+# sym_empty <- which(lengths(gene_list_hot) == 0)
+# sym_one <- which(lengths(gene_list_hot) == 1)
+# sym_mult <- which(lengths(gene_list_hot) >= 2)
 
+genes <- c()
+
+for (i in 1:length(gene_list_hot)){
+  
+  if (length(gene_list_hot[[i]]) == 0){
+    genes[i] <- ""
+  } else {
+    genes[i] <- paste(gene_list_hot[[i]], collapse = " ")
+  }
+  
+}
+
+gwas_hot$gene <- genes
+
+gwas_hot <- gwas_hot %>% 
+  separate(col = gene, into = c("gene", "gene2"), sep = " ") %>%
+  pivot_longer(gene:gene2, names_to = "lab", values_to = "gene", 
+               values_drop_na = TRUE)
+  
+
+# need to add the $gene column before continuing.......
 ##########
-
-
-# use the GeneAnnotation to get the gene symbol for the gwas
-annot_split_hot <- str_split(gwas_hot$GeneAnnotation, "\\|")
-# the second item is the gene symbol
-gwas_hot$gene <- sapply(annot_split_hot, "[[", 2)
-# the third item is where the snp is located, intron, syn coding etc.
-gwas_hot$grps <- sapply(annot_split_hot, "[[", 3)
-# join the two data frames together
-comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
 
 # create a data.frame with info for the individual ma_plots --------------------
 deg_gwas_cold <- left_join(res_cold, gwas_cold, by = "gene")
