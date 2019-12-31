@@ -406,7 +406,7 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
   . <- NULL
   data$sig <- as.factor(data$sig)
   .lev <- .levels(data$sig) %>% as.numeric()
-  palette <- palette[.lev]
+  #palette <- palette[.lev]
   new.levels <- c(
     paste0("Up: ", up_n),
     paste0("Down: ", down_n),
@@ -425,13 +425,15 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
   # select data for top genes
   labs_data <- stats::na.omit(data)
   #labs_data <- subset(labs_data, padj <= fdr & name!="" & abs(lfc) >= log2(fc))
-  labs_data <- utils::head(labs_data, top)
+  labs_data <- labs_data %>%
+    dplyr::filter(sig == paste0("GWAS: ", gwas_n)) %>%
+    dplyr::top_n(top)
   
   labs_data_sig <- labs_data %>%
-    filter(padj <= fdr)
+    dplyr::filter(padj <= fdr)
   
   labs_data_ns <- labs_data %>%
-    filter(padj > fdr)
+    dplyr::filter(padj > fdr)
   
   
   font.label <- .parse_font(font.label)
@@ -467,14 +469,16 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
       ggrepel::geom_label_repel(data = labs_data_sig, mapping = aes(label = name),
                                        box.padding = unit(0.35, "lines"),
                                        point.padding = unit(0.3, "lines"),
-                                       force = 1, fontface = font.label.sig$face,
+                                       force = 10, fontface = font.label.sig$face,
                                        size = font.label.sig$size/3, color = font.label.sig$color) +
+                                #, nudge_x = -3, nudge_y = -2) +
       
       ggrepel::geom_label_repel(data = labs_data_ns, mapping = aes(label = name),
                                 box.padding = unit(0.35, "lines"),
                                 point.padding = unit(0.3, "lines"),
-                                force = 1, fontface = font.label$face,
-                                size = font.label$size/3, color = font.label$color)
+                                force = 10, fontface = font.label$face,
+                                size = font.label$size/3, color = font.label$color) 
+                                #, nudge_x = 3)
   }
   else{
     p <- p + 
@@ -482,13 +486,13 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
       ggrepel::geom_text_repel(data = labs_data_sig, mapping = aes(label = name),
                                       box.padding = unit(0.35, "lines"),
                                       point.padding = unit(0.3, "lines"),
-                                      force = 1, fontface = font.label$face,
+                                      force = 10, fontface = font.label$face,
                                       size = font.label$size/3, color = "red") +
       
       ggrepel::geom_text_repel(data = labs_data_ns, mapping = aes(label = name),
                                box.padding = unit(0.35, "lines"),
                                point.padding = unit(0.3, "lines"),
-                               force = 1, fontface = font.label.sig$face,
+                               force = 10, fontface = font.label.sig$face,
                                size = font.label.sig$size/3, color = font.label.sig$color)
   }
   
@@ -500,3 +504,155 @@ ggmaplot_gwas <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
   p <- ggpar(p, palette = palette, ggtheme = ggtheme, ...) 
   p + scale_color_manual(breaks = new.levels, values = palette)
 }
+
+
+
+
+#################TEST
+
+
+
+ggmaplot_test <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
+                           detection_call = NULL, size = NULL,
+                           font.label = c(12, "plain", "black"),
+                           font.label.sig = c(12, "plain", "red"),
+                           label.rectangle = FALSE,
+                           palette = c("#B31B21", "#1465AC", "gray1", "darkgray"),
+                           top = 15, select.top.method = c("padj", "fc", "gwas"),
+                           main = NULL, xlab = "Log2 mean expression",  ylab = "Log2 fold change",
+                           ggtheme = theme_classic(),...)
+{
+  
+  if(!base::inherits(data, c("matrix", "data.frame", "DataFrame", "DE_Results", "DESeqResults")))
+    stop("data must be an object of class matrix, data.frame, DataFrame, DE_Results or DESeqResults")
+  if(!is.null(detection_call)){
+    if(nrow(data)!=length(detection_call))
+      stop("detection_call must be a numeric vector of length = nrow(data)")
+  }
+  else if("detection_call" %in% colnames(data)){
+    detection_call <- as.vector(data$detection_call)
+  }
+  else detection_call = rep(1, nrow(data))
+  
+  # Legend position
+  if(is.null(list(...)$legend)) legend <- c(0.12, 0.9)
+  
+  # Check data format
+  ss <- base::setdiff(c("baseMean", "log2FoldChange", "padj"), colnames(data))
+  if(length(ss)>0) stop("The colnames of data must contain: ",
+                        paste(ss, collapse = ", "))
+  
+  if(is.null(genenames)) genenames <- rownames(data)
+  else if(length(genenames)!=nrow(data))
+    stop("genenames should be of length nrow(data).")
+  
+  # Create the levels for coloring
+  sig <- rep(3, nrow(data)) # all rows are defaulted to group 4
+  
+  sig[which(data$padj <= fdr & 
+              data$log2FoldChange < 0 & 
+              abs(data$log2FoldChange) >= log2(fc) & 
+              detection_call == 1)] <- 2
+  down_n <- sum(sig == 2)
+  
+  sig[which(data$padj <= fdr & 
+              data$log2FoldChange > 0 & 
+              abs(data$log2FoldChange) >= log2(fc) & 
+              detection_call == 1)] <- 1
+  up_n <- sum(sig == 1)
+  
+  sig[which(!is.na(data$ID))] <- 4
+  gwas_n <- sum(sig == 4)
+  
+  # making a simpler data.frame with new names for each variable
+  data <- data.frame(name = genenames, mean = data$baseMean, lfc = data$log2FoldChange,
+                     padj = data$padj, sig = sig)
+  
+  # Change level labels
+  . <- NULL
+  data$sig <- as.factor(data$sig)
+  .lev <- .levels(data$sig) %>% as.numeric()
+  palette <- palette[.lev]
+  new.levels <- c(
+    paste0("Up: ", up_n),
+    paste0("Down: ", down_n),
+    "NS",
+    paste0("GWAS: ", gwas_n)
+  ) %>% .[.lev]
+  
+  data$sig <- factor(data$sig, labels = new.levels)
+  
+  
+  # Ordering for selecting top gene
+  select.top.method <- match.arg(select.top.method)
+  if(select.top.method == "padj") data <- data[order(data$padj), ]
+  else if(select.top.method == "fc") data <- data[order(abs(data$lfc), decreasing = TRUE), ]
+  else if(select.top.method == "gwas") data <- data[order(data$sig, decreasing = TRUE), ]
+  # select data for top genes
+  labs_data <- stats::na.omit(data)
+  #labs_data <- subset(labs_data, padj <= fdr & name!="" & abs(lfc) >= log2(fc))
+  labs_data <- labs_data %>%
+    dplyr::filter(sig == paste0("GWAS: ", gwas_n)) %>%
+    dplyr::top_n(top)
+  
+  font.label <- .parse_font(font.label)
+  font.label$size <- ifelse(is.null(font.label$size), 12, font.label$size)
+  font.label$color <- ifelse(is.null(font.label$color), "black", font.label$color)
+  font.label$face <- ifelse(is.null(font.label$face), "plain", font.label$face)
+  
+  font.label.sig <- .parse_font(font.label.sig)
+  font.label.sig$size <- ifelse(is.null(font.label.sig$size), 12, font.label.sig$size)
+  font.label.sig$color <- ifelse(is.null(font.label.sig$color), "black", font.label.sig$color)
+  font.label.sig$face <- ifelse(is.null(font.label.sig$face), "plain", font.label.sig$face)
+  
+  
+  data <- data %>%
+    dplyr::arrange(sig)
+  
+  # Plot
+  set.seed(2)
+  mean <- lfc <- sig <- name <- padj <-  NULL
+  p <- ggplot(data = NULL, aes(x = log2(mean + 1), y = lfc)) +
+    geom_point(data = data %>% 
+                 dplyr::filter(sig != paste0("GWAS: ", gwas_n)), 
+               aes(x = log2(mean + 1), y = lfc, color = sig), 
+               size = size) + 
+    geom_point(data = data %>% 
+                 dplyr::filter(sig == paste0("GWAS: ", gwas_n)),
+               aes(x = log2(mean + 1), y = lfc, color = sig),
+               size = 2)
+  
+  
+  p <- p + scale_x_continuous(breaks = seq(0, max(log2(data$mean + 1)), 2))+
+    labs(x = xlab, y = ylab, title = main, color = "")+ # to remove legend title use color = ""
+    geom_hline(yintercept = c(0, -log2(fc), log2(fc)), linetype = c(1, 2, 2),
+               color = c("black", "black", "black")) 
+  
+  
+  if(label.rectangle){
+    p <- p + 
+      
+      ggrepel::geom_label_repel(data = labs_data, mapping = aes(label = name, color = labs_data$padj < fdr),
+                                box.padding = unit(0.35, "lines"),
+                                point.padding = unit(0.3, "lines"),
+                                force = 10, fontface = font.label.sig$face,
+                                size = font.label.sig$size/3) +
+      guides(colour = guide_legend(override.aes = list(shape = 20)))
+      }
+  
+  
+  else{
+    p <- p + 
+      
+      ggrepel::geom_text_repel(data = labs_data_sig, mapping = aes(label = name, color = labs_data$padj < fdr),
+                               box.padding = unit(0.35, "lines"),
+                               point.padding = unit(0.3, "lines"),
+                               force = 10, fontface = font.label$face,
+                               size = font.label$size/3, color = "red")
+  }
+  
+  p <- ggpar(p, ggtheme = ggtheme, ...) 
+  p + scale_color_manual(breaks = new.levels, values = c("#1465AC", "black", "black", "#A6A6A680", "firebrick", "#B31B21"))
+  #p + scale_color_manual(breaks = new.levels, values = palette)
+}
+
