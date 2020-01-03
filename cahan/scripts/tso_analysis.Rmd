@@ -36,9 +36,7 @@ setwd(here::here("DRGP_GWAS"))
 gwas_cold_all <- read.table("CTmin/gwas.top.annot", header = TRUE)
 gwas_hot_all <- read.table("CTmax/gwas.top.annot", header = TRUE)
 
-# combine the hot gwas and deg -------------------------------------------------
-
-# get all the gene symbols annotated for hot and cold -----
+# annotated all the gene symbols for the gwas output  --------------------------
 
 gwas_cold_all <- gwas_dgrp_gene_annot(gwas_cold_all)
 gwas_hot_all <- gwas_dgrp_gene_annot(gwas_hot_all)
@@ -51,19 +49,9 @@ gwas_cold <- gwas_cold_all %>%
 gwas_hot <- gwas_hot_all %>%
   filter(AvgMixedPval < pval_cut)
 
-# get the grp info and combine back to comb df
-# use the GeneAnnotation to get the gene symbol for the gwas
-annot_split_cold <- str_split(gwas_cold$GeneAnnotation, "\\|")
-# the third item is where the snp is located, intron, syn coding etc.
-gwas_cold$grps <- sapply(annot_split_cold, "[[", 3)
-# join the two data frames together
-comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
 
-# use the GeneAnnotation to get the gene symbol for the gwas
-annot_split_hot <- str_split(gwas_hot$GeneAnnotation, "\\|")
-# the third item is where the snp is located, intron, syn coding etc.
-gwas_hot$grps <- sapply(annot_split_hot, "[[", 3)
-# join the two data frames together
+# create a combined df with deg and gwas for each alone ------------------------
+comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
 comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
 
   
@@ -75,39 +63,15 @@ deg_gwas_hot <- left_join(res_hot, gwas_hot, by = "gene")
 temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
 total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
 
-deg_grouped <- total %>%
-  mutate(cold_genes = case_when(padj.cold < 0.01 ~ "sig",
-                                padj.cold >= 0.01 ~ "ns"),
-         hot_genes = case_when(padj.hot < 0.01 ~ "sig",
-                               padj.hot >= 0.01 ~ "ns"),
-         cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
-                             log2FoldChange.cold > 0 ~ "up"),
-         hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
-                            log2FoldChange.hot > 0 ~ "up")) %>%
-  filter(!is.na(cold_genes) & !is.na(hot_genes) &
-           !is.na(cold_fc) & !is.na(hot_fc)) %>%
-  mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
-  mutate(group = case_when(col == "sig sig up up" |
-                             col == "sig sig down down" ~ "Shared",
-                           col == "sig ns up up" |
-                             col == "ns sig up up" |
-                             col == "sig ns down down" |
-                             col == "ns sig down down" ~ "Sig1 Shared",
-                           col == "ns ns down down" |
-                             col == "ns ns down up" |
-                             col == "ns ns up down" |
-                             col == "ns ns up up" ~ "NS",
-                           col == "sig sig down up" |
-                             col == "sig sig up down" ~ "Unique",
-                           col == "ns sig up down" |
-                             col == "ns sig down up" |
-                             col == "sig ns down up" |
-                             col == "sig ns up down" ~ "Sig1 Unique")) %>%
-  add_count(group) %>% 
-  mutate(groupn = paste0(group, ': ', n)) %>%
-  arrange(groupn)
+# group by the significance
+deg_grouped <- group_deg(total, pval_cut = 0.01, lfc_cut = 0)
 
-# colors for the shared unique scatter plot            
+
+
+# colors for the shared unique scatter plot  
+##############
+# create a parameters space where all these go later .....
+
 clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
 
 legend.font.size <- 12
