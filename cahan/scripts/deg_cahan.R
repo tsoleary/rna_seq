@@ -499,10 +499,56 @@ deg_cold <- read.csv(list.files()[grepl("cold_results", list.files())])
 deg_hot <- read.csv(list.files()[grepl("hot_results", list.files())])
 
 # write files for gsea input
-write.rnk(deg_cold, "cold_deg_p_05_gsea_lfc.rnk", padj_cut = 0.05)
 write.rnk(deg_cold, "cold_deg_p_01_gsea_lfc.rnk", padj_cut = 0.01)
-write.rnk(deg_hot, "hot_deg_p_05_gsea_lfc.rnk", padj_cut = 0.05)
 write.rnk(deg_hot, "hot_deg_p_01_gsea_lfc.rnk", padj_cut = 0.01)
+
+
+
+# import DEG data filter the unique and shared
+# create a combined df with deg and gwas for each alone ------------------------
+comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
+comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
+
+
+# create a data.frame with info for the individual ma_plots --------------------
+deg_gwas_cold <- left_join(res_cold, gwas_cold, by = "gene")
+deg_gwas_hot <- left_join(res_hot, gwas_hot, by = "gene")
+
+# create a data.frame with all the info for the plotting later -----------------
+temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
+total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
+
+# group by the significance
+deg_grouped <- group_deg(total, pval_cut = 0.01, lfc_cut = 0)
+
+uniq <- deg_grouped %>%
+  dplyr::filter(group == "Unique")
+
+uniq_sig1 <- deg_grouped %>%
+  dplyr::filter(group == "Unique" | group == "Sig1 Unique")
+
+shared_up <- deg_grouped %>%
+  dplyr::filter(col == "sig sig up up" | 
+                  col == "sig ns up up" |
+                  col == "ns sig up up")
+  
+
+
+# write the .rnk files for gsea input
+# or should I just do the over enrichment analysis
+
+# write files for overenrichment analysis -----------
+uniq %>%
+  dplyr::select(gene) %>%
+  write_delim("unique_p_01_gsea_lfc.rnk", col_names = FALSE, delim = "\t")
+
+uniq_sig1 %>%
+  dplyr::select(gene) %>%
+  write_delim("unique_sig_1_p_01_gsea_lfc.rnk", col_names = FALSE, delim = "\t")
+
+shared_up %>%
+  dplyr::select(gene) %>%
+  write_delim("shared_up_p_01_gsea_lfc.rnk", col_names = FALSE, delim = "\t")
 
 
 # logfoldchange expression scatter and density plot ----------------------------
