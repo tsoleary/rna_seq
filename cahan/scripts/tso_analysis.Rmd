@@ -33,140 +33,23 @@ deg <- full_join(res_cold, res_hot, by = "gene", suffix = c(".cold", ".hot"))
 
 # load the gwas results
 setwd(here::here("DRGP_GWAS"))
-gwas_cold <- read.table("CTmin/gwas.top.annot", header = TRUE)
-gwas_hot <- read.table("CTmax/gwas.top.annot", header = TRUE)
+gwas_cold_all <- read.table("CTmin/gwas.top.annot", header = TRUE)
+gwas_hot_all <- read.table("CTmax/gwas.top.annot", header = TRUE)
+
+# combine the hot gwas and deg -------------------------------------------------
+
+# get all the gene symbols annotated for hot and cold -----
+
+gwas_cold_all <- gwas_dgrp_gene_annot(gwas_cold_all)
+gwas_hot_all <- gwas_dgrp_gene_annot(gwas_hot_all)
 
 # filter the gwas so there is only the pvalues that reach the cut off level ----
 pval_cut <- 10^-5
 
-gwas_cold <- gwas_cold %>%
+gwas_cold <- gwas_cold_all %>%
   filter(AvgMixedPval < pval_cut)
-gwas_hot <- gwas_hot %>%
+gwas_hot <- gwas_hot_all %>%
   filter(AvgMixedPval < pval_cut)
-
-# combine the hot gwas and deg -------------------------------------------------
-
-# get all the gene symbols annotated for hot -----
-hot_mult_genes <- str_split(gwas_hot$GeneAnnotation, ";")
-annot_split_hot_mult <- sapply(hot_mult_genes, "str_split", "\\|")
-
-gene_list_hot <- vector(mode = "list", length = length(annot_split_hot_mult))
-
-for (i in 1:length(annot_split_hot_mult)) {
-  
-  list_4  <- which(lengths(annot_split_hot_mult[[i]]) == 4)
-  list_10 <- which(lengths(annot_split_hot_mult[[i]]) == 10)
-  list_13 <- which(lengths(annot_split_hot_mult[[i]]) == 13)
-  
-  sym_4 <- c()
-  sym_10 <- c()
-  sym_13 <- c()
-  
-  if(!is_empty(list_4)){
-      for (k in list_4){
-        x <- annot_split_hot_mult[[i]][[c(k, 2)]]
-        sym_4 <- c(sym_4, x)
-      }
-  }
-  
-  if(!is_empty(list_10)){
-      for (k in list_10){
-        x <- annot_split_hot_mult[[i]][[c(k, 6)]]
-        sym_10 <- c(sym_10, x)
-      }
-  }
-  
-  if(!is_empty(list_13)){
-      for (k in list_13){
-        x <- annot_split_hot_mult[[i]][[c(k, 2)]]
-        sym_13 <- c(sym_13, x)
-      }
-  }
-  all_symbols <- c(sym_4, sym_10, sym_13)
-  unique_symbols <- unique(all_symbols[all_symbols != ""])
-  gene_list_hot[[i]] <- unique_symbols
-}
-
-
-# get all the gene symbols annotated for cold -----
-
-cold_mult_genes <- str_split(gwas_cold$GeneAnnotation, ";")
-annot_split_cold_mult <- sapply(cold_mult_genes, "str_split", "\\|")
-
-gene_list_cold <- vector(mode = "list", length = length(annot_split_hot_mult))
-
-for (i in 1:length(annot_split_cold_mult)) {
-  
-  list_4  <- which(lengths(annot_split_cold_mult[[i]]) == 4)
-  list_10 <- which(lengths(annot_split_cold_mult[[i]]) == 10)
-  list_13 <- which(lengths(annot_split_cold_mult[[i]]) == 13)
-  
-  sym_4 <- c()
-  sym_10 <- c()
-  sym_13 <- c()
-  
-  if(!is_empty(list_4)){
-      for (k in list_4){
-        x <- annot_split_cold_mult[[i]][[c(k, 2)]]
-        sym_4 <- c(sym_4, x)
-      }
-  }
-  
-  if(!is_empty(list_10)){
-      for (k in list_10){
-        x <- annot_split_cold_mult[[i]][[c(k, 6)]]
-        sym_10 <- c(sym_10, x)
-      }
-  }
-  
-  if(!is_empty(list_13)){
-      for (k in list_13){
-        x <- annot_split_cold_mult[[i]][[c(k, 2)]]
-        sym_13 <- c(sym_13, x)
-      }
-  }
-  all_symbols <- c(sym_4, sym_10, sym_13)
-  unique_symbols <- unique(all_symbols[all_symbols != ""])
-  gene_list_cold[[i]] <- unique_symbols
-}
-
-
-
-# integrate the multiple genes back to the gwas df -----
-
-# gwas_hot 
-genes_hot <- c()
-for (i in 1:length(gene_list_hot)){
-  if (length(gene_list_hot[[i]]) == 0){
-    genes_hot[i] <- ""
-  } else {
-    genes_hot[i] <- paste(gene_list_hot[[i]], collapse = " ")
-  }
-}
-gwas_hot$gene <- genes_hot
-
-gwas_hot <- gwas_hot %>% 
-  separate(col = gene, into = c("gene", "gene2"), sep = " ") %>%
-  pivot_longer(gene:gene2, names_to = "lab", values_to = "gene", 
-               values_drop_na = TRUE)
-
-# gwas_cold 
-genes_cold <- c() 
-for (i in 1:length(gene_list_cold)){
-  if (length(gene_list_cold[[i]]) == 0){
-    genes_cold[i] <- ""
-  } else {
-    genes_cold[i] <- paste(gene_list_cold[[i]], collapse = " ")
-  }
-}
-gwas_cold$gene <- genes_cold
-
-gwas_cold <- gwas_cold %>% 
-  separate(col = gene, into = c("gene", "gene2"), sep = " ") %>%
-  pivot_longer(gene:gene2, names_to = "lab", values_to = "gene", 
-               values_drop_na = TRUE)
-
-
 
 # get the grp info and combine back to comb df
 # use the GeneAnnotation to get the gene symbol for the gwas
@@ -342,7 +225,7 @@ ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) 
+  theme(legend.text = element_text(size = legend.font.size))
 ```
 
 
@@ -367,7 +250,8 @@ ggmaplot_test(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size))
+  theme(legend.text = element_text(size = legend.font.size)) + 
+  guides(color = guide_legend(override.aes = list(shape = 20)))
 ```
 
 **Hot v Ctrl MA plot**
@@ -389,7 +273,8 @@ ggmaplot_test(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) 
+  theme(legend.text = element_text(size = legend.font.size)) + 
+  guides(color = guide_legend(override.aes = list(shape = 20))) 
 ```
 
 
@@ -414,7 +299,8 @@ ggmaplot_test(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size))
+  theme(legend.text = element_text(size = legend.font.size)) + 
+  guides(color = guide_legend(override.aes = list(shape = 20)))
 ```
 
 **Hot v Ctrl MA plot**
@@ -436,7 +322,8 @@ ggmaplot_test(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
               font.legend = "bold",
               font.main = "bold",
               ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) 
+  theme(legend.text = element_text(size = legend.font.size)) + 
+  guides(color = guide_legend(override.aes = list(shape = 20))) 
 ```
 
 
@@ -472,7 +359,7 @@ deg_grouped %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
-# Shared and unique - LFC scatter {.tabset .tabset-fade .tabset-pills}
+# DEG LFC scatter & GWAS Density {.tabset .tabset-fade .tabset-pills}
 
 ## GWAS scatter & density plots
 
@@ -518,6 +405,63 @@ plot_scatter_side_density_xy(deg_simple_distinct,
                              n_auto_label = 0)
 ```
 
+```{r scatter_and_density_plots_cut_4, fig.height = 7, fig.width = 7}
+# set up the new cut 4
+
+# filter the gwas so there is only the pvalues that reach the cut off level ----
+pval_cut_4 <- 10^-4
+
+gwas_cold_4 <- gwas_cold_all %>%
+  filter(AvgMixedPval < pval_cut_4)
+gwas_hot_4 <- gwas_hot_all %>%
+  filter(AvgMixedPval < pval_cut_4)
+
+
+
+
+
+color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
+
+# the function from seqsetvis requires a sequential column in the data.frame
+deg_grouped$id <- seq_len(nrow(deg_grouped))
+
+deg_simple <- deg_grouped %>%
+  dplyr::select(gene, log2FoldChange.hot, 
+                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
+  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
+                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
+                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
+                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
+
+# order the levels of the factor for plotting purposes to get NS on bottom
+deg_simple$groupn <- as.factor(deg_simple$groupn)
+
+deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6113", 
+                                                          "Sig1 Shared: 3216", 
+                                                          "Unique: 14",
+                                                          "Sig1 Unique: 103",
+                                                          "NS: 6425"))
+
+deg_simple_distinct <- deg_simple %>%
+  distinct(gene, .keep_all = TRUE)
+
+plot_scatter_side_density_xy(deg_simple_distinct, 
+                             x_ = "log2FoldChange.cold", 
+                             y_ = "log2FoldChange.hot",
+                             labs_x = "Cold vs Ctrl (L2FC)",
+                             labs_y = "Hot vs Ctrl (L2FC)",
+                             bg.string = "NS: 6437",
+                             bg.density.string = "Other",
+                             labs_sets_density = "GWAS",
+                             id_ = "id", 
+                             set_ = "groupn", 
+                             set_density_ = "gwas_g", 
+                             sets.density.colors = c("red", "blue", "yellow"),
+                             sets.colors = color_set,
+                             n_auto_label = 0)
+```
+
+
 ## GWAS density plots (distinct)
 
 ```{r density_plots_distinct}
@@ -532,6 +476,8 @@ ggplot(deg_simple_distinct) +
        caption = "Cold dashed line\nHot solid line") +
   theme_classic()
 ```
+
+# DEG LFC scatter {.tabset .tabset-fade .tabset-pills}
 
 ## No labels
 
