@@ -731,4 +731,42 @@ gwas_dgrp_gene_annot <- function(dat){
   
 }
 
+# function to group the genes by differential expression -----------------------
+
+group_deg <- function(dat){
+  
+  deg_grouped <- dat %>%
+    mutate(cold_genes = case_when(padj.cold < 0.01 ~ "sig",
+                                  padj.cold >= 0.01 ~ "ns"),
+           hot_genes = case_when(padj.hot < 0.01 ~ "sig",
+                                 padj.hot >= 0.01 ~ "ns"),
+           cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
+                               log2FoldChange.cold > 0 ~ "up"),
+           hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
+                              log2FoldChange.hot > 0 ~ "up")) %>%
+    filter(!is.na(cold_genes) & !is.na(hot_genes) &
+             !is.na(cold_fc) & !is.na(hot_fc)) %>%
+    mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
+    mutate(group = case_when(col == "sig sig up up" |
+                               col == "sig sig down down" ~ "Shared",
+                             col == "sig ns up up" |
+                               col == "ns sig up up" |
+                               col == "sig ns down down" |
+                               col == "ns sig down down" ~ "Sig1 Shared",
+                             col == "ns ns down down" |
+                               col == "ns ns down up" |
+                               col == "ns ns up down" |
+                               col == "ns ns up up" ~ "NS",
+                             col == "sig sig down up" |
+                               col == "sig sig up down" ~ "Unique",
+                             col == "ns sig up down" |
+                               col == "ns sig down up" |
+                               col == "sig ns down up" |
+                               col == "sig ns up down" ~ "Sig1 Unique")) %>%
+    add_count(group) %>% 
+    mutate(groupn = paste0(group, ': ', n)) %>%
+    arrange(groupn)
+  
+  return(deg_grouped)
+}
 
