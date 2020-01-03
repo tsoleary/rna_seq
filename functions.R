@@ -518,6 +518,7 @@ ggmaplot_test <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
                            font.label.sig = c(12, "plain", "red"),
                            label.rectangle = FALSE,
                            palette = c("#B31B21", "#1465AC", "gray1", "darkgray"),
+                           color_sig = FALSE,
                            top = 15, select.top.method = c("padj", "fc", "gwas"),
                            main = NULL, xlab = "Log2 mean expression",  ylab = "Log2 fold change",
                            ggtheme = theme_classic(),...)
@@ -652,7 +653,82 @@ ggmaplot_test <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
   }
   
   p <- ggpar(p, ggtheme = ggtheme, ...) 
-  p + scale_color_manual(breaks = new.levels, values = c("#1465AC", "black", "black", "#A6A6A680", "firebrick", "#B31B21"))
+  
+  if (color_sig) {
+    p <- p + scale_color_manual(breaks = new.levels, values = c("#1465AC", "black", "black", "#A6A6A680", "firebrick", "#B31B21"))
+  } 
+  else {
+    p <- p + scale_color_manual(breaks = new.levels, values = c("#1465AC", "black", "black", "#A6A6A680", "black", "#B31B21"))
+  }
+  #p + scale_color_manual(breaks = new.levels, values = c("#1465AC", "black", "black", "#A6A6A680", "firebrick", "#B31B21"))
   #p + scale_color_manual(breaks = new.levels, values = palette)
+  
+  p
 }
+
+
+# function to get the gene from the dgrp .top.annot file -----------------------
+
+gwas_dgrp_gene_annot <- function(dat){
+  # get all the gene symbols-----
+  mult_genes <- str_split(dat$GeneAnnotation, ";")
+  annot_split_mult <- sapply(mult_genes, "str_split", "\\|")
+  
+  gene_list <- vector(mode = "list", length = length(annot_split_mult))
+  
+  for (i in 1:length(annot_split_mult)) {
+    
+    list_4  <- which(lengths(annot_split_mult[[i]]) == 4)
+    list_10 <- which(lengths(annot_split_mult[[i]]) == 10)
+    list_13 <- which(lengths(annot_split_mult[[i]]) == 13)
+    
+    sym_4 <- c()
+    sym_10 <- c()
+    sym_13 <- c()
+    
+    if(!is_empty(list_4)){
+      for (k in list_4){
+        x <- annot_split_mult[[i]][[c(k, 2)]]
+        sym_4 <- c(sym_4, x)
+      }
+    }
+    
+    if(!is_empty(list_10)){
+      for (k in list_10){
+        x <- annot_split_mult[[i]][[c(k, 6)]]
+        sym_10 <- c(sym_10, x)
+      }
+    }
+    
+    if(!is_empty(list_13)){
+      for (k in list_13){
+        x <- annot_split_mult[[i]][[c(k, 2)]]
+        sym_13 <- c(sym_13, x)
+      }
+    }
+    all_symbols <- c(sym_4, sym_10, sym_13)
+    unique_symbols <- unique(all_symbols[all_symbols != ""])
+    gene_list[[i]] <- unique_symbols
+  }
+  
+  # gwas 
+  genes <- c()
+  for (i in 1:length(gene_list)){
+    if (length(gene_list[[i]]) == 0){
+      genes[i] <- ""
+    } else {
+      genes[i] <- paste(gene_list[[i]], collapse = " ")
+    }
+  }
+  dat$gene <- genes
+  
+  df <- dat %>% 
+    separate(col = gene, into = c("gene", "gene2"), sep = " ") %>%
+    pivot_longer(gene:gene2, names_to = "lab", values_to = "gene", 
+                 values_drop_na = TRUE)
+  
+  return(df)
+  
+}
+
 
