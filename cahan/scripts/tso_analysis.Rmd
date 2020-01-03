@@ -66,8 +66,6 @@ total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
 # group by the significance
 deg_grouped <- group_deg(total, pval_cut = 0.01, lfc_cut = 0)
 
-
-
 # colors for the shared unique scatter plot  
 ##############
 # create a parameters space where all these go later .....
@@ -325,7 +323,7 @@ deg_grouped %>%
 
 # DEG LFC scatter & GWAS Density {.tabset .tabset-fade .tabset-pills}
 
-## GWAS scatter & density plots
+## GWAS scatter & density plots (10^-5)
 
 ```{r scatter_and_density_plots, fig.height = 7, fig.width = 7}
 color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
@@ -358,7 +356,7 @@ plot_scatter_side_density_xy(deg_simple_distinct,
                              y_ = "log2FoldChange.hot",
                              labs_x = "Cold vs Ctrl (L2FC)",
                              labs_y = "Hot vs Ctrl (L2FC)",
-                             bg.string = "NS: 6437",
+                             bg.string = "NS: 6425",
                              bg.density.string = "Other",
                              labs_sets_density = "GWAS",
                              id_ = "id", 
@@ -369,66 +367,7 @@ plot_scatter_side_density_xy(deg_simple_distinct,
                              n_auto_label = 0)
 ```
 
-```{r scatter_and_density_plots_cut_4, fig.height = 7, fig.width = 7}
-# set up the new cut 4
-
-# filter the gwas so there is only the pvalues that reach the cut off level ----
-pval_cut_4 <- 10^-4
-
-gwas_cold_4 <- gwas_cold_all %>%
-  filter(AvgMixedPval < pval_cut_4)
-gwas_hot_4 <- gwas_hot_all %>%
-  filter(AvgMixedPval < pval_cut_4)
-
-
-
-
-
-color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
-
-# the function from seqsetvis requires a sequential column in the data.frame
-deg_grouped$id <- seq_len(nrow(deg_grouped))
-
-deg_simple <- deg_grouped %>%
-  dplyr::select(gene, log2FoldChange.hot, 
-                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
-  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
-                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
-                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
-                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
-
-# order the levels of the factor for plotting purposes to get NS on bottom
-deg_simple$groupn <- as.factor(deg_simple$groupn)
-
-deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6113", 
-                                                          "Sig1 Shared: 3216", 
-                                                          "Unique: 14",
-                                                          "Sig1 Unique: 103",
-                                                          "NS: 6425"))
-
-deg_simple_distinct <- deg_simple %>%
-  distinct(gene, .keep_all = TRUE)
-
-plot_scatter_side_density_xy(deg_simple_distinct, 
-                             x_ = "log2FoldChange.cold", 
-                             y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (L2FC)",
-                             labs_y = "Hot vs Ctrl (L2FC)",
-                             bg.string = "NS: 6437",
-                             bg.density.string = "Other",
-                             labs_sets_density = "GWAS",
-                             id_ = "id", 
-                             set_ = "groupn", 
-                             set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
-                             sets.colors = color_set,
-                             n_auto_label = 0)
-```
-
-
-## GWAS density plots (distinct)
-
-```{r density_plots_distinct}
+```{r density_plots_5}
 ggplot(deg_simple_distinct) +
   geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
             data = deg_simple_distinct, stat = "density") +
@@ -440,6 +379,80 @@ ggplot(deg_simple_distinct) +
        caption = "Cold dashed line\nHot solid line") +
   theme_classic()
 ```
+
+## GWAS scatter & density plots (10^-4)
+
+```{r scatter_and_density_plots_cut_4, fig.height = 7, fig.width = 7}
+# filter the gwas so there is only the pvalues that reach the cut off level ----
+pval_cut_4 <- 10^-4
+
+gwas_cold_4 <- gwas_cold_all %>%
+  filter(AvgMixedPval < pval_cut_4)
+gwas_hot_4 <- gwas_hot_all %>%
+  filter(AvgMixedPval < pval_cut_4)
+
+# create a data.frame with all the info for the plotting later -----------------
+temp <- left_join(deg, gwas_cold_4, by = "gene", suffix = c("", ".cold"))
+total_4 <- full_join(temp, gwas_hot_4, by = "gene", suffix = c(".cold", ".hot"))
+
+# group by the significance
+deg_grouped_4 <- group_deg(total_4, pval_cut = 0.01, lfc_cut = 0)
+
+
+color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
+
+# the function from seqsetvis requires a sequential column in the data.frame
+deg_grouped_4$id <- seq_len(nrow(deg_grouped_4))
+
+deg_simple_4 <- deg_grouped_4 %>%
+  dplyr::select(gene, log2FoldChange.hot, 
+                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
+  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
+                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
+                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
+                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
+
+# order the levels of the factor for plotting purposes to get NS on bottom
+deg_simple_4$groupn <- as.factor(deg_simple_4$groupn)
+
+deg_simple_4$groupn <- factor(deg_simple_4$groupn, levels = c("Shared: 6123", 
+                                                          "Sig1 Shared: 3218", 
+                                                          "Unique: 14",
+                                                          "Sig1 Unique: 104",
+                                                          "NS: 6438"))
+
+deg_simple_distinct_4 <- deg_simple_4 %>%
+  distinct(gene, .keep_all = TRUE)
+
+plot_scatter_side_density_xy(deg_simple_distinct_4, 
+                             x_ = "log2FoldChange.cold", 
+                             y_ = "log2FoldChange.hot",
+                             labs_x = "Cold vs Ctrl (L2FC)",
+                             labs_y = "Hot vs Ctrl (L2FC)",
+                             bg.string = "NS: 6425",
+                             bg.density.string = "Other",
+                             labs_sets_density = "GWAS",
+                             id_ = "id", 
+                             set_ = "groupn", 
+                             set_density_ = "gwas_g", 
+                             sets.density.colors = c("red", "blue", "yellow"),
+                             sets.colors = color_set,
+                             n_auto_label = 0)
+```
+
+```{r density_plots_4}
+ggplot(deg_simple_distinct_4) +
+  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
+            data = deg_simple_distinct, stat = "density") +
+  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
+            linetype = "dashed", data = deg_simple_distinct, stat = "density") +
+  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  labs(x = "log2FoldChange vs. Ctrl", 
+       color = "GWAS", 
+       caption = "Cold dashed line\nHot solid line") +
+  theme_classic()
+```
+
 
 # DEG LFC scatter {.tabset .tabset-fade .tabset-pills}
 
