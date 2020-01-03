@@ -670,6 +670,14 @@ ggmaplot_test <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
 # function to get the gene from the dgrp .top.annot file -----------------------
 
 gwas_dgrp_gene_annot <- function(dat){
+  
+  
+  # get the grp info and combine back df ----
+  annot_split <- str_split(dat$GeneAnnotation, "\\|")
+  # the third item is where the snp is located, intron, syn coding etc.
+  dat$grps <- sapply(annot_split, "[[", 3)
+  
+  
   # get all the gene symbols-----
   mult_genes <- str_split(dat$GeneAnnotation, ";")
   annot_split_mult <- sapply(mult_genes, "str_split", "\\|")
@@ -727,23 +735,25 @@ gwas_dgrp_gene_annot <- function(dat){
     pivot_longer(gene:gene2, names_to = "lab", values_to = "gene", 
                  values_drop_na = TRUE)
   
+
+  
   return(df)
   
 }
 
 # function to group the genes by differential expression -----------------------
 
-group_deg <- function(dat){
+group_deg <- function(dat, pval_cut = 0.01, lfc_cut = 0){
   
   deg_grouped <- dat %>%
-    mutate(cold_genes = case_when(padj.cold < 0.01 ~ "sig",
-                                  padj.cold >= 0.01 ~ "ns"),
-           hot_genes = case_when(padj.hot < 0.01 ~ "sig",
-                                 padj.hot >= 0.01 ~ "ns"),
-           cold_fc = case_when(log2FoldChange.cold < 0 ~ "down",
-                               log2FoldChange.cold > 0 ~ "up"),
-           hot_fc = case_when(log2FoldChange.hot < 0 ~ "down",
-                              log2FoldChange.hot > 0 ~ "up")) %>%
+    mutate(cold_genes = case_when(padj.cold < pval_cut ~ "sig",
+                                  padj.cold >= pval_cut ~ "ns"),
+           hot_genes = case_when(padj.hot < pval_cut ~ "sig",
+                                 padj.hot >= pval_cut ~ "ns"),
+           cold_fc = case_when(log2FoldChange.cold < lfc_cut ~ "down",
+                               log2FoldChange.cold > lfc_cut ~ "up"),
+           hot_fc = case_when(log2FoldChange.hot < lfc_cut ~ "down",
+                              log2FoldChange.hot > lfc_cut ~ "up")) %>%
     filter(!is.na(cold_genes) & !is.na(hot_genes) &
              !is.na(cold_fc) & !is.na(hot_fc)) %>%
     mutate(col = paste(cold_genes, hot_genes, cold_fc, hot_fc)) %>%
