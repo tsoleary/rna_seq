@@ -343,7 +343,7 @@ deg_simple <- deg_grouped %>%
 deg_simple$groupn <- as.factor(deg_simple$groupn)
 
 deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6113", 
-                                                          "Sig1 Shared: 3216", 
+                                                          "Sig1 Shared: 3217", 
                                                           "Unique: 14",
                                                           "Sig1 Unique: 103",
                                                           "NS: 6425"))
