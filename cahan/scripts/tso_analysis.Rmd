@@ -365,25 +365,9 @@ plot_scatter_side_density_xy(deg_simple_distinct,
                              sets.density.colors = c("red", "blue", "yellow"),
                              sets.colors = color_set,
                              n_auto_label = 0)
-
-plot_scatter_side_density_xy(deg_simple_4, 
-                             x_ = "log2FoldChange.cold", 
-                             y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (L2FC)",
-                             labs_y = "Hot vs Ctrl (L2FC)",
-                             bg.string = "NS: 6425",
-                             bg.density.string = "Other",
-                             labs_sets_density = "GWAS",
-                             id_ = "id", 
-                             set_ = "groupn", 
-                             set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
-                             sets.colors = color_set,
-                             n_auto_label = 0)
-
 ```
 
-```{r density_plots_5}
+```{r density_plots_5, fig.height = 4, fig.width = 7}
 ggplot(deg_simple_distinct) +
   geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
             data = deg_simple_distinct, stat = "density") +
@@ -456,12 +440,12 @@ plot_scatter_side_density_xy(deg_simple_distinct_4,
                              n_auto_label = 0)
 ```
 
-```{r density_plots_4}
+```{r density_plots_4, fig.height = 4, fig.width = 7}
 ggplot(deg_simple_distinct_4) +
   geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_distinct, stat = "density") +
+            data = deg_simple_distinct_4, stat = "density") +
   geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_distinct, stat = "density") +
+            linetype = "dashed", data = deg_simple_distinct_4, stat = "density") +
   scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
   labs(x = "log2FoldChange vs. Ctrl", 
        color = "GWAS", 
@@ -490,12 +474,12 @@ plot_scatter_side_density_xy(deg_simple_4,
 
 ```
 
-```{r density_plots_4_first}
+```{r density_plots_4_first, fig.height = 4, fig.width = 7}
 ggplot(deg_simple_4) +
   geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_distinct, stat = "density") +
+            data = deg_simple_4, stat = "density") +
   geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_distinct, stat = "density") +
+            linetype = "dashed", data = deg_simple_4, stat = "density") +
   scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
   labs(x = "log2FoldChange vs. Ctrl", 
        color = "GWAS", 
