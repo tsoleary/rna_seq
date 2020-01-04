@@ -623,4 +623,36 @@ plot_scatter_side_density_xy(test,
                              n_auto_label = 0)
 
 
+# feature mapper snps gwas ------
+
+# load the gwas results
+setwd(here::here("DRGP_GWAS"))
+gwas_cold_all <- read.table("CTmin/gwas.top.annot", header = TRUE)
+gwas_hot_all <- read.table("CTmax/gwas.top.annot", header = TRUE)
+
+gwas_hot <- gwas_hot_all %>%
+  dplyr::filter(AvgMixedPval < 10^-5)
+
+gwas_cold <- gwas_cold_all %>%
+  dplyr::filter(AvgMixedPval < 10^-5)
+
+gwas_hot <- gwas_hot %>%
+  separate(ID, c("chr", "pos", "type")) %>%
+  dplyr::mutate(featureMap = paste(paste(chr, pos, sep = ":"), pos, sep = "-"))
+
+write_delim(gwas_hot %>% dplyr::select(featureMap), 
+            "gwas_hot_snps.txt", delim = "^t", col_names = FALSE)
+
+
+gwas_cold <- gwas_cold %>%
+  separate(ID, c("chr", "pos", "type")) %>%
+  dplyr::mutate(featureMap = paste(paste(chr, pos, sep = ":"), pos, sep = "-"))
+
+write_delim(gwas_cold %>% dplyr::select(featureMap), 
+            "gwas_cold_snps.txt", delim = "^t", col_names = FALSE)
+
+
+
+
+
  
