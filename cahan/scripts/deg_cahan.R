@@ -525,7 +525,8 @@ uniq <- deg_grouped %>%
   dplyr::filter(group == "Unique")
 
 uniq_sig1 <- deg_grouped %>%
-  dplyr::filter(group == "Unique" | group == "Sig1 Unique")
+  dplyr::filter(group == "Unique" | 
+                  group == "Sig1 Unique")
 
 shared_up <- deg_grouped %>%
   dplyr::filter(col == "sig sig up up" | 
@@ -540,15 +541,15 @@ shared_up <- deg_grouped %>%
 # write files for overenrichment analysis -----------
 uniq %>%
   dplyr::select(gene) %>%
-  write_delim("unique_p_01_gsea_lfc.rnk", col_names = FALSE, delim = "\t")
+  write_delim("unique_p_01_gsea_lfc.txt", col_names = FALSE, delim = "\t")
 
 uniq_sig1 %>%
   dplyr::select(gene) %>%
-  write_delim("unique_sig_1_p_01_gsea_lfc.rnk", col_names = FALSE, delim = "\t")
+  write_delim("unique_sig_1_p_01_gsea_lfc.txt", col_names = FALSE, delim = "\t")
 
 shared_up %>%
   dplyr::select(gene) %>%
-  write_delim("shared_up_p_01_gsea_lfc.rnk", col_names = FALSE, delim = "\t")
+  write_delim("shared_up_p_01_gsea_lfc.txt", col_names = FALSE, delim = "\t")
 
 
 # logfoldchange expression scatter and density plot ----------------------------
