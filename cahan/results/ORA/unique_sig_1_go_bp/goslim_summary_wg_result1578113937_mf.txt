@@ -1,0 +1,12 @@
+GO:0043167	ion binding	23
+GO:0005515	protein binding	19
+GO:0016787	hydrolase activity	14
+GO:0003676	nucleic acid binding	12
+GO:0000166	nucleotide binding	8
+GO:0005215	transporter activity	8
+GO:0016740	transferase activity	6
+GO:0005198	structural molecule activity	3
+GO:0030234	enzyme regulator activity	2
+GO:0060089	molecular transducer activity	2
+GO:0045182	translation regulator activity	1
+GO:0030246	carbohydrate binding	1

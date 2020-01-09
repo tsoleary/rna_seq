@@ -1,0 +1,11 @@
+geneSet	description	link	size	overlap	expect	enrichmentRatio	pValue	FDR	overlapId	userId
+GO:0051082	unfolded protein binding	http://amigo.geneontology.org/amigo/term/GO:0051082	90	4	0.048291897692720444	82.82962962962964	5.814584136398793e-8	6.54722173758504e-5	39071;39076;42852;48582	Hsp67Bc;Hsp67Ba;Hsp70Bb;Hsp68
+GO:0051787	misfolded protein binding	http://amigo.geneontology.org/amigo/term/GO:0051787	12	2	0.006438919692362726	310.61111111111114	1.579897359760274e-5	0.007006369493459452	42852;48582	Hsp70Bb;Hsp68
+GO:0044183	protein binding involved in protein folding	http://amigo.geneontology.org/amigo/term/GO:0044183	13	2	0.006975496333392953	286.71794871794873	1.8667059041188594e-5	0.007006369493459452	42852;48582	Hsp70Bb;Hsp68
+GO:0031072	heat shock protein binding	http://amigo.geneontology.org/amigo/term/GO:0031072	33	2	0.017707029153997494	112.94949494949496	1.2575973775263982e-4	0.03540136617736811	42852;48582	Hsp70Bb;Hsp68
+GO:0004550	nucleoside diphosphate kinase activity	http://amigo.geneontology.org/amigo/term/GO:0004550	8	1	0.004292613128241817	232.95833333333334	0.004285899328570819	0.9651845287941484	43661	CG15547
+GO:0042623	ATPase activity, coupled	http://amigo.geneontology.org/amigo/term/GO:0042623	322	2	0.17277767841173314	11.575569358178054	0.011484275636614694	1	42852;48582	Hsp70Bb;Hsp68
+GO:0016776	phosphotransferase activity, phosphate group as acceptor	http://amigo.geneontology.org/amigo/term/GO:0016776	24	1	0.012877839384725451	77.65277777777779	0.012811786644426615	1	43661	CG15547
+GO:0016887	ATPase activity	http://amigo.geneontology.org/amigo/term/GO:0016887	382	2	0.20497227687354677	9.75741710296684	0.015938030584724316	1	42852;48582	Hsp70Bb;Hsp68
+GO:0019205	nucleobase-containing compound kinase activity	http://amigo.geneontology.org/amigo/term/GO:0019205	33	1	0.017707029153997494	56.47474747474748	0.01758080290226771	1	43661	CG15547
+GO:0017111	nucleoside-triphosphatase activity	http://amigo.geneontology.org/amigo/term/GO:0017111	574	2	0.3079949919513504	6.493612078977932	0.03437739104464488	1	42852;48582	Hsp70Bb;Hsp68

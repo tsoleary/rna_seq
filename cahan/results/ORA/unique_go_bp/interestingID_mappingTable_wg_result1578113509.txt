@@ -1,0 +1,14 @@
+userId	geneSymbol	geneName	entrezgene	gLink
+CG6785	CG6785	NA	34620	https://www.ncbi.nlm.nih.gov/gene/?term=34620
+CG13868	CG13868	NA	37302	https://www.ncbi.nlm.nih.gov/gene/?term=37302
+CG6511	CG6511	NA	38997	https://www.ncbi.nlm.nih.gov/gene/?term=38997
+Hsp67Bc	Hsp67Bc	Heat shock gene 67Bc	39071	https://www.ncbi.nlm.nih.gov/gene/?term=39071
+Hsp67Ba	Hsp67Ba	Heat shock gene 67Ba	39076	https://www.ncbi.nlm.nih.gov/gene/?term=39076
+CR43481	CR43481	NA	12798374	https://www.ncbi.nlm.nih.gov/gene/?term=12798374
+alphagamma-element:CR32865	alphagamma-element:CR32865	NA	3772597	https://www.ncbi.nlm.nih.gov/gene/?term=3772597
+Hsp70Bb	Hsp70Bb	Heat-shock-protein-70Bb	48582	https://www.ncbi.nlm.nih.gov/gene/?term=48582
+Hsp70Bc	Hsp70Bc	Heat-shock-protein-70Bc	48583	https://www.ncbi.nlm.nih.gov/gene/?term=48583
+CG31296	CG31296	NA	318668	https://www.ncbi.nlm.nih.gov/gene/?term=318668
+Hsp68	Hsp68	Heat shock protein 68	42852	https://www.ncbi.nlm.nih.gov/gene/?term=42852
+CG12071	CG12071	NA	43660	https://www.ncbi.nlm.nih.gov/gene/?term=43660
+CG15547	CG15547	NA	43661	https://www.ncbi.nlm.nih.gov/gene/?term=43661
