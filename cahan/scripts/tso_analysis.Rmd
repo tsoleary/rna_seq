@@ -33,8 +33,8 @@ deg <- full_join(res_cold, res_hot, by = "gene", suffix = c(".cold", ".hot"))
 
 # load the gwas results
 setwd(here::here("DRGP_GWAS"))
-gwas_cold_all <- read.table("CTmin/gwas.top.annot", header = TRUE)
-gwas_hot_all <- read.table("CTmax/gwas.top.annot", header = TRUE)
+gwas_cold_all <- read.table("CTmin/gwas.top.4.annot", header = TRUE)
+gwas_hot_all <- read.table("CTmax/gwas.top.4.annot", header = TRUE)
 
 # annotated all the gene symbols for the gwas output  --------------------------
 
@@ -343,10 +343,10 @@ deg_simple <- deg_grouped %>%
 deg_simple$groupn <- as.factor(deg_simple$groupn)
 
 deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6113", 
-                                                          "Sig1 Shared: 3217", 
+                                                          "Sig1 Shared: 3218", 
                                                           "Unique: 14",
                                                           "Sig1 Unique: 103",
-                                                          "NS: 6425"))
+                                                          "NS: 6428"))
 
 deg_simple_distinct <- deg_simple %>%
   distinct(gene, .keep_all = TRUE)
@@ -356,7 +356,7 @@ plot_scatter_side_density_xy(deg_simple_distinct,
                              y_ = "log2FoldChange.hot",
                              labs_x = "Cold vs Ctrl (L2FC)",
                              labs_y = "Hot vs Ctrl (L2FC)",
-                             bg.string = "NS: 6425",
+                             bg.string = "NS: 6428",
                              bg.density.string = "Other",
                              labs_sets_density = "GWAS",
                              id_ = "id", 
@@ -427,16 +427,16 @@ deg_simple_4 <- deg_grouped_4 %>%
   mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
                             !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
                             is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
-                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
+                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "Both"))
 
 # order the levels of the factor for plotting purposes to get NS on bottom
 deg_simple_4$groupn <- as.factor(deg_simple_4$groupn)
 
-deg_simple_4$groupn <- factor(deg_simple_4$groupn, levels = c("Shared: 6123", 
-                                                          "Sig1 Shared: 3218", 
+deg_simple_4$groupn <- factor(deg_simple_4$groupn, levels =  c("Shared: 6228", 
+                                                          "Sig1 Shared: 3266", 
                                                           "Unique: 14",
-                                                          "Sig1 Unique: 104",
-                                                          "NS: 6438"))
+                                                          "Sig1 Unique: 106",
+                                                          "NS: 6485"))
 
 deg_simple_distinct_4 <- deg_simple_4 %>%
   distinct(gene, .keep_all = TRUE)
@@ -446,13 +446,13 @@ plot_scatter_side_density_xy(deg_simple_distinct_4,
                              y_ = "log2FoldChange.hot",
                              labs_x = "Cold vs Ctrl (L2FC)",
                              labs_y = "Hot vs Ctrl (L2FC)",
-                             bg.string = "NS: 6425",
+                             bg.string = "NS: 6485",
                              bg.density.string = "Other",
                              labs_sets_density = "GWAS",
                              id_ = "id", 
                              set_ = "groupn", 
                              set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
+                             sets.density.colors = c("purple", "red", "blue", "yellow"),
                              sets.colors = color_set,
                              n_auto_label = 0)
 ```
@@ -463,23 +463,44 @@ ggplot(deg_simple_distinct_4) +
             data = deg_simple_distinct_4, stat = "density") +
   geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
             linetype = "dashed", data = deg_simple_distinct_4, stat = "density") +
-  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  scale_color_manual(values = c("purple", "red", "blue", "grey50"), drop = FALSE) +
   labs(x = "log2FoldChange vs. Ctrl", 
        color = "GWAS", 
        caption = "Cold dashed line\nHot solid line") +
   theme_classic()
 ```
 
-## GWAS scatter & density plots (10^-4 & nondistinct)
+```{r ks_test_tab_4_distinct}
+# do comparison for both hot and cold
+tab_hot <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.hot") 
+tab_cold <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.cold")
+df <- cbind(tab_hot, tab_cold[2])
+colnames(df) <- c("GWAS distributions", "Heat-shock", "Cold-shock")
 
-```{r scatter_and_density_plots_first_plot, fig.height = 7, fig.width = 7}
+# create a table for the output
+df %>%
+  kable(caption = 
+          "K.S. pairwise comparisons of the distributions of top GWAS genes under shock") %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
 
-plot_scatter_side_density_xy(deg_simple_4, 
+```
+
+## GWAS scatter & density plots (10^-4) rm both
+
+```{r scatter_and_density_plots_cut_4_both, fig.height = 7, fig.width = 7}
+
+deg_simple_distinct_4_rm_b <- deg_simple_4 %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  add_count(gwas_g) %>%
+  dplyr::filter(n > 5)
+
+plot_scatter_side_density_xy(deg_simple_distinct_4_rm_b, 
                              x_ = "log2FoldChange.cold", 
                              y_ = "log2FoldChange.hot",
                              labs_x = "Cold vs Ctrl (L2FC)",
                              labs_y = "Hot vs Ctrl (L2FC)",
-                             bg.string = "NS: 6425",
+                             bg.string = "NS: 6485",
                              bg.density.string = "Other",
                              labs_sets_density = "GWAS",
                              id_ = "id", 
@@ -488,20 +509,35 @@ plot_scatter_side_density_xy(deg_simple_4,
                              sets.density.colors = c("red", "blue", "yellow"),
                              sets.colors = color_set,
                              n_auto_label = 0)
-
 ```
 
-```{r density_plots_4_first, fig.height = 4, fig.width = 7}
-ggplot(deg_simple_4) +
+```{r density_plots_4_both, fig.height = 4, fig.width = 7}
+ggplot(deg_simple_distinct_4_rm_b) +
   geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_4, stat = "density") +
+            data = deg_simple_distinct_4_rm_b, stat = "density") +
   geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_4, stat = "density") +
+            linetype = "dashed", data = deg_simple_distinct_4_rm_b, stat = "density") +
   scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
   labs(x = "log2FoldChange vs. Ctrl", 
        color = "GWAS", 
        caption = "Cold dashed line\nHot solid line") +
   theme_classic()
+```
+
+```{r ks_test_tab_4_distinct_both}
+# do comparison for both hot and cold
+tab_hot <- ks.pairwise(deg_simple_distinct_4_rm_b, "log2FoldChange.hot") 
+tab_cold <- ks.pairwise(deg_simple_distinct_4_rm_b, "log2FoldChange.cold")
+df <- cbind(tab_hot, tab_cold[2])
+colnames(df) <- c("GWAS distributions", "Heat-shock", "Cold-shock")
+
+# create a table for the output
+df %>%
+  kable(caption = 
+          "K.S. pairwise comparisons of the distributions of top GWAS genes under shock") %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+
 ```
 
 
@@ -708,7 +744,7 @@ table %>%
 
 ```{r table_top_gwas_hot_all}
 gwas_hot %>%
-  dplyr::select(ID, gene, grps, AvgEff, AvgMixedPval) %>%
+  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -749,7 +785,7 @@ gwas_hot %>%
 
 ```{r table_top_gwas_cold_all}
 gwas_cold %>%
-  dplyr::select(ID, gene, grps, AvgEff, AvgMixedPval) %>%
+  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
