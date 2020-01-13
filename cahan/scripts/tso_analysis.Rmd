@@ -380,11 +380,17 @@ ggplot(deg_simple_distinct) +
   theme_classic()
 ```
 
-```{r ks_test_tab}
+```{r ks_test_tab_5_distinct}
+# do comparison for both hot and cold
+tab_hot <- ks.pairwise(deg_simple_distinct, "log2FoldChange.hot") 
+tab_cold <- ks.pairwise(deg_simple_distinct, "log2FoldChange.cold")
+df <- cbind(tab_hot, tab_cold[2])
+colnames(df) <- c("GWAS distributions", "Heat-shock", "Cold-shock")
 
 # create a table for the output
-ks.pairwise(deg_simple_distinct, "log2FoldChange.hot") %>%
-  kable() %>%
+df %>%
+  kable(caption = 
+          "K.S. pairwise comparisons of the distributions of top GWAS genes under shock") %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "100%")
 
