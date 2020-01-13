@@ -380,6 +380,17 @@ ggplot(deg_simple_distinct) +
   theme_classic()
 ```
 
+```{r ks_test_tab}
+
+# create a table for the output
+ks.pairwise(deg_simple_distinct, "log2FoldChange.hot") %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+
+```
+
+
 ## GWAS scatter & density plots (10^-4)
 
 ```{r scatter_and_density_plots_cut_4, fig.height = 7, fig.width = 7}
