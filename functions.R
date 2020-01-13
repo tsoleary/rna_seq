@@ -780,3 +780,33 @@ group_deg <- function(dat, pval_cut = 0.01, lfc_cut = 0){
   return(deg_grouped)
 }
 
+
+# funcion to produce the data frame with the ks pval pairwise comparisons ------ 
+ks.pairwise <- function(.data, dist) {
+  x <- .data %>%
+    dplyr::select(dist, gwas_g) %>%
+    dplyr::group_by(gwas_g) %>%
+    tidyr::pivot_wider(names_from = gwas_g, 
+                       values_from = dist)
+  
+  cols <- colnames(x)
+  
+  comparisons <- combn(1:length(cols), 2)
+  
+  df <- NULL
+  
+  for (i in 1:ncol(comparisons)) {
+    # pval of each comparison
+    pval <- ks.test(unlist(x[, comparisons[1, i]]), 
+                    unlist(x[, comparisons[2, i]]))$p.value
+    # character string of the relevant comparison
+    Comp <- paste(cols[comparisons[1, i]], "vs.", cols[comparisons[2, i]]) 
+    # bind together
+    df <- as.data.frame(rbind(df, cbind(Comp, pval)))
+  }
+  
+  # treat pvals as numeric
+  df$pval <- as.numeric(as.character(df$pval))
+  
+  return(df)
+}
