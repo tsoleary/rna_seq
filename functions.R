@@ -691,7 +691,7 @@ gwas_dgrp_gene_annot <- function(dat){
                        lengths(annot_split_mult[[i]]) == 11 )
     list_13 <- which(lengths(annot_split_mult[[i]]) == 13 | 
                        lengths(annot_split_mult[[i]]) == 14 |
-                       lengths(annot_split_mult[[i]]) == 25)
+                       lengths(annot_split_mult[[i]]) == 15)
     
     sym_4 <- c()
     sym_10 <- c()
