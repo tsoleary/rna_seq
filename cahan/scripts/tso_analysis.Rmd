@@ -35,11 +35,13 @@ deg <- full_join(res_cold, res_hot, by = "gene", suffix = c(".cold", ".hot"))
 setwd(here::here("DRGP_GWAS"))
 gwas_cold_all <- read.table("CTmin/gwas.top.4.annot", header = TRUE)
 gwas_hot_all <- read.table("CTmax/gwas.top.4.annot", header = TRUE)
+gwas_tb_all <- read.table("ThermalBreadth/gwas.top.4.annot", header = TRUE)
 
 # annotated all the gene symbols for the gwas output  --------------------------
 
 gwas_cold_all <- gwas_dgrp_gene_annot(gwas_cold_all)
 gwas_hot_all <- gwas_dgrp_gene_annot(gwas_hot_all)
+gwas_tb_all <- gwas_dgrp_gene_annot(gwas_tb_all)
 
 # filter the gwas so there is only the pvalues that reach the cut off level ----
 pval_cut <- 10^-5
@@ -48,12 +50,12 @@ gwas_cold <- gwas_cold_all %>%
   filter(AvgMixedPval < pval_cut)
 gwas_hot <- gwas_hot_all %>%
   filter(AvgMixedPval < pval_cut)
-
+gwas_tb <- gwas_tb_all %>%
+  filter(AvgMixedPval < pval_cut)
 
 # create a combined df with deg and gwas for each alone ------------------------
 comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
 comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
-
   
 # create a data.frame with info for the individual ma_plots --------------------
 deg_gwas_cold <- left_join(res_cold, gwas_cold, by = "gene")
@@ -62,7 +64,9 @@ deg_gwas_hot <- left_join(res_hot, gwas_hot, by = "gene")
 # create a data.frame with all the info for the plotting later -----------------
 temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
 total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
-
+#total <- full_join(total, gwas_tb, by = "gene", suffix = c("", ".tb"))
+# the termal breadth stuff to the 
+ 
 # group by the significance
 deg_grouped <- group_deg(total, pval_cut = 0.01, lfc_cut = 0)
 
@@ -663,17 +667,18 @@ ggplot(deg_grouped,
 ## GWAS summary table
 
 ```{r gwas_hot_summary}
-
+# get only the SNPs identified in the GWAS
 comb_hot_filt <- comb_hot %>%
   filter(!is.na(ID))
-
-comb_hot_filt$gwas <- "CTmax"
-
 
 comb_cold_filt <- comb_cold %>%
   filter(!is.na(ID))
 
+
+# create a column that indicates where the snps are from
+comb_hot_filt$gwas <- "CTmax"
 comb_cold_filt$gwas <- "CTmin"
+
 
 comb_gwas <- rbind(comb_hot_filt, comb_cold_filt)
 
