@@ -82,7 +82,7 @@ legend.font.size <- 12
 
 # MA plots {.tabset .tabset-fade .tabset-pills}
 
-All MA plots now have an FDR cutoff of 0.01 and no fold-change cutoff.
+All MA plots now have an FDR of 0.01 and no fold-change cutoff.
 
 ## No gene labels
 
@@ -549,7 +549,7 @@ df %>%
 
 ## No labels
 
-```{r shared_unique}
+```{r shared_unique, fig.height = 7, fig.width = 7}
 ggplot(deg_grouped, 
        aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
   geom_point() + 
@@ -565,7 +565,7 @@ ggplot(deg_grouped,
 
 ## GWAS hits labeled
 
-```{r shared_unique_gwas_lab}
+```{r shared_unique_gwas_lab, fig.height = 7, fig.width = 7}
 ggplot(deg_grouped, 
        aes(x = log2FoldChange.cold, y = log2FoldChange.hot, color = groupn)) +
   geom_point() + 
@@ -589,7 +589,7 @@ ggplot(deg_grouped,
 
 ## With unique labeled
 
-```{r shared_unique_labels}
+```{r shared_unique_labels, fig.height = 7, fig.width = 7}
 set.seed(1)
 
 ggplot(deg_grouped, 
@@ -614,7 +614,7 @@ ggplot(deg_grouped,
 
 ## With shared labeled
 
-```{r shared_shared_labels}
+```{r shared_shared_labels, fig.height = 7, fig.width = 7}
 set.seed(1)
 
 ggplot(deg_grouped, 
@@ -639,7 +639,7 @@ ggplot(deg_grouped,
 
 ## With shared labeled (padj.hot)
 
-```{r shared_shared_padj.hot_labels}
+```{r shared_shared_padj.hot_labels, fig.height = 7, fig.width = 7}
 set.seed(1)
 
 ggplot(deg_grouped, 
@@ -662,9 +662,9 @@ ggplot(deg_grouped,
   theme(legend.position = "top")
 ```
 
-# GWAS Tables
+# GWAS (pval cutoff 10^-5)
 
-## GWAS summary table
+## Summary table
 
 ```{r gwas_hot_summary}
 # get only the SNPs identified in the GWAS
@@ -678,9 +678,10 @@ comb_cold_filt <- comb_cold %>%
 # create a column that indicates where the snps are from
 comb_hot_filt$gwas <- "CTmax"
 comb_cold_filt$gwas <- "CTmin"
+gwas_tb$gwas <- "ThermalBreadth"
 
 
-comb_gwas <- rbind(comb_hot_filt, comb_cold_filt)
+comb_gwas <- dplyr::bind_rows(comb_hot_filt, comb_cold_filt, gwas_tb)
 
 
 t1 <- comb_gwas %>%
@@ -745,7 +746,7 @@ table %>%
 
 ## CTmax
 
-### All hits (pval cutoff 10^-5)
+### All hits
 
 ```{r table_top_gwas_hot_all}
 gwas_hot %>%
@@ -786,7 +787,7 @@ gwas_hot %>%
 
 ## CTmin
 
-### All hits (pval cutoff 10^-5)
+### All hits 
 
 ```{r table_top_gwas_cold_all}
 gwas_cold %>%
@@ -814,6 +815,273 @@ gwas_cold %>%
 
 ```{r table_top_gwas_cold_genes}
 gwas_cold %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+## Thermal Breadth
+
+### All hits
+
+```{r table_top_gwas_tb_all}
+gwas_tb %>%
+  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Group count
+
+```{r table_top_gwas_tb_grps}
+gwas_tb %>%
+  group_by(grps) %>%
+  filter(grps != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+### Gene counts
+
+```{r table_top_gwas_tb_genes}
+gwas_tb %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+# GWAS Tables (pval cutoff 10^-4)
+
+## Summary table
+
+```{r gwas_hot_summary4}
+comb_cold_all <- full_join(res_cold, gwas_cold_all, by = "gene")
+comb_hot_all <- full_join(res_hot, gwas_hot_all, by = "gene")
+
+
+# get only the SNPs identified in the GWAS
+comb_hot_filt <- comb_hot_all %>%
+  filter(!is.na(ID))
+
+comb_cold_filt <- comb_cold_all %>%
+  filter(!is.na(ID))
+
+
+# create a column that indicates where the snps are from
+comb_hot_filt$gwas <- "CTmax"
+comb_cold_filt$gwas <- "CTmin"
+gwas_tb_all$gwas <- "ThermalBreadth"
+
+
+comb_gwas <- dplyr::bind_rows(comb_hot_filt, comb_cold_filt, gwas_tb_all)
+
+
+t1 <- comb_gwas %>%
+  group_by(gwas) %>%
+  distinct(ID, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("SNPs" = n)
+
+t2 <- comb_gwas %>%
+  group_by(gwas) %>%
+  distinct(ID, .keep_all = TRUE) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::count() %>%
+  dplyr::rename("SNPs annotated to genes" = n)
+
+t3 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("Unique genes" = n)
+
+t4 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(padj <= 0.01) %>%
+  dplyr::count() %>%
+  dplyr::rename("Sig DEGs" = n)
+
+t5 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::count() %>%
+  dplyr::rename("NS DEGs" = n)
+
+t6 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "" & is.na(baseMean) | baseMean == 0) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("No RNAseq data" = n)
+
+t7 <- full_join(t1, t2) %>%
+  full_join(t3) %>%
+  full_join(t4) %>%
+  full_join(t5) %>%
+  full_join(t6)
+
+t7$`No RNAseq data` <- t7$`No RNAseq data` %>% replace_na(0)
+
+table <- t7 %>%
+  dplyr::rename(GWAS = gwas) 
+
+table %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+
+ctmin_snps <- comb_gwas$ID[comb_gwas$gwas=="CTmin"]
+ctmax_snps <- comb_gwas$ID[comb_gwas$gwas=="CTmax"]
+tb_snps <- comb_gwas$ID[comb_gwas$gwas=="ThermalBreadth"]
+
+
+
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
+                              CTmax = ctmax_snps, 
+                              ThermalBreadth = tb_snps),
+             filename = "test_venn_diagram.tiff",
+             fill = c("red", "blue", "purple"), 
+             alpha = 0.5,
+             label.col = "white", 
+             fontfamily = "serif", 
+             fontface = "bold",
+             cat.col = c("red", "blue", "purple"), 
+             cat.fontfamily = "serif",
+             cat.fontface = "bold")
+
+```
+
+## CTmax
+
+### All hits
+
+```{r table_top_gwas_hot_all_4}
+gwas_hot_all %>%
+  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Group count
+
+```{r table_top_gwas_hot_grps_4}
+gwas_hot_all %>%
+  group_by(grps) %>%
+  dplyr::count() %>%
+  filter(grps != "") %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+### Gene counts
+
+```{r table_top_gwas_hot_genes_4}
+gwas_hot_all %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+
+## CTmin
+
+### All hits 
+
+```{r table_top_gwas_cold_all_4}
+gwas_cold_all %>%
+  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Group count
+
+```{r table_top_gwas_cold_grps_4}
+gwas_cold_all %>%
+  group_by(grps) %>%
+  filter(grps != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+### Gene counts
+
+```{r table_top_gwas_cold_genes_4}
+gwas_cold_all %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+## Thermal Breadth
+
+### All hits
+
+```{r table_top_gwas_tb_all_4}
+gwas_tb_all %>%
+  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Group count
+
+```{r table_top_gwas_tb_grps_4}
+gwas_tb_all %>%
+  group_by(grps) %>%
+  filter(grps != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+### Gene counts
+
+```{r table_top_gwas_tb_genes_4}
+gwas_tb_all %>%
   dplyr::select(gene) %>%
   group_by(gene) %>%
   filter(gene != "") %>%
