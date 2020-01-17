@@ -12,6 +12,8 @@ output:
 ```{r setup, include=FALSE}
 # don't show cose, warnings or messages
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+# don't make the log files for the VennDiagram package
+futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
 # load these required packages
 require(tidyverse)
@@ -73,11 +75,8 @@ deg_grouped <- group_deg(total, pval_cut = 0.01, lfc_cut = 0)
 # colors for the shared unique scatter plot  
 ##############
 # create a parameters space where all these go later .....
-
 clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
-
 legend.font.size <- 12
-
 ```
 
 # MA plots {.tabset .tabset-fade .tabset-pills}
@@ -744,6 +743,36 @@ table %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
+```{r venn_diagram_5, include = FALSE, fig.width = 3, fig.height = 3}
+ctmin_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmin"]
+ctmax_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmax"]
+tb_snps <- comb_gwas$ID[comb_gwas$gwas == "ThermalBreadth"]
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
+                              CTmax = ctmax_snps, 
+                              ThermalBreadth = tb_snps),
+                          imagetype = "png",
+                          filename = "gwas_5_venn_diagram.png",
+                          fill = c("red", "blue", "purple"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("red", "blue", "purple"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r, out.width = "400px"}
+knitr::include_graphics("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_venn_diagram.png")
+```
+
 ## CTmax
 
 ### All hits
@@ -781,7 +810,7 @@ gwas_hot %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  scroll_box(width = "100%", height = "500px")
 ```
 
 
@@ -822,7 +851,7 @@ gwas_cold %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  scroll_box(width = "100%", height = "500px")
 ```
 
 ## Thermal Breadth
@@ -862,7 +891,7 @@ gwas_tb %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  scroll_box(width = "100%", height = "500px")
 ```
 
 # GWAS Tables (pval cutoff 10^-4)
@@ -949,26 +978,36 @@ table %>%
   kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "100%")
+```
 
-ctmin_snps <- comb_gwas$ID[comb_gwas$gwas=="CTmin"]
-ctmax_snps <- comb_gwas$ID[comb_gwas$gwas=="CTmax"]
-tb_snps <- comb_gwas$ID[comb_gwas$gwas=="ThermalBreadth"]
+```{r venn_diagram_4, include = FALSE, fig.width = 3, fig.height = 3}
+ctmin_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmin"]
+ctmax_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmax"]
+tb_snps <- comb_gwas$ID[comb_gwas$gwas == "ThermalBreadth"]
 
-
-
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
 VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
                               CTmax = ctmax_snps, 
                               ThermalBreadth = tb_snps),
-             filename = "test_venn_diagram.tiff",
-             fill = c("red", "blue", "purple"), 
-             alpha = 0.5,
-             label.col = "white", 
-             fontfamily = "serif", 
-             fontface = "bold",
-             cat.col = c("red", "blue", "purple"), 
-             cat.fontfamily = "serif",
-             cat.fontface = "bold")
+                          imagetype = "png",
+                          filename = "gwas_4_venn_diagram.png",
+                          fill = c("red", "blue", "purple"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("red", "blue", "purple"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
 
+```{r, out.width = "400px"}
+knitr::include_graphics("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_venn_diagram.png")
 ```
 
 ## CTmax
@@ -1008,7 +1047,7 @@ gwas_hot_all %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  scroll_box(width = "100%", height = "500px")
 ```
 
 
@@ -1049,7 +1088,7 @@ gwas_cold_all %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  scroll_box(width = "100%", height = "500px")
 ```
 
 ## Thermal Breadth
@@ -1089,5 +1128,5 @@ gwas_tb_all %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  scroll_box(width = "100%", height = "500px")
 ```
