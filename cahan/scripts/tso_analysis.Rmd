@@ -663,7 +663,7 @@ ggplot(deg_grouped,
 
 # GWAS (pval cutoff 10^-5)
 
-## Summary table
+## Summary
 
 ```{r gwas_hot_summary}
 # get only the SNPs identified in the GWAS
@@ -743,7 +743,9 @@ table %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
-```{r venn_diagram_5, include = FALSE, fig.width = 3, fig.height = 3}
+## Venn Diagram: SNPs & Genes
+
+```{r venn_diagram_5, include = FALSE}
 ctmin_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmin"]
 ctmax_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmax"]
 tb_snps <- comb_gwas$ID[comb_gwas$gwas == "ThermalBreadth"]
@@ -755,7 +757,7 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps,
                               ThermalBreadth = tb_snps),
                           imagetype = "png",
                           filename = "gwas_5_venn_diagram.png",
-                          fill = c("red", "blue", "purple"), 
+                          fill = c("blue", "red", "purple"), 
                           alpha = 0.5,
                           label.col = "white", 
                           fontfamily = "serif", 
@@ -764,13 +766,46 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps,
                           cat.dist = .1,
                           margin = .1,
                           cex = 2,
-                          cat.col = c("red", "blue", "purple"), 
+                          cat.col = c("blue", "red", "purple"), 
                           cat.fontfamily = "serif",
                           cat.fontface = "bold")
 ```
 
-```{r, out.width = "400px"}
+```{r venn_diagram_5_genes, include = FALSE}
+ctmin_genes <- comb_gwas %>%
+  dplyr::filter(gwas == "CTmin" & gene != "") %>%
+  dplyr::distinct(gene)
+ctmax_genes <- comb_gwas %>%
+  dplyr::filter(gwas == "CTmax" & gene != "") %>%
+  dplyr::distinct(gene)
+tb_genes <- comb_gwas %>%
+  dplyr::filter(gwas == "ThermalBreadth" & gene != "") %>%
+  dplyr::distinct(gene)
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene, 
+                              CTmax = ctmax_genes$gene, 
+                              ThermalBreadth = tb_genes$gene),
+                          imagetype = "png",
+                          filename = "gwas_5_genes_venn_diagram.png",
+                          fill = c("blue", "red", "purple"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red", "purple"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r, out.width = "400px", fig.align = "default"}
 knitr::include_graphics("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_venn_diagram.png")
+knitr::include_graphics("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_genes_venn_diagram.png")
 ```
 
 ## CTmax
@@ -896,7 +931,7 @@ gwas_tb %>%
 
 # GWAS Tables (pval cutoff 10^-4)
 
-## Summary table
+## Summary
 
 ```{r gwas_hot_summary4}
 comb_cold_all <- full_join(res_cold, gwas_cold_all, by = "gene")
@@ -980,7 +1015,9 @@ table %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
-```{r venn_diagram_4, include = FALSE, fig.width = 3, fig.height = 3}
+## Venn Diagram: SNPs & Genes
+
+```{r venn_diagram_4_snps, include = FALSE}
 ctmin_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmin"]
 ctmax_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmax"]
 tb_snps <- comb_gwas$ID[comb_gwas$gwas == "ThermalBreadth"]
@@ -992,7 +1029,7 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps,
                               ThermalBreadth = tb_snps),
                           imagetype = "png",
                           filename = "gwas_4_venn_diagram.png",
-                          fill = c("red", "blue", "purple"), 
+                          fill = c("blue", "red", "purple"), 
                           alpha = 0.5,
                           label.col = "white", 
                           fontfamily = "serif", 
@@ -1001,13 +1038,46 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps,
                           cat.dist = .1,
                           margin = .1,
                           cex = 2,
-                          cat.col = c("red", "blue", "purple"), 
+                          cat.col = c("blue", "red", "purple"), 
                           cat.fontfamily = "serif",
                           cat.fontface = "bold")
 ```
 
-```{r, out.width = "400px"}
+```{r venn_diagram_4_genes, include = FALSE}
+ctmin_genes <- comb_gwas %>%
+  dplyr::filter(gwas == "CTmin" & gene != "") %>%
+  dplyr::distinct(gene)
+ctmax_genes <- comb_gwas %>%
+  dplyr::filter(gwas == "CTmax" & gene != "") %>%
+  dplyr::distinct(gene)
+tb_genes <- comb_gwas %>%
+  dplyr::filter(gwas == "ThermalBreadth" & gene != "") %>%
+  dplyr::distinct(gene)
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene, 
+                              CTmax = ctmax_genes$gene, 
+                              ThermalBreadth = tb_genes$gene),
+                          imagetype = "png",
+                          filename = "gwas_4_genes_venn_diagram.png",
+                          fill = c("blue", "red", "purple"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red", "purple"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r, out.width = "400px", fig.align = "default"}
 knitr::include_graphics("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_venn_diagram.png")
+knitr::include_graphics("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_genes_venn_diagram.png")
 ```
 
 ## CTmax
