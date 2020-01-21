@@ -1071,6 +1071,7 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene,
                           imagetype = "png",
                           filename = "gwas_4_genes_venn_diagram.png",
                           fill = c("blue", "red", "purple"), 
+                          cat.pos = c(330,30,180),
                           alpha = 0.5,
                           label.col = "white", 
                           fontfamily = "serif", 
@@ -1081,6 +1082,7 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene,
                           cex = 2,
                           cat.col = c("blue", "red", "purple"), 
                           cat.fontfamily = "serif",
+                          rotation = 3,
                           cat.fontface = "bold")
 ```
 
