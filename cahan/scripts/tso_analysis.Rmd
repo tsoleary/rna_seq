@@ -35,9 +35,18 @@ deg <- full_join(res_cold, res_hot, by = "gene", suffix = c(".cold", ".hot"))
 
 # load the gwas results
 setwd(here::here("DRGP_GWAS"))
+pheno <- read.csv("pheno.csv")
 gwas_cold_all <- read.table("CTmin/gwas.top.4.annot", header = TRUE)
 gwas_hot_all <- read.table("CTmax/gwas.top.4.annot", header = TRUE)
 gwas_tb_all <- read.table("ThermalBreadth/gwas.top.4.annot", header = TRUE)
+
+# wrangle the phenotypes
+pheno <- pheno %>%
+  pivot_longer(cols = starts_with("ct"), 
+               names_to = "type",
+               values_to = "temp") %>%
+  separate(type, into = c("type", "sex") ,sep = "_")
+  
 
 # annotated all the gene symbols for the gwas output  --------------------------
 
@@ -1200,3 +1209,116 @@ gwas_tb_all %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
 ```
+
+# Phenotypes
+
+## CTmin
+```{r}
+ggplot(pheno %>%
+         filter(type == "ctmin"), 
+       aes(x = temp, fill = sex)) + 
+  geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+  labs(x = "CTmin (°C)", y = "Counts", fill = "Sex") +
+  xlim(c(0, 10)) +
+  scale_fill_manual(values = c("purple", "green"),
+                    labels = c("Female", "Male")) + 
+  theme_classic()
+
+ggplot(pheno %>%
+         filter(type == "ctmin") %>%
+         group_by(line_DGRP) %>%
+         summarize(temp = mean(temp)), 
+       aes(x = temp)) + 
+  geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+  labs(x = "CTmin (°C)", y = "Counts", fill = "Sex") +
+  xlim(c(0, 10)) +
+  theme_classic()
+
+```
+
+## CTmax
+```{r}
+ggplot(pheno %>%
+         filter(type == "ctmax"), 
+       aes(x = temp, fill = sex)) + 
+  geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+  labs(x = "CTmax (°C)", y = "Counts", fill = "Sex") +
+  xlim(c(35, 45)) +
+  scale_fill_manual(values = c("purple", "green"),
+                    labels = c("Female", "Male")) + 
+  theme_classic()
+
+ggplot(pheno %>%
+         filter(type == "ctmax") %>%
+         group_by(line_DGRP) %>%
+         summarize(temp = mean(temp)), 
+       aes(x = temp)) + 
+  geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+  labs(x = "CTmax (°C)", y = "Counts", fill = "Sex") +
+  xlim(c(35, 45)) +
+  theme_classic()
+```
+
+
+## Thermal Breadth Correlation
+
+### CTmin
+```{r}
+my.formula <- y ~ x
+
+ggplot(pheno %>%
+         pivot_wider(names_from = type, values_from = temp) %>%
+         mutate(tb = ctmax - ctmin), 
+       aes(x = tb, y = ctmin, color = sex)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, formula = my.formula) +
+  ggpmisc::stat_poly_eq(formula = my.formula, 
+                        aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                        parse = TRUE, label.x = "right") + 
+  theme_classic()
+
+ggplot(pheno %>%
+         pivot_wider(names_from = type, values_from = temp) %>%
+         mutate(tb = ctmax - ctmin) %>%
+         group_by(line_DGRP) %>%
+         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+       aes(x = tb, y = ctmin)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, formula = my.formula) +
+  ggpmisc::stat_poly_eq(formula = my.formula, 
+                        aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                        parse = TRUE, label.x = "right") + 
+  theme_classic()
+```
+
+### CTmax
+
+```{r}
+my.formula <- y ~ x
+
+ggplot(pheno %>%
+         pivot_wider(names_from = type, values_from = temp) %>%
+         mutate(tb = ctmax - ctmin), 
+       aes(x = tb, y = ctmax, color = sex)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, formula = my.formula) +
+  ggpmisc::stat_poly_eq(formula = my.formula, 
+                        aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                        parse = TRUE, label.x = "right") + 
+  theme_classic()
+
+ggplot(pheno %>%
+         pivot_wider(names_from = type, values_from = temp) %>%
+         mutate(tb = ctmax - ctmin) %>%
+         group_by(line_DGRP) %>%
+         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+       aes(x = tb, y = ctmax)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, formula = my.formula) +
+  ggpmisc::stat_poly_eq(formula = my.formula, 
+                        aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                        parse = TRUE, label.x = "right", label.y = "bottom") + 
+  theme_classic()
+```
+
+
