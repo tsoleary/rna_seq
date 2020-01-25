@@ -1076,53 +1076,57 @@ gwas_tb_all %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
-# Phenotypes
+# Phenotypes {.tabset .tabset-fade .tabset-pills}
 
-## CTmin
+## Figure 1
 ```{r, fig.height = 3.5, fig.width = 7}
-ggplot(pheno %>%
-         filter(type == "ctmin"), 
-       aes(x = temp, fill = sex)) + 
-  geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
-  labs(x = "CTmin (°C)", y = "Counts", fill = "Sex") +
-  xlim(c(0, 10)) +
-  scale_fill_manual(values = c("purple", "green"),
-                    labels = c("Female", "Male")) + 
-  theme_classic()
+p1 <- ggplot(pheno %>%
+               filter(type == "ctmin"), 
+             aes(x = temp, fill = sex)) + 
+        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+        labs(x = "CTmin (°C)", y = "Counts", fill = "Sex") +
+        xlim(c(0, 10)) +
+        scale_fill_manual(values = c("purple", "green"),
+                          labels = c("Female", "Male")) + 
+        theme_classic()
 
-ggplot(pheno %>%
-         filter(type == "ctmin") %>%
-         group_by(line_DGRP) %>%
-         summarize(temp = mean(temp)), 
-       aes(x = temp)) + 
-  geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
-  labs(x = "CTmin (°C)", y = "Counts", fill = "Sex") +
-  xlim(c(0, 10)) +
-  theme_classic()
+p2 <- ggplot(pheno %>%
+               filter(type == "ctmax"), 
+             aes(x = temp, fill = sex)) + 
+        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+        labs(x = "CTmax (°C)", y = "Counts", fill = "Sex") +
+        xlim(c(35, 45)) +
+        scale_fill_manual(values = c("purple", "green"),
+                          labels = c("Female", "Male")) + 
+        theme_classic()
 
+cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ```
 
 ## CTmax
 ```{r, fig.height = 3.5, fig.width = 7}
-ggplot(pheno %>%
-         filter(type == "ctmax"), 
-       aes(x = temp, fill = sex)) + 
-  geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
-  labs(x = "CTmax (°C)", y = "Counts", fill = "Sex") +
-  xlim(c(35, 45)) +
-  scale_fill_manual(values = c("purple", "green"),
-                    labels = c("Female", "Male")) + 
-  theme_classic()
+p1 <- ggplot(pheno %>%
+               filter(type == "ctmin") %>%
+               group_by(line_DGRP) %>%
+               summarize(temp = mean(temp)), 
+             aes(x = temp)) + 
+        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+        labs(x = "CTmin (°C)", y = "Counts") +
+        xlim(c(0, 10)) +
+        theme_classic()
 
-ggplot(pheno %>%
-         filter(type == "ctmax") %>%
-         group_by(line_DGRP) %>%
-         summarize(temp = mean(temp)), 
-       aes(x = temp)) + 
-  geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
-  labs(x = "CTmax (°C)", y = "Counts", fill = "Sex") +
-  xlim(c(35, 45)) +
-  theme_classic()
+p2 <- ggplot(pheno %>%
+               filter(type == "ctmax") %>%
+               group_by(line_DGRP) %>%
+               summarize(temp = mean(temp)), 
+             aes(x = temp)) + 
+        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+        labs(x = "CTmax (°C)", y = "Counts") +
+        xlim(c(35, 45)) +
+        theme_classic()
+
+cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+
 ```
 
 
