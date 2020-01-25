@@ -366,8 +366,8 @@ deg_simple_distinct <- deg_simple %>%
 plot_scatter_side_density_xy(deg_simple_distinct, 
                              x_ = "log2FoldChange.cold", 
                              y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (L2FC)",
-                             labs_y = "Hot vs Ctrl (L2FC)",
+                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
+                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
                              bg.string = "NS: 6428",
                              bg.density.string = "Other",
                              labs_sets_density = "GWAS",
@@ -441,36 +441,37 @@ deg_simple_4 <- deg_grouped_4 %>%
                             is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
                             !is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin_CTmax"))
 
-deg_simple_4 %>%
+deg_simple_distinct_4 <- deg_simple_4 %>%
+  distinct(gene, .keep_all = TRUE)
+
+
+deg_simple_distinct_4 <- deg_simple_distinct_4 %>%
   separate(gwas_g, into = c("gwas_g", "gwas_g2"), sep = "_") %>%
   pivot_longer(gwas_g:gwas_g2, names_to = "type", values_to = "gwas_g", 
                values_drop_na = TRUE)
 
 # order the levels of the factor for plotting purposes to get NS on bottom
-deg_simple_4$groupn <- as.factor(deg_simple_4$groupn)
+deg_simple_distinct_4$groupn <- as.factor(deg_simple_distinct_4$groupn)
 
-deg_simple_4$groupn <- factor(deg_simple_4$groupn, levels =  c("Shared: 6228", 
-                                                          "Sig1 Shared: 3266", 
-                                                          "Unique: 14",
-                                                          "Sig1 Unique: 106",
-                                                          "NS: 6485"))
-
-deg_simple_distinct_4 <- deg_simple_4 %>%
-  group_by(gwas_g) %>%
-  distinct(gene, .keep_all = TRUE)
+deg_simple_distinct_4$groupn <- factor(deg_simple_distinct_4$groupn, 
+                                       levels =  c("Shared: 6228",
+                                                   "Sig1 Shared: 3266", 
+                                                   "Unique: 14",
+                                                   "Sig1 Unique: 106",
+                                                   "NS: 6485"))
 
 plot_scatter_side_density_xy(deg_simple_distinct_4, 
                              x_ = "log2FoldChange.cold", 
                              y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (L2FC)",
-                             labs_y = "Hot vs Ctrl (L2FC)",
+                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
+                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
                              bg.string = "NS: 6485",
                              bg.density.string = "Other",
-                             labs_sets_density = "GWAS",
+                             labs_sets_density = "Top GWAS-associated genes",
                              id_ = "id", 
                              set_ = "groupn", 
                              set_density_ = "gwas_g", 
-                             sets.density.colors = c("purple", "red", "blue", "yellow"),
+                             sets.density.colors = c("red", "blue", "yellow"),
                              sets.colors = color_set,
                              n_auto_label = 0)
 ```
@@ -481,8 +482,8 @@ ggplot(deg_simple_distinct_4) +
             data = deg_simple_distinct_4, stat = "density") +
   geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
             linetype = "dashed", data = deg_simple_distinct_4, stat = "density") +
-  scale_color_manual(values = c("purple", "red", "blue", "grey50"), drop = FALSE) +
-  labs(x = "log2FoldChange vs. Ctrl", 
+  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  labs(x = "log 2 fold change vs. Ctrl", 
        color = "GWAS", 
        caption = "Cold dashed line\nHot solid line") +
   theme_classic()
@@ -492,60 +493,6 @@ ggplot(deg_simple_distinct_4) +
 # do comparison for both hot and cold
 tab_hot <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.hot") 
 tab_cold <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.cold")
-df <- cbind(tab_hot, tab_cold[2])
-colnames(df) <- c("GWAS distributions", "Heat-shock", "Cold-shock")
-
-# create a table for the output
-df %>%
-  kable(caption = 
-          "K.S. pairwise comparisons of the distributions of top GWAS genes under shock") %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-
-```
-
-## GWAS scatter & density plots (10^-4) rm both
-
-```{r scatter_and_density_plots_cut_4_both, fig.height = 7, fig.width = 7}
-
-deg_simple_distinct_4_rm_b <- deg_simple_4 %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  add_count(gwas_g) %>%
-  dplyr::filter(n > 5)
-
-plot_scatter_side_density_xy(deg_simple_distinct_4_rm_b, 
-                             x_ = "log2FoldChange.cold", 
-                             y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (L2FC)",
-                             labs_y = "Hot vs Ctrl (L2FC)",
-                             bg.string = "NS: 6485",
-                             bg.density.string = "Other",
-                             labs_sets_density = "GWAS",
-                             id_ = "id", 
-                             set_ = "groupn", 
-                             set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
-                             sets.colors = color_set,
-                             n_auto_label = 0)
-```
-
-```{r density_plots_4_both, fig.height = 4, fig.width = 7}
-ggplot(deg_simple_distinct_4_rm_b) +
-  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_distinct_4_rm_b, stat = "density") +
-  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_distinct_4_rm_b, stat = "density") +
-  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
-  labs(x = "log2FoldChange vs. Ctrl", 
-       color = "GWAS", 
-       caption = "Cold dashed line\nHot solid line") +
-  theme_classic()
-```
-
-```{r ks_test_tab_4_distinct_both}
-# do comparison for both hot and cold
-tab_hot <- ks.pairwise(deg_simple_distinct_4_rm_b, "log2FoldChange.hot") 
-tab_cold <- ks.pairwise(deg_simple_distinct_4_rm_b, "log2FoldChange.cold")
 df <- cbind(tab_hot, tab_cold[2])
 colnames(df) <- c("GWAS distributions", "Heat-shock", "Cold-shock")
 
