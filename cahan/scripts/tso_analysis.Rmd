@@ -1089,7 +1089,9 @@ p1 <- ggplot(pheno %>%
         labs(x = expression(CT[min] * ~ "(°C)"),
              y = "Counts") +
         xlim(c(0, 10)) +
-        ylim(c(0, 33)) +
+        ylim(c(0, 33)) + 
+        annotate("text", x = 7.5, y = 17.5, label = expression(H^2 *" = 0.25"),
+                 size = 4) +
         theme_classic()
 
 p2 <- ggplot(pheno %>%
@@ -1102,6 +1104,8 @@ p2 <- ggplot(pheno %>%
              y = "Counts") +
         xlim(c(35, 45)) +
         ylim(c(0, 33)) +
+        annotate("text", x = 42.5, y = 17.5, label = expression(H^2 *" = 0.29"),
+                 size = 4) +
         theme_classic()
 
 cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
@@ -1110,30 +1114,6 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ## Figure 1 (with the scatter plot)
 
 ```{r, fig.height = 5, fig.width = 7}
-p1 <- ggplot(pheno %>%
-               filter(type == "ctmin") %>%
-               group_by(line_DGRP) %>%
-               summarize(temp = mean(temp)), 
-             aes(x = temp)) + 
-        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
-        labs(x = expression(CT[min] * ~ "(°C)"),
-             y = "Counts") +
-        xlim(c(0, 10)) +
-        ylim(c(0, 33)) +
-        theme_classic()
-
-p2 <- ggplot(pheno %>%
-               filter(type == "ctmax") %>%
-               group_by(line_DGRP) %>%
-               summarize(temp = mean(temp)), 
-             aes(x = temp)) + 
-        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
-        labs(x = expression(CT[max] * ~ "(°C)"), 
-             y = "Counts") +
-        xlim(c(35, 45)) +
-        ylim(c(0, 33)) +
-        theme_classic()
-
 top_row <- cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 
 my.formula <- y ~ x
