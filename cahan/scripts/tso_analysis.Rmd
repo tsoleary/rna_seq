@@ -1107,24 +1107,62 @@ p2 <- ggplot(pheno %>%
 cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ```
 
+## Figure 1 (with the scatter plot)
+```{r, fig.height = 5, fig.width = 7}
+p1 <- ggplot(pheno %>%
+               filter(type == "ctmin") %>%
+               group_by(line_DGRP) %>%
+               summarize(temp = mean(temp)), 
+             aes(x = temp)) + 
+        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+        labs(x = expression(CT[min] * ~ "(°C)"),
+             y = "Counts") +
+        xlim(c(0, 10)) +
+        ylim(c(0, 33)) +
+        theme_classic()
+
+p2 <- ggplot(pheno %>%
+               filter(type == "ctmax") %>%
+               group_by(line_DGRP) %>%
+               summarize(temp = mean(temp)), 
+             aes(x = temp)) + 
+        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+        labs(x = expression(CT[max] * ~ "(°C)"), 
+             y = "Counts") +
+        xlim(c(35, 45)) +
+        ylim(c(0, 33)) +
+        theme_classic()
+
+top_row <- cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+
+my.formula <- y ~ x
+p3 <- ggplot(pheno %>%
+               pivot_wider(names_from = type, values_from = temp) %>%
+               group_by(line_DGRP) %>%
+               summarize(ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+             aes(x = ctmin, y = ctmax)) +
+        geom_point(fill = "grey50", shape = 21) +
+        geom_smooth(method = "lm", 
+                    linetype = "dashed", 
+                    se = FALSE, formula = my.formula, color = "grey50") +
+        ggpmisc::stat_poly_eq(formula = my.formula, 
+                              aes(label = ..rr.label..), # paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                              parse = TRUE, label.x = "right", label.y = "bottom") + 
+        labs(x = expression(CT[min] * ~ "(°C)"), 
+             y = expression(CT[max] * ~ "(°C)")) +
+        theme_classic() +
+        theme(plot.margin = unit(c(t = 0.25, r = 3.5, b = 0, l = 3.5), "cm"))
+
+cowplot::plot_grid(top_row, p3, nrow = 2, 
+                   labels = c("", "C"))
+```
+
 
 ## Thermal Breadth Correlation
 
 ### CTmin
 ```{r}
 my.formula <- y ~ x
-
-ggplot(pheno %>%
-         pivot_wider(names_from = type, values_from = temp) %>%
-         mutate(tb = ctmax - ctmin), 
-       aes(x = tb, y = ctmin, color = sex)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, formula = my.formula) +
-  ggpmisc::stat_poly_eq(formula = my.formula, 
-                        aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
-                        parse = TRUE, label.x = "right") + 
-  theme_classic()
-
 ggplot(pheno %>%
          pivot_wider(names_from = type, values_from = temp) %>%
          mutate(tb = ctmax - ctmin) %>%
@@ -1143,17 +1181,6 @@ ggplot(pheno %>%
 
 ```{r}
 my.formula <- y ~ x
-
-ggplot(pheno %>%
-         pivot_wider(names_from = type, values_from = temp) %>%
-         mutate(tb = ctmax - ctmin), 
-       aes(x = tb, y = ctmax, color = sex)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, formula = my.formula) +
-  ggpmisc::stat_poly_eq(formula = my.formula, 
-                        aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
-                        parse = TRUE, label.x = "right") + 
-  theme_classic()
 
 ggplot(pheno %>%
          pivot_wider(names_from = type, values_from = temp) %>%
