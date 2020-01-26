@@ -40,6 +40,43 @@ gwas_cold_all <- read.table("CTmin/gwas.top.4.annot", header = TRUE)
 gwas_hot_all <- read.table("CTmax/gwas.top.4.annot", header = TRUE)
 gwas_tb_all <- read.table("ThermalBreadth/gwas.top.4.annot", header = TRUE)
 
+# # load all the gwas snps for the manhattan plot
+# gwas_cold_manhat <- read_delim("CTmin/gwas.all.assoc", 
+#                                delim = " ", 
+#                                col_names = TRUE)
+# gwas_hot_manhat <- read_delim("CTmax/gwas.all.assoc", 
+#                               delim = " ", 
+#                               col_names = TRUE)
+# 
+# # wrangle the manhat dfs for qqman
+# gwas_cold_manhat <- gwas_cold_manhat %>%
+#   separate(ID, into = c("CHR", "BP", "type")) %>%
+#   mutate(CHR = case_when(CHR == "2L" ~ 1,
+#                          CHR == "2R" ~ 2,
+#                          CHR == "3L" ~ 3,
+#                          CHR == "3R" ~ 4,
+#                          CHR == "4" ~ 5,
+#                          CHR == "X" ~ 6)) %>%
+#   dplyr::filter(!is.na(AvgMixedPval) | !is.na(CHR) | !is.na(BP))
+# 
+# gwas_cold_manhat$P <- gwas_cold_manhat$AvgMixedPval
+# gwas_cold_manhat$BP <- as.numeric(gwas_cold_manhat$BP)
+# 
+# 
+# gwas_hot_manhat <- gwas_hot_manhat %>%
+#   separate(ID, into = c("CHR", "BP", "type")) %>%
+#   mutate(CHR = case_when(CHR == "2L" ~ 1,
+#                          CHR == "2R" ~ 2,
+#                          CHR == "3L" ~ 3,
+#                          CHR == "3R" ~ 4,
+#                          CHR == "4" ~ 5,
+#                          CHR == "X" ~ 6)) %>%
+#   dplyr::filter(!is.na(AvgMixedPval) | !is.na(CHR) | !is.na(BP))
+# 
+# gwas_hot_manhat$P <- gwas_hot_manhat$AvgMixedPval
+# gwas_hot_manhat$BP <- as.numeric(gwas_hot_manhat$BP)
+
+
 # wrangle the phenotypes
 pheno <- pheno %>%
   pivot_longer(cols = starts_with("ct"), 
@@ -944,11 +981,11 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene,
 ```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-4) associated with each phenotype. B. The unique genes associated with those top SNPs"}
 
 p1 <- cowplot::ggdraw() +
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_venn_diagram.png", 
+  cowplot::draw_image(here::here("cahan/plots/gwas_4_venn_diagram.png"), 
                       scale = 0.9)
 
 p2 <- cowplot::ggdraw() + 
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_genes_venn_diagram.png",
+  cowplot::draw_image(here::here("cahan/plots/gwas_4_genes_venn_diagram.png"),
                       scale = 0.9)
 
 cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
@@ -1180,4 +1217,35 @@ p2 <- ggplot(pheno %>%
 cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ```
 
+# Manhattan plots
 
+```{r, fig.height = 7, fig.width = 7}
+# setwd(here::here("DRGP_GWAS"))
+# 
+# png("gwas_cold_manhattan.png", width = 600, height = 300)
+# qqman::manhattan(gwas_cold_manhat,
+#                  annotateTop = FALSE,
+#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
+#                  ylim = c(0, 8),
+#                  suggestiveline = -log10(1e-04),
+#                  genomewideline = -log10(1e-05))
+# dev.off()
+# 
+# 
+# png("gwas_hot_manhattan.png", width = 600, height = 300)
+# qqman::manhattan(gwas_hot_manhat,
+#                  annotateTop = FALSE,
+#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
+#                  ylim = c(0, 8),
+#                  suggestiveline = -log10(1e-04),
+#                  genomewideline = -log10(1e-05))
+# dev.off()
+
+p1 <- cowplot::ggdraw() +
+  cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"))
+
+p2 <- cowplot::ggdraw() + 
+  cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"))
+
+cowplot::plot_grid(p1, p2, nrow = 2, labels = "AUTO")
+```
