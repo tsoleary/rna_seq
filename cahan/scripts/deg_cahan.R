@@ -651,6 +651,26 @@ gwas_cold <- gwas_cold %>%
 write_delim(gwas_cold %>% dplyr::select(featureMap), 
             "gwas_cold_snps.txt", delim = "^t", col_names = FALSE)
 
+# snps for over-represenation analysis -----
+
+
+setwd(here::here("cahan/results/ORA/ctmin"))
+gwas_cold_all %>% 
+  dplyr::select(gene) %>% 
+  distinct(gene) %>% 
+  filter(gene != "") %>% 
+  write_delim("gwas_ctmin_genes_4_ora.txt", 
+              delim = "^t", col_names = FALSE)
+
+
+setwd(here::here("cahan/results/ORA/ctmax"))
+gwas_hot_all %>% 
+  dplyr::select(gene) %>% 
+  distinct(gene) %>% 
+  filter(gene != "") %>% 
+  write_delim("gwas_ctmax_genes_4_ora.txt", 
+              delim = "^t", col_names = FALSE)
+
 
 
 

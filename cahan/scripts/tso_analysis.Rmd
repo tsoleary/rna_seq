@@ -1219,7 +1219,7 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 
 # Manhattan plots
 
-```{r, fig.height = 5, fig.width = 7}
+```{r, fig.height = 4.5, fig.width = 6}
 # setwd(here::here("DRGP_GWAS"))
 # 
 # png("gwas_cold_manhattan.png", width = 600, height = 300)
