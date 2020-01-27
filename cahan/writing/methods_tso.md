@@ -1,5 +1,7 @@
 # Frontiers Paper
 
+Right now this is just an incomplete rough draft of the methods that I was involved in.
+
 # Methods
 
 ## Differential Expression
