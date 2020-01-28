@@ -1,5 +1,5 @@
 ---
-title: Genome wide association study and differential gene expression of _Drosophila melanogaster_ under heat and cold stress
+title: Sketch of the potential final figures
 author: "TS O'Leary"
 output:
   rmarkdown::html_document:
@@ -125,7 +125,7 @@ clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
 legend.font.size <- 12
 ```
 
-# Phenotypes {.tabset .tabset-fade .tabset-pills}
+# Figure 1: Phenotypes {.tabset .tabset-fade .tabset-pills}
 
 ## Figure 1
 ```{r, fig.height = 3.5, fig.width = 7}
@@ -185,6 +185,83 @@ p3 <- ggplot(pheno %>%
 
 cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
 ```
+
+## Thermal Breadth Correlation
+
+```{r, fig.height = 3.5, fig.width = 7}
+my.formula <- y ~ x
+p1 <- ggplot(pheno %>%
+         pivot_wider(names_from = type, values_from = temp) %>%
+         mutate(tb = ctmax - ctmin) %>%
+         group_by(line_DGRP) %>%
+         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+        aes(x = ctmin, y = tb)) +
+        geom_point(fill = "grey50", shape = 21) +
+        geom_smooth(method = "lm", 
+                    linetype = "dashed", 
+                    se = FALSE, formula = my.formula, color = "grey50") +
+        ggpmisc::stat_poly_eq(formula = my.formula, 
+                              aes(label = ..rr.label..),
+                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        labs(x = expression(CT[min] * ~ "(°C)"), 
+             y = "Thermal Breadth (°C)") +
+        theme_classic()
+  
+
+p2 <- ggplot(pheno %>%
+         pivot_wider(names_from = type, values_from = temp) %>%
+         mutate(tb = ctmax - ctmin) %>%
+         group_by(line_DGRP) %>%
+         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+        aes(x = ctmax, y = tb)) +
+        geom_point(fill = "grey50", shape = 21) +
+        geom_smooth(method = "lm", 
+                    linetype = "dashed", 
+                    se = FALSE, formula = my.formula, color = "grey50") +
+        ggpmisc::stat_poly_eq(formula = my.formula, 
+                              aes(label = ..rr.label..),
+                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        labs(x = expression(CT[max] * ~ "(°C)"), 
+             y = "Thermal Breadth (°C)") +
+        theme_classic()
+
+cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+```
+
+# Figure 2: Manhattan plots
+
+```{r, fig.height = 4, fig.width = 5}
+# setwd(here::here("DRGP_GWAS"))
+# 
+# png("gwas_cold_manhattan.png", width = 600, height = 300)
+# qqman::manhattan(gwas_cold_manhat,
+#                  annotateTop = FALSE,
+#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
+#                  ylim = c(0, 8),
+#                  suggestiveline = -log10(1e-04),
+#                  genomewideline = -log10(1e-05))
+# dev.off()
+# 
+# 
+# png("gwas_hot_manhattan.png", width = 600, height = 300)
+# qqman::manhattan(gwas_hot_manhat,
+#                  annotateTop = FALSE,
+#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
+#                  ylim = c(0, 8),
+#                  suggestiveline = -log10(1e-04),
+#                  genomewideline = -log10(1e-05))
+# dev.off()
+
+p1 <- cowplot::ggdraw() +
+  cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"))
+
+p2 <- cowplot::ggdraw() + 
+  cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"))
+
+cowplot::plot_grid(p1, p2, nrow = 2, labels = "AUTO")
+```
+
+# Figure 3: DEG & GWAS integration
 
 ```{r scatter_and_density_plots_cut_4, fig.height = 7, fig.width = 7}
 # filter the gwas so there is only the pvalues that reach the cut off level ----
@@ -249,93 +326,4 @@ plot_scatter_side_density_xy(deg_simple_distinct_4,
                              sets.density.colors = c("red", "blue", "yellow"),
                              sets.colors = color_set,
                              n_auto_label = 0)
-```
-
-```{r density_plots_4, fig.height = 4, fig.width = 7}
-ggplot(deg_simple_distinct_4) +
-  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_distinct_4, stat = "density") +
-  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_distinct_4, stat = "density") +
-  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
-  labs(x = "log 2 fold change vs. Ctrl", 
-       color = "GWAS", 
-       caption = "Cold dashed line\nHot solid line") +
-  theme_classic()
-```
-
-
-## Thermal Breadth Correlation
-
-```{r, fig.height = 3.5, fig.width = 7}
-my.formula <- y ~ x
-p1 <- ggplot(pheno %>%
-         pivot_wider(names_from = type, values_from = temp) %>%
-         mutate(tb = ctmax - ctmin) %>%
-         group_by(line_DGRP) %>%
-         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
-        aes(x = ctmin, y = tb)) +
-        geom_point(fill = "grey50", shape = 21) +
-        geom_smooth(method = "lm", 
-                    linetype = "dashed", 
-                    se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
-        labs(x = expression(CT[min] * ~ "(°C)"), 
-             y = "Thermal Breadth (°C)") +
-        theme_classic()
-  
-
-p2 <- ggplot(pheno %>%
-         pivot_wider(names_from = type, values_from = temp) %>%
-         mutate(tb = ctmax - ctmin) %>%
-         group_by(line_DGRP) %>%
-         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
-        aes(x = ctmax, y = tb)) +
-        geom_point(fill = "grey50", shape = 21) +
-        geom_smooth(method = "lm", 
-                    linetype = "dashed", 
-                    se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
-        labs(x = expression(CT[max] * ~ "(°C)"), 
-             y = "Thermal Breadth (°C)") +
-        theme_classic()
-
-cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
-```
-
-# Manhattan plots
-
-```{r, fig.height = 4, fig.width = 5}
-# setwd(here::here("DRGP_GWAS"))
-# 
-# png("gwas_cold_manhattan.png", width = 600, height = 300)
-# qqman::manhattan(gwas_cold_manhat,
-#                  annotateTop = FALSE,
-#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
-#                  ylim = c(0, 8),
-#                  suggestiveline = -log10(1e-04),
-#                  genomewideline = -log10(1e-05))
-# dev.off()
-# 
-# 
-# png("gwas_hot_manhattan.png", width = 600, height = 300)
-# qqman::manhattan(gwas_hot_manhat,
-#                  annotateTop = FALSE,
-#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
-#                  ylim = c(0, 8),
-#                  suggestiveline = -log10(1e-04),
-#                  genomewideline = -log10(1e-05))
-# dev.off()
-
-p1 <- cowplot::ggdraw() +
-  cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"))
-
-p2 <- cowplot::ggdraw() + 
-  cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"))
-
-cowplot::plot_grid(p1, p2, nrow = 2, labels = "AUTO")
 ```
