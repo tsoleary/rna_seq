@@ -672,6 +672,68 @@ gwas_hot_all %>%
               delim = "^t", col_names = FALSE)
 
 
+# differentially expressed genes for over representation analysis --------------
+
+# all differentially expressed genes
+setwd(here::here("cahan/results/ORA/cold"))
+res_cold %>% 
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::select(gene) %>% 
+  distinct(gene) %>% 
+  filter(gene != "") %>% 
+  write_delim("deg_cold_all_01_ora.txt", 
+              delim = "^t", col_names = FALSE)
+
+setwd(here::here("cahan/results/ORA/hot"))
+res_hot %>% 
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::select(gene) %>% 
+  distinct(gene) %>% 
+  filter(gene != "") %>% 
+  write_delim("deg_hot_all_01_ora.txt", 
+              delim = "^t", col_names = FALSE)
+
+
+# only differentially expressed up
+setwd(here::here("cahan/results/ORA/cold"))
+res_cold %>% 
+  dplyr::filter(padj < 0.01 & log2FoldChange > 0) %>%
+  dplyr::select(gene) %>% 
+  distinct(gene) %>% 
+  filter(gene != "") %>% 
+  write_delim("deg_cold_up_01_ora.txt", 
+              delim = "^t", col_names = FALSE)
+
+setwd(here::here("cahan/results/ORA/hot"))
+res_hot %>% 
+  dplyr::filter(padj < 0.01 & log2FoldChange > 0) %>%
+  dplyr::select(gene) %>% 
+  distinct(gene) %>% 
+  filter(gene != "") %>% 
+  write_delim("deg_hot_up_01_ora.txt", 
+              delim = "^t", col_names = FALSE)
+
+# only differentially expressed down
+setwd(here::here("cahan/results/ORA/cold"))
+res_cold %>% 
+  dplyr::filter(padj < 0.01 & log2FoldChange < 0) %>%
+  dplyr::select(gene) %>% 
+  distinct(gene) %>% 
+  filter(gene != "") %>% 
+  write_delim("deg_cold_down_01_ora.txt", 
+              delim = "^t", col_names = FALSE)
+
+setwd(here::here("cahan/results/ORA/hot"))
+res_hot %>% 
+  dplyr::filter(padj < 0.01 & log2FoldChange < 0) %>%
+  dplyr::select(gene) %>% 
+  distinct(gene) %>% 
+  filter(gene != "") %>% 
+  write_delim("deg_hot_down_01_ora.txt", 
+              delim = "^t", col_names = FALSE)
+
+
+
 
 
 
