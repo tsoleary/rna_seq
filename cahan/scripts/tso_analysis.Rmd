@@ -372,7 +372,7 @@ deg_grouped %>%
 
 # DEG LFC scatter & GWAS Density {.tabset .tabset-fade .tabset-pills}
 
-## GWAS scatter & density plots (10^-5)
+## GWAS scatter & density plots  (10<sup>-5</sup>)
 
 ```{r scatter_and_density_plots, fig.height = 7, fig.width = 7}
 color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
@@ -429,6 +429,21 @@ ggplot(deg_simple_distinct) +
   theme_classic()
 ```
 
+```{r, fig.height = 4, fig.width = 7}
+ggplot(deg_simple_distinct) +
+  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
+            data = deg_simple_distinct %>%
+              dplyr::filter(gwas_g != "CTmin"), stat = "density") +
+  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
+            linetype = "dashed", data = deg_simple_distinct %>%
+              dplyr::filter(gwas_g != "CTmax"), stat = "density") +
+  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  labs(x = "log2FoldChange vs. Ctrl", 
+       color = "GWAS", 
+       caption = "Cold dashed line\nHot solid line") +
+  theme_classic()
+```
+
 ```{r ks_test_tab_5_distinct}
 # do comparison for both hot and cold
 tab_hot <- ks.pairwise(deg_simple_distinct, "log2FoldChange.hot") 
@@ -446,7 +461,7 @@ df %>%
 ```
 
 
-## GWAS scatter & density plots (10^-4)
+## GWAS scatter & density plots (10<sup>-4</sup>)
 
 ```{r scatter_and_density_plots_cut_4, fig.height = 7, fig.width = 7}
 # filter the gwas so there is only the pvalues that reach the cut off level ----
@@ -526,6 +541,22 @@ ggplot(deg_simple_distinct_4) +
   theme_classic()
 ```
 
+```{r density_plots_5_dia, fig.height = 4, fig.width = 7}
+ggplot(deg_simple_distinct_4) +
+  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
+            data = deg_simple_distinct_4 %>%
+              dplyr::filter(gwas_g != "CTmin"), stat = "density") +
+  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
+            linetype = "dashed", data = deg_simple_distinct_4 %>%
+              dplyr::filter(gwas_g != "CTmax"), stat = "density") +
+  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  labs(x = "log2FoldChange vs. Ctrl", 
+       color = "GWAS", 
+       caption = "Cold dashed line\nHot solid line") +
+  theme_classic()
+```
+
+
 ```{r ks_test_tab_4_distinct}
 # do comparison for both hot and cold
 tab_hot <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.hot") 
@@ -540,6 +571,27 @@ df %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "100%")
 ```
+
+
+## GWAS scatter with relevant density plot
+
+```{r, fig.height = 7, fig.width = 7}
+plot_scatter_side_density_xy_rel(deg_simple_distinct_4, 
+                             x_ = "log2FoldChange.cold", 
+                             y_ = "log2FoldChange.hot",
+                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
+                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
+                             bg.string = "NS: 6485",
+                             bg.density.string = "Other",
+                             labs_sets_density = "Top GWAS-associated genes",
+                             id_ = "id", 
+                             set_ = "groupn", 
+                             set_density_ = "gwas_g", 
+                             sets.density.colors = c("red", "blue", "yellow"),
+                             sets.colors = color_set,
+                             n_auto_label = 0)
+```
+
 
 # GWAS (pval cutoff 10^-5)
 
