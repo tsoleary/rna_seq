@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>WebGestalt (WEB-based GEne SeT AnaLysis Toolkit)</title>
+<link rel="icon" type="image/png" href="https://s3-us-west-2.amazonaws.com/webgestalt/favicon.png">
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-42098540-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?flags=gated&features=es2015%2Ces2016%2Cfetch"></script>
+<script src="http://www.webgestalt.org/assets/0.4/build/vendor.min.js"></script>
+	
+	<script>window.cytoscape = null;</script>
+	<link rel="stylesheet" href="http://www.webgestalt.org/assets/0.4/build/vendor.css">
+	<link rel="stylesheet" href="http://www.webgestalt.org/assets/0.4/build/wg.css">
+<link rel="stylesheet" href="https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
+</head>
+<body>
+<header>
+	<div id="header-img"><a href="http://www.webgestalt.org"><img border="0" src="http://www.webgestalt.org/images/gsa.png"></a></div>
+	<div id="header-title">
+		<p id="header-title-text">WEB-based GEne SeT AnaLysis Toolkit</p>
+		<p id="header-subtitle-text">Translating gene lists into biological insights...</p>
+	</div>
+</header>
+<hr><main>
+<div id="app">
+<div class="loading-preinit" v-cloak><div class="loading-icon"></div></div>
+<div class="wrapper" v-cloak>
+<div class="level">
+	<div class="level-left">
+		<div class="level-item">
+			<h4 class="title is-4 has-text-primary">Summary</h4>
+		</div>
+	</div>
+	<div class="level-right">
+		<div class="level-item">
+			<a class="button is-text" href="Project_wg_result1576701897.zip" target="_blank">Result Download</a>
+		</div>
+	</div>
+</div>
+
+<section id="summary" class="summary">
+<div class="card" v-bind:class="{active: summaryShown}" >
+	<div class="card-header" v-on:click="summaryShown=!summaryShown">
+		<p class="card-header-title">Job summary</p>
+		<a href="#" class="card-header-icon">
+			<b-icon :icon="summaryShown ? 'chevron-up' : 'chevron-down'"></b-icon>
+		</a>
+	</div>
+	<div class="card-content content" v-show="summaryShown">
+		<ul id="summary-list"> 
+		<li><b>Enrichment method:</b> GSEA</li>
+		<li><b>Organism: </b>dmelanogaster</li>
+		<li>
+				<b>Enrichment Categories: </b>chromosomalLocation_CytogeneticBand
+				<a class="has-text-info" href="http://www.webgestalt.org/api/geneset?organism=dmelanogaster&database=chromosomalLocation_CytogeneticBand&fileType=gmt">
+					<b-icon icon="download" size="is-small"></b-icon>
+				</a>
+					</li>
+		
+			<li><b>Interesting list: </b>cold_deg_p_01_gsea_lfc_1576701897.rnk. <b>ID type: </b>genesymbol</li>
+						<li>The interesting list contains <b>6952</b> user IDs in which <b>6558</b> user IDs are unambiguously mapped to <b>6558</b> unique entrezgene IDs and <b>394</b> user IDs can not be mapped to any entrezgene ID.</li>
+			<li>The GO Slim summary are based upon the <b>6558</b> unique entrezgene IDs.</li>
+		
+
+		<li>Among the <b>6558</b> unique entrezgene IDs, <b>5551</b> IDs are annotated to the selected functional categories, which are used for the enrichment analysis.</li>
+</ul> 
+
+<p><b>Parameters for the enrichment analysis:</b></p>
+<ul><li><b>Minimum number of IDs in the category: </b>10</li>
+<li><b>Maximum number of IDs in the category: </b>500</li>
+
+<li><b>Significance Level:</b> Top 10</li>
+<li><b>Number of permutation: </b>1000</li>
+</ul>
+	<p>Based on the above parameters, <b>1 positive related </b>categories and <b>10 negative related </b>categories are identified as enriched categories
+	and all are shown in this report.
+	
+
+	</div>
+</div>
+</section>
+<section id="go-summary" class="summary">
+<div class="card" v-bind:class="{active: goShown}" >
+	<div class="card-header" v-on:click="goShown=!goShown">
+		<p class="card-header-title">GO Slim summary for the user uploaded IDs</p>
+		<a href="#" class="card-header-icon">
+			<b-icon :icon="goShown ? 'chevron-up' : 'chevron-down'"></b-icon>
+		</a>
+	</div>
+	<div v-show="goShown">
+		<div class="card-content">
+			<p>Each Biological Process, Cellular Component and Molecular Function category is represented by a red, blue and green bar, repectively.</p>
+			<p>The height of the bar represents the number of IDs in the user list and also in the category.</p>
+		</div>
+		<div class="card-image">
+			<img src="goslim_summary_wg_result1576701897.png" width="100%" height="100%" alt="Bar charts of enriched GO Slim terms"/>
+		</div>
+	</div>
+</div>
+</section> <h4 class="title is-4 has-text-primary">Enrichment Results</h4>
+<section id="enrich-result">
+	<p class="select-redundancy">
+		<b-tooltip label="Enriched gene sets are post-processed by two methods to reduce redundancy." type="is-dark" animated multilined dashed>
+			Redundancy reduction:
+		</b-tooltip>
+		<b-radio v-model="redundancy" native-value="all">All</b-radio>
+		<b-radio v-model="redundancy" native-value="ap">
+			<b-tooltip label="R package apcluster is used to cluster gene sets." type="is-dark" animated multilined dashed>
+				Affinity propagation
+			</b-tooltip>
+		</b-radio>
+		
+		<b-radio v-model="redundancy" native-value="wsc">
+			<b-tooltip label="Find top gene sets while maximizing gene coverage." type="is-dark" animated multilined dashed>
+				Weighted set cover
+			</b-tooltip>
+		</b-radio>
+	</p>
+	<b-tabs v-model="activeTab" type="is-toggle">
+		<b-tab-item label="Table">
+			<wg-result-table
+				:data="enrichmentData"
+				:method="enrichMethod"
+			></wg-result-table>
+		</b-tab-item>
+		<b-tab-item label="Bar chart">
+		<div class="vertical-center-container">
+			<wg-bar-plot
+				:dimensions="bar.dimensions"
+				:label-width="bar.labelWidth"
+				:data="enrichmentData"
+				:value-key="bar.valueKey"
+				:x-label="bar.xLabel">
+			</wg-bar-plot>
+		</div>
+		</b-tab-item>
+		<b-tab-item label="Volcano plot">
+		<div class="vertical-center-container">
+			<wg-volcano-plot
+				:data="volcanoData"
+				:x="volcano.x"
+				:y="volcano.y"
+				:dimensions="volcano.dimensions"
+				:x-label="volcano.xLabel"
+				:label-types="volcano.labelTypes"
+				:x-transform="volcano.xTransform"
+				:radius="volcano.radius"
+				:color="volcano.color"
+				:tooltip-content="volcano.tooltipContent"
+				:show-all-labels="false"
+				:auto-place-labels="true"
+			></wg-volcano-plot>
+		</div>
+		</b-tab-item>
+	</b-tabs>
+	<wg-gene-table
+		:data="geneTables"
+		:info="enrichment"
+		:standard-id="standardId"
+		:method="enrichMethod"
+		:organism="organism"
+		:host-name="hostName"
+		:sets-with-net="false"
+	></wg-gene-table>
+</section> 
+
+</div>
+</div>
+</main>
+	<script type="text/javascript" src="http://www.webgestalt.org/assets/0.4/build/wg.min.js"></script>
+<script type="text/javascript">
+var enrichment = [{"geneSet":"3L72D10","description":"chr3L72D10","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=3L;r=3L:16197868-16273608","enrichmentScore":-0.618826828286316,"normalizedEnrichmentScore":-1.45193150803963,"pValue":0.0363070539042458,"FDR":0.0959796599396154,"size":11,"plotPath":"./Project_wg_result1576701897_GSEA/3L72D10.png","leadingEdgeNum":8,"leadingEdgeId":"39779;50274;3772513;39781;39780;39782;3772322;5740883"},{"geneSet":"2L34C4","description":"chr2L34C4","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=2L;r=2L:13500624-13639411","enrichmentScore":-0.648873132889241,"normalizedEnrichmentScore":-1.48441269751784,"pValue":0.0187695515966949,"FDR":0.102494835531543,"size":10,"plotPath":"./Project_wg_result1576701897_GSEA/2L34C4.png","leadingEdgeNum":6,"leadingEdgeId":"34769;3771913;3771970;3772563;34771;3771733"},{"geneSet":"3L72E1","description":"chr3L72E1","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=3L;r=3L:16289712-16348782","enrichmentScore":-0.63645598634892,"normalizedEnrichmentScore":-1.5206126828325,"pValue":0.0103412616232252,"FDR":0.147783251231527,"size":12,"plotPath":"./Project_wg_result1576701897_GSEA/3L72E1.png","leadingEdgeNum":11,"leadingEdgeId":"39799;39804;39794;50268;39792;39806;39807;10178940;39802;12797917;39798"},{"geneSet":"2L32C1","description":"chr2L32C1","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=2L;r=2L:10917015-11018778","enrichmentScore":0.361331704337202,"normalizedEnrichmentScore":1.12654243969753,"pValue":0.14285713877551,"FDR":0.22463768115942,"size":10,"plotPath":"./Project_wg_result1576701897_GSEA/2L32C1.png","leadingEdgeNum":10,"leadingEdgeId":"34529;34521;34516;34527;34519;34514;34526;53516;3346227;34513"},{"geneSet":"2R","description":"chr2R","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=2R;r=2R:326768-25255318","enrichmentScore":-0.562138289502582,"normalizedEnrichmentScore":-1.30531948832606,"pValue":0.103124999892578,"FDR":0.26457969172096,"size":10,"plotPath":"./Project_wg_result1576701897_GSEA/2R.png","leadingEdgeNum":4,"leadingEdgeId":"38012;3885596;8673980;3771724"},{"geneSet":"2L22E1","description":"chr2L22E1","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=2L;r=2L:2300103-2425041","enrichmentScore":-0.494718930300986,"normalizedEnrichmentScore":-1.17419815019011,"pValue":0.221991701014531,"FDR":0.507230255839822,"size":12,"plotPath":"./Project_wg_result1576701897_GSEA/2L22E1.png","leadingEdgeNum":7,"leadingEdgeId":"33429;5740554;319042;33426;5740813;14462673;326178"},{"geneSet":"3L68E3","description":"chr3L68E3","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=3L;r=3L:11850645-11958909","enrichmentScore":-0.464617334677543,"normalizedEnrichmentScore":-1.09174324789729,"pValue":0.312371133698586,"FDR":0.650881932305737,"size":12,"plotPath":"./Project_wg_result1576701897_GSEA/3L68E3.png","leadingEdgeNum":8,"leadingEdgeId":"39351;39356;39353;39354;12798218;39345;39355;39347"},{"geneSet":"3R93F14","description":"chr3R93F14","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=3R;r=3R:21842521-22016212","enrichmentScore":-0.443669657064846,"normalizedEnrichmentScore":-1.03956371496409,"pValue":0.407098120660649,"FDR":0.708133754057797,"size":11,"plotPath":"./Project_wg_result1576701897_GSEA/3R93F14.png","leadingEdgeNum":9,"leadingEdgeId":"42585;42583;117470;42577;117472;42582;32625;42575;42579"},{"geneSet":"3R82A1","description":"chr3R82A1","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=3R;r=3R:4204493-4304604","enrichmentScore":-0.424331837434447,"normalizedEnrichmentScore":-0.984251212890219,"pValue":0.514492753090587,"FDR":0.760964563801049,"size":10,"plotPath":"./Project_wg_result1576701897_GSEA/3R82A1.png","leadingEdgeNum":2,"leadingEdgeId":"318778;40537"},{"geneSet":"2L31B1","description":"chr2L31B1","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=2L;r=2L:10064121-10278811","enrichmentScore":-0.287567433108043,"normalizedEnrichmentScore":-0.683418046817894,"pValue":0.943762780221101,"FDR":0.936755124741777,"size":12,"plotPath":"./Project_wg_result1576701897_GSEA/2L31B1.png","leadingEdgeNum":5,"leadingEdgeId":"318995;34355;34341;34367;34349"},{"geneSet":"3R99F6","description":"chr3R99F6","link":"http://www.ensembl.org/Drosophila_melanogaster/Location/View?chr=3R;r=3R:30466050-30512214","enrichmentScore":-0.379008001233757,"normalizedEnrichmentScore":-0.860490569090098,"pValue":0.712328766372678,"FDR":0.968907251443403,"size":10,"plotPath":"./Project_wg_result1576701897_GSEA/3R99F6.png","leadingEdgeNum":8,"leadingEdgeId":"318559;43624;326112;43626;43623;3885583;43625;43628"}];
+var background = [{"geneSet":"2L35F1","enrichmentScore":-0.293145680785309,"normalizedEnrichmentScore":-0.71187183879661,"pValue":0.921052630646708,"FDR":0.996605174580703,"leadingEdgeNum":5},{"geneSet":"2L21E2","enrichmentScore":-0.27142847805789,"normalizedEnrichmentScore":-0.718646598475376,"pValue":0.951903806661419,"FDR":1,"leadingEdgeNum":18}];
+var geneTables = {"3L72D10":[{"userId":"CG13053","geneSymbol":"CG13053","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=50274","entrezgene":"50274","score":-5.1287},{"userId":"CG13054","geneSymbol":"CG13054","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39780","entrezgene":"39780","score":-5.9067},{"userId":"CG13055","geneSymbol":"CG13055","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39779","entrezgene":"39779","score":-4.9172},{"userId":"CG13070","geneSymbol":"CG13070","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39782","entrezgene":"39782","score":-6.5996},{"userId":"CG13071","geneSymbol":"CG13071","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39781","entrezgene":"39781","score":-5.5109},{"userId":"CG33687","geneSymbol":"CG33687","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3772322","entrezgene":"3772322","score":-6.8284},{"userId":"CG33690","geneSymbol":"CG33690","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3772513","entrezgene":"3772513","score":-5.2706},{"userId":"CG34248","geneSymbol":"CG34248","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=5740883","entrezgene":"5740883","score":-7.3546}],"2L34C4":[{"userId":"CG16852","geneSymbol":"CG16852","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34769","entrezgene":"34769","score":-6.014},{"userId":"CG16853","geneSymbol":"CG16853","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34771","entrezgene":"34771","score":-7.682},{"userId":"CG33641","geneSymbol":"CG33641","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3771970","entrezgene":"3771970","score":-7.0439},{"userId":"CG33642","geneSymbol":"CG33642","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3771733","entrezgene":"3771733","score":-7.9488},{"userId":"CG33644","geneSymbol":"CG33644","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3772563","entrezgene":"3772563","score":-7.3573},{"userId":"CG33645","geneSymbol":"CG33645","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3771913","entrezgene":"3771913","score":-6.5629}],"3L72E1":[{"userId":"CG13038","geneSymbol":"CG13038","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=50268","entrezgene":"50268","score":-5.0767},{"userId":"CG13040","geneSymbol":"CG13040","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39804","entrezgene":"39804","score":-4.6487},{"userId":"CG13042","geneSymbol":"CG13042","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39798","entrezgene":"39798","score":-7.7665},{"userId":"CG13045","geneSymbol":"CG13045","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39792","entrezgene":"39792","score":-5.1853},{"userId":"CG13058","geneSymbol":"CG13058","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39806","entrezgene":"39806","score":-5.3668},{"userId":"CG13060","geneSymbol":"CG13060","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39802","entrezgene":"39802","score":-6.9686},{"userId":"CG13062","geneSymbol":"CG13062","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39799","entrezgene":"39799","score":-4.5574},{"userId":"CG33060","geneSymbol":"CG33060","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39807","entrezgene":"39807","score":-6.5659},{"userId":"CG42718","geneSymbol":"CG42718","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=10178940","entrezgene":"10178940","score":-6.8198},{"userId":"CG43249","geneSymbol":"CG43249","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=12797917","entrezgene":"12797917","score":-7.5175},{"userId":"CG4982","geneSymbol":"CG4982","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39794","entrezgene":"39794","score":-4.9643}],"2L32C1":[{"userId":"CG14072","geneSymbol":"CG14072","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34513","entrezgene":"34513","score":-4.3245},{"userId":"CG33129","geneSymbol":"CG33129","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34514","entrezgene":"34514","score":0.4183},{"userId":"Nup154","geneSymbol":"Nup154","geneName":"Nucleoporin 154kD","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34527","entrezgene":"34527","score":0.506},{"userId":"RpL9","geneSymbol":"RpL9","geneName":"Ribosomal protein L9","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34526","entrezgene":"34526","score":0.3351},{"userId":"SCAR","geneSymbol":"SCAR","geneName":"SCAR","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34519","entrezgene":"34519","score":0.4634},{"userId":"YL-1","geneSymbol":"YL-1","geneName":"YL-1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34516","entrezgene":"34516","score":0.5563},{"userId":"dUTPase","geneSymbol":"dUTPase","geneName":"Deoxyuridine triphosphatase","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34529","entrezgene":"34529","score":0.6498},{"userId":"dpr2","geneSymbol":"dpr2","geneName":"defective proboscis extension response 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3346227","entrezgene":"3346227","score":-2.5028},{"userId":"lectin-33A","geneSymbol":"lectin-33A","geneName":"lectin-33A","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=53516","entrezgene":"53516","score":-1.9761},{"userId":"piwi","geneSymbol":"piwi","geneName":"P-element induced wimpy testis","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34521","entrezgene":"34521","score":0.5836}],"2R":[{"userId":"CG33680","geneSymbol":"CG33680","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3771724","entrezgene":"3771724","score":-8.2178},{"userId":"CG34038","geneSymbol":"CG34038","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3885596","entrezgene":"3885596","score":-6.3291},{"userId":"Kr","geneSymbol":"Kr","geneName":"Kruppel","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=38012","entrezgene":"38012","score":-5.151},{"userId":"Sfp60F","geneSymbol":"Sfp60F","geneName":"Seminal fluid protein 60F","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=8673980","entrezgene":"8673980","score":-7.0351}],"2L22E1":[{"userId":"CG18641","geneSymbol":"CG18641","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33429","entrezgene":"33429","score":-3.9018},{"userId":"CG31948","geneSymbol":"CG31948","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326178","entrezgene":"326178","score":-8.7381},{"userId":"CG31949","geneSymbol":"CG31949","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=319042","entrezgene":"319042","score":-4.6417},{"userId":"CG34447","geneSymbol":"CG34447","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=5740813","entrezgene":"5740813","score":-7.0607},{"userId":"CG34448","geneSymbol":"CG34448","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=5740554","entrezgene":"5740554","score":-4.4851},{"userId":"CG3557","geneSymbol":"CG3557","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33426","entrezgene":"33426","score":-5.4472},{"userId":"CG43750","geneSymbol":"CG43750","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=14462673","entrezgene":"14462673","score":-7.2946}],"3L68E3":[{"userId":"CCDC151","geneSymbol":"CCDC151","geneName":"Coiled-coil domain containing protein 151","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39345","entrezgene":"39345","score":-6.1454},{"userId":"CG11588","geneSymbol":"CG11588","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39347","entrezgene":"39347","score":-8.1738},{"userId":"CG17826","geneSymbol":"CG17826","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39354","entrezgene":"39354","score":-5.0408},{"userId":"CG43294","geneSymbol":"CG43294","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=12798218","entrezgene":"12798218","score":-5.2524},{"userId":"CG7248","geneSymbol":"CG7248","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39356","entrezgene":"39356","score":-4.4456},{"userId":"CG7252","geneSymbol":"CG7252","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39353","entrezgene":"39353","score":-4.9516},{"userId":"Rpt4R","geneSymbol":"Rpt4R","geneName":"Regulatory particle triple-A ATPase 4-related","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39351","entrezgene":"39351","score":-4.4103},{"userId":"obst-G","geneSymbol":"obst-G","geneName":"obstructor-G","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39355","entrezgene":"39355","score":-6.9369}],"3R93F14":[{"userId":"CG17819","geneSymbol":"CG17819","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42579","entrezgene":"42579","score":-6.5523},{"userId":"CG17843","geneSymbol":"CG17843","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42583","entrezgene":"42583","score":-3.3363},{"userId":"CG31178","geneSymbol":"CG31178","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42575","entrezgene":"42575","score":-6.0874},{"userId":"CG31465","geneSymbol":"CG31465","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42577","entrezgene":"42577","score":-4.636},{"userId":"CG6332","geneSymbol":"CG6332","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42585","entrezgene":"42585","score":-3.1},{"userId":"CG6690","geneSymbol":"CG6690","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42582","entrezgene":"42582","score":-5.2664},{"userId":"Gr93b","geneSymbol":"Gr93b","geneName":"Gustatory receptor 93b","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=117472","entrezgene":"117472","score":-4.6528},{"userId":"Gr93d","geneSymbol":"Gr93d","geneName":"Gustatory receptor 93d","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=117470","entrezgene":"117470","score":-3.5826},{"userId":"P5CDh2","geneSymbol":"P5CDh2","geneName":"delta-1-Pyrroline-5-carboxylate dehydrogenase 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32625","entrezgene":"32625","score":-5.6215}],"3R82A1":[{"userId":"Or82a","geneSymbol":"Or82a","geneName":"Odorant receptor 82a","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=318778","entrezgene":"318778","score":-7.7818},{"userId":"TwdlV","geneSymbol":"TwdlV","geneName":"TweedleV","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40537","entrezgene":"40537","score":-8.0589}],"2L31B1":[{"userId":"CG13137","geneSymbol":"CG13137","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34349","entrezgene":"34349","score":-4.9179},{"userId":"CG31874","geneSymbol":"CG31874","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=318995","entrezgene":"318995","score":-3.4849},{"userId":"CG44153","geneSymbol":"CG44153","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34341","entrezgene":"34341","score":-3.6906},{"userId":"CG5731","geneSymbol":"CG5731","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34355","entrezgene":"34355","score":-3.5084},{"userId":"Ror","geneSymbol":"Ror","geneName":"Ror","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34367","entrezgene":"34367","score":-4.0329}],"3R99F6":[{"userId":"CG31371","geneSymbol":"CG31371","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43626","entrezgene":"43626","score":-4.0448},{"userId":"CG34041","geneSymbol":"CG34041","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=3885583","entrezgene":"3885583","score":-5.4073},{"userId":"PH4alphaMP","geneSymbol":"PH4alphaMP","geneName":"prolyl-4-hydroxylase-alpha MP","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43624","entrezgene":"43624","score":-3.1029},{"userId":"PH4alphaNE1","geneSymbol":"PH4alphaNE1","geneName":"prolyl-4-hydroxylase-alpha NE1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43625","entrezgene":"43625","score":-5.5757},{"userId":"PH4alphaNE2","geneSymbol":"PH4alphaNE2","geneName":"prolyl-4-hydroxylase-alpha NE2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43628","entrezgene":"43628","score":-6.8442},{"userId":"PH4alphaSG1","geneSymbol":"PH4alphaSG1","geneName":"prolyl-4-hydroxylase-alpha SG1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326112","entrezgene":"326112","score":-3.8028},{"userId":"PH4alphaSG2","geneSymbol":"PH4alphaSG2","geneName":"prolyl-4-hydroxylase-alpha SG2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43623","entrezgene":"43623","score":-4.3498},{"userId":"spdo","geneSymbol":"spdo","geneName":"sanpodo","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=318559","entrezgene":"318559","score":-2.4906}]};
+var clusters = {"ap":{"clusters":["3L72D10","2L34C4","3L72E1","2L32C1","2R","2L22E1","3L68E3","3R93F14","3R82A1","2L31B1","3R99F6"],"representatives":["3L72D10","2L34C4","3L72E1","2L32C1","2R","2L22E1","3L68E3","3R93F14","3R82A1","2L31B1","3R99F6"]},"wsc":{"representatives":["3L72E1","3L72D10","2L34C4","2L32C1","2L22E1","3L68E3","2R","3R93F14","3R99F6","3R82A1"],"coverage":[0.9359]}};
+
+wgLib({
+	enrichDatabase: "chromosomalLocation_CytogeneticBand",
+	organism: "dmelanogaster",
+	hostName: "http://www.webgestalt.org",
+	enrichment: enrichment,
+	background: background,
+	geneTables: geneTables,
+	clusters: clusters,
+	enrichMethod: "gsea",
+		standardId: "entrezgene",
+	volcano: {
+		labelTypes: ["geneSet", "description"],
+				dimensions: { width: 960, height: 500 },
+		autoPlaceLabels: true,
+		y: "FDR",
+
+		x: "normalizedEnrichmentScore",
+		xLabel: "normalizedEnrichmentScore",
+		xTransform: null,
+		radius: "leadingEdgeNum",
+		color: "leadingEdgeNum",
+			tooltipContent: ["geneSet", "description", "normalizedEnrichmentScore", "FDR", "pValue", "leadingEdgeNum"]
+					
+
+	},
+	bar: {
+		dimensions: { width: 960, height: 300 },
+		labelWidth: 200,
+		tooltipContent: ["geneSet", "description", "enrichmentRatio", "FDR", "pValue", "overlap"],
+		valueKey: "normalizedEnrichmentScore",
+		xLabel: "Normalized Enrichment Score"
+			}
+})
+
+
+</script>
+<footer class="footer has-text-centered">
+<p>WebGestalt is currently developed and maintained by Yuxing Liao, Suhas Vasaikar, Zhiao Shi and Bing Zhang at the <a target="_new" href=http://www.zhang-lab.org> Zhang Lab</a>. Other people who have made significant contribution to the project include Jing Wang, Dexter Duncan, Stefan Kirov and Jay Snoddy.</p>
+<p><b>Funding credits:</b> NIH/NCI (U24 CA210954); Leidos (15X038); CPRIT (RR160027); NIH/NIAAA (U01 AA016662, U01 AA013512); NIH/NIDA (P01 DA015027); NIH/NIMH (P50 MH078028, P50 MH096972); NIH/NCI (U24 CA159988); NIH/NIGMS (R01 GM088822).
+</p>
+</footer></body>
+</html>

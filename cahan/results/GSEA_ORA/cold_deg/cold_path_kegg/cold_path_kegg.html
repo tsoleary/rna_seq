@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>WebGestalt (WEB-based GEne SeT AnaLysis Toolkit)</title>
+<link rel="icon" type="image/png" href="https://s3-us-west-2.amazonaws.com/webgestalt/favicon.png">
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-42098540-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?flags=gated&features=es2015%2Ces2016%2Cfetch"></script>
+<script src="http://www.webgestalt.org/assets/0.4/build/vendor.min.js"></script>
+	
+	<script>window.cytoscape = null;</script>
+	<link rel="stylesheet" href="http://www.webgestalt.org/assets/0.4/build/vendor.css">
+	<link rel="stylesheet" href="http://www.webgestalt.org/assets/0.4/build/wg.css">
+<link rel="stylesheet" href="https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
+</head>
+<body>
+<header>
+	<div id="header-img"><a href="http://www.webgestalt.org"><img border="0" src="http://www.webgestalt.org/images/gsa.png"></a></div>
+	<div id="header-title">
+		<p id="header-title-text">WEB-based GEne SeT AnaLysis Toolkit</p>
+		<p id="header-subtitle-text">Translating gene lists into biological insights...</p>
+	</div>
+</header>
+<hr><main>
+<div id="app">
+<div class="loading-preinit" v-cloak><div class="loading-icon"></div></div>
+<div class="wrapper" v-cloak>
+<div class="level">
+	<div class="level-left">
+		<div class="level-item">
+			<h4 class="title is-4 has-text-primary">Summary</h4>
+		</div>
+	</div>
+	<div class="level-right">
+		<div class="level-item">
+			<a class="button is-text" href="Project_wg_result1576701795.zip" target="_blank">Result Download</a>
+		</div>
+	</div>
+</div>
+
+<section id="summary" class="summary">
+<div class="card" v-bind:class="{active: summaryShown}" >
+	<div class="card-header" v-on:click="summaryShown=!summaryShown">
+		<p class="card-header-title">Job summary</p>
+		<a href="#" class="card-header-icon">
+			<b-icon :icon="summaryShown ? 'chevron-up' : 'chevron-down'"></b-icon>
+		</a>
+	</div>
+	<div class="card-content content" v-show="summaryShown">
+		<ul id="summary-list"> 
+		<li><b>Enrichment method:</b> GSEA</li>
+		<li><b>Organism: </b>dmelanogaster</li>
+		<li>
+				<b>Enrichment Categories: </b>pathway_KEGG
+				<a class="has-text-info" href="http://www.webgestalt.org/api/geneset?organism=dmelanogaster&database=pathway_KEGG&fileType=gmt">
+					<b-icon icon="download" size="is-small"></b-icon>
+				</a>
+					</li>
+		
+			<li><b>Interesting list: </b>cold_deg_p_01_gsea_lfc_1576701795.rnk. <b>ID type: </b>genesymbol</li>
+						<li>The interesting list contains <b>6952</b> user IDs in which <b>6558</b> user IDs are unambiguously mapped to <b>6558</b> unique entrezgene IDs and <b>394</b> user IDs can not be mapped to any entrezgene ID.</li>
+			<li>The GO Slim summary are based upon the <b>6558</b> unique entrezgene IDs.</li>
+		
+
+		<li>Among the <b>6558</b> unique entrezgene IDs, <b>1002</b> IDs are annotated to the selected functional categories, which are used for the enrichment analysis.</li>
+</ul> 
+
+<p><b>Parameters for the enrichment analysis:</b></p>
+<ul><li><b>Minimum number of IDs in the category: </b>20</li>
+<li><b>Maximum number of IDs in the category: </b>500</li>
+
+<li><b>Significance Level:</b> Top 10</li>
+<li><b>Number of permutation: </b>1000</li>
+</ul>
+	<p>Based on the above parameters, <b>2 positive related </b>categories and <b>10 negative related </b>categories are identified as enriched categories
+	and all are shown in this report.
+	
+
+	</div>
+</div>
+</section>
+<section id="go-summary" class="summary">
+<div class="card" v-bind:class="{active: goShown}" >
+	<div class="card-header" v-on:click="goShown=!goShown">
+		<p class="card-header-title">GO Slim summary for the user uploaded IDs</p>
+		<a href="#" class="card-header-icon">
+			<b-icon :icon="goShown ? 'chevron-up' : 'chevron-down'"></b-icon>
+		</a>
+	</div>
+	<div v-show="goShown">
+		<div class="card-content">
+			<p>Each Biological Process, Cellular Component and Molecular Function category is represented by a red, blue and green bar, repectively.</p>
+			<p>The height of the bar represents the number of IDs in the user list and also in the category.</p>
+		</div>
+		<div class="card-image">
+			<img src="goslim_summary_wg_result1576701795.png" width="100%" height="100%" alt="Bar charts of enriched GO Slim terms"/>
+		</div>
+	</div>
+</div>
+</section> <h4 class="title is-4 has-text-primary">Enrichment Results</h4>
+<section id="enrich-result">
+	<p class="select-redundancy">
+		<b-tooltip label="Enriched gene sets are post-processed by two methods to reduce redundancy." type="is-dark" animated multilined dashed>
+			Redundancy reduction:
+		</b-tooltip>
+		<b-radio v-model="redundancy" native-value="all">All</b-radio>
+		<b-radio v-model="redundancy" native-value="ap">
+			<b-tooltip label="R package apcluster is used to cluster gene sets." type="is-dark" animated multilined dashed>
+				Affinity propagation
+			</b-tooltip>
+		</b-radio>
+		
+		<b-radio v-model="redundancy" native-value="wsc">
+			<b-tooltip label="Find top gene sets while maximizing gene coverage." type="is-dark" animated multilined dashed>
+				Weighted set cover
+			</b-tooltip>
+		</b-radio>
+	</p>
+	<b-tabs v-model="activeTab" type="is-toggle">
+		<b-tab-item label="Table">
+			<wg-result-table
+				:data="enrichmentData"
+				:method="enrichMethod"
+			></wg-result-table>
+		</b-tab-item>
+		<b-tab-item label="Bar chart">
+		<div class="vertical-center-container">
+			<wg-bar-plot
+				:dimensions="bar.dimensions"
+				:label-width="bar.labelWidth"
+				:data="enrichmentData"
+				:value-key="bar.valueKey"
+				:x-label="bar.xLabel">
+			</wg-bar-plot>
+		</div>
+		</b-tab-item>
+		<b-tab-item label="Volcano plot">
+		<div class="vertical-center-container">
+			<wg-volcano-plot
+				:data="volcanoData"
+				:x="volcano.x"
+				:y="volcano.y"
+				:dimensions="volcano.dimensions"
+				:x-label="volcano.xLabel"
+				:label-types="volcano.labelTypes"
+				:x-transform="volcano.xTransform"
+				:radius="volcano.radius"
+				:color="volcano.color"
+				:tooltip-content="volcano.tooltipContent"
+				:show-all-labels="false"
+				:auto-place-labels="true"
+			></wg-volcano-plot>
+		</div>
+		</b-tab-item>
+	</b-tabs>
+	<wg-gene-table
+		:data="geneTables"
+		:info="enrichment"
+		:standard-id="standardId"
+		:method="enrichMethod"
+		:organism="organism"
+		:host-name="hostName"
+		:sets-with-net="false"
+	></wg-gene-table>
+</section> 
+
+</div>
+</div>
+</main>
+	<script type="text/javascript" src="http://www.webgestalt.org/assets/0.4/build/wg.min.js"></script>
+<script type="text/javascript">
+var enrichment = [{"geneSet":"dme00190","description":"Oxidative phosphorylation","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme00190+34695+318868+19835750+40748+36328+246543+41806+39282+42739+42041+34482+12797919+41324+36900","enrichmentScore":-0.565152793225338,"normalizedEnrichmentScore":-1.47321170965589,"pValue":0.00601202404207212,"FDR":0.104241141647839,"size":23,"plotPath":"./Project_wg_result1576701795_GSEA/dme00190.png","leadingEdgeNum":14,"leadingEdgeId":"34695;318868;19835750;40748;36328;246543;41806;39282;42739;42041;34482;12797919;41324;36900"},{"geneSet":"dme00330","description":"Arginine and proline metabolism","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme00330+43624+50001+38986+326112+41922+40026+5740402+36844+36847+40028+43623+43629+43416+326188+43625+317911+42892+326114+43628+326209+39556","enrichmentScore":-0.41514140099551,"normalizedEnrichmentScore":-1.10135049835977,"pValue":0.276276275999723,"FDR":0.995420171672066,"size":28,"plotPath":"./Project_wg_result1576701795_GSEA/dme00330.png","leadingEdgeNum":21,"leadingEdgeId":"43624;50001;38986;326112;41922;40026;5740402;36844;36847;40028;43623;43629;43416;326188;43625;317911;42892;326114;43628;326209;39556"},{"geneSet":"dme01200","description":"Carbon metabolism","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme01200+117364+37900+36839+42326+40409+33475+39281+34198+43189+38358+41787+36904+37541+39469+41324+43191+41326","enrichmentScore":-0.423966174369395,"normalizedEnrichmentScore":-1.19694258873719,"pValue":0.097999999902,"FDR":1,"size":47,"plotPath":"./Project_wg_result1576701795_GSEA/dme01200.png","leadingEdgeNum":17,"leadingEdgeId":"117364;37900;36839;42326;40409;33475;39281;34198;43189;38358;41787;36904;37541;39469;41324;43191;41326"},{"geneSet":"dme03050","description":"Proteasome","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme03050+33449+33451+31511+2768973+43679+34726+42457","enrichmentScore":-0.429388210234535,"normalizedEnrichmentScore":-1.17365552054727,"pValue":0.12999999987,"FDR":1,"size":38,"plotPath":"./Project_wg_result1576701795_GSEA/dme03050.png","leadingEdgeNum":7,"leadingEdgeId":"33449;33451;31511;2768973;43679;34726;42457"},{"geneSet":"dme04624","description":"Toll and Imd signaling pathway","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme04624+50209+43256+43222+34969+36769+41087+41785+37216+38613+42504+32257+32358+32256+35047+35956+39063+32099+40034+31797+38858+42692","enrichmentScore":0.279177532146959,"normalizedEnrichmentScore":1.11704244394354,"pValue":0.199999960000008,"FDR":1,"size":22,"plotPath":"./Project_wg_result1576701795_GSEA/dme04624.png","leadingEdgeNum":21,"leadingEdgeId":"50209;43256;43222;34969;36769;41087;41785;37216;38613;42504;32257;32358;32256;35047;35956;39063;32099;40034;31797;38858;42692"},{"geneSet":"dme04142","description":"Lysosome","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme04142+37877+246543+34451+41806+42096+39282+42739+34482+41643+34494+36900","enrichmentScore":-0.421006961528644,"normalizedEnrichmentScore":-1.13564820486616,"pValue":0.212212211999788,"FDR":1,"size":31,"plotPath":"./Project_wg_result1576701795_GSEA/dme04142.png","leadingEdgeNum":11,"leadingEdgeId":"37877;246543;34451;41806;42096;39282;42739;34482;41643;34494;36900"},{"geneSet":"dme00010","description":"Glycolysis / Gluconeogenesis","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme00010+117364+40409+34586+33475+36649+36510+43189+41787+36904+32345+43191","enrichmentScore":-0.419812757439306,"normalizedEnrichmentScore":-1.12683612754416,"pValue":0.239478957675873,"FDR":1,"size":28,"plotPath":"./Project_wg_result1576701795_GSEA/dme00010.png","leadingEdgeNum":11,"leadingEdgeId":"117364;40409;34586;33475;36649;36510;43189;41787;36904;32345;43191"},{"geneSet":"dme00620","description":"Pyruvate metabolism","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme00620+31407+318995+31606+49997+36839+31830+40409+33475+39281+36510+41787+5740441+39469+34807","enrichmentScore":-0.423812148097381,"normalizedEnrichmentScore":-1.10921762013859,"pValue":0.27683049119676,"FDR":1,"size":21,"plotPath":"./Project_wg_result1576701795_GSEA/dme00620.png","leadingEdgeNum":14,"leadingEdgeId":"31407;318995;31606;49997;36839;31830;40409;33475;39281;36510;41787;5740441;39469;34807"},{"geneSet":"dme04120","description":"Ubiquitin mediated proteolysis","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme04120+32190+53445+33318+40900+38591+37808+12798588","enrichmentScore":-0.3810203711964,"normalizedEnrichmentScore":-1.0584045284237,"pValue":0.332999999667,"FDR":1,"size":38,"plotPath":"./Project_wg_result1576701795_GSEA/dme04120.png","leadingEdgeNum":7,"leadingEdgeId":"32190;53445;33318;40900;38591;37808;12798588"},{"geneSet":"dme03018","description":"RNA degradation","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme03018+48572+33796+34229+34901+34763","enrichmentScore":-0.409937600688996,"normalizedEnrichmentScore":-1.0658448714315,"pValue":0.359719438517315,"FDR":1,"size":22,"plotPath":"./Project_wg_result1576701795_GSEA/dme03018.png","leadingEdgeNum":5,"leadingEdgeId":"48572;33796;34229;34901;34763"},{"geneSet":"dme00480","description":"Glutathione metabolism","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme00480+32438+48340+48338+5740847+48337+38986+37695+48339+37194+36844+36847+31995+326187+36524+326188+31994+326209","enrichmentScore":-0.357581495589743,"normalizedEnrichmentScore":-0.963111408242129,"pValue":0.575999999424,"FDR":1,"size":28,"plotPath":"./Project_wg_result1576701795_GSEA/dme00480.png","leadingEdgeNum":17,"leadingEdgeId":"32438;48340;48338;5740847;48337;38986;37695;48339;37194;36844;36847;31995;326187;36524;326188;31994;326209"},{"geneSet":"dme04214","description":"Apoptosis","link":"http://www.kegg.jp/kegg-bin/show_pathway?dme04214+31165+33445+40653+252554+37216+33782+40958+37247+43651+32566+45827+41140+32256+31581+39962+32608+33638+42745+42692+40014+34995+32360","enrichmentScore":0.217411260709914,"normalizedEnrichmentScore":0.819071757913646,"pValue":0.999999666666778,"FDR":1,"size":22,"plotPath":"./Project_wg_result1576701795_GSEA/dme04214.png","leadingEdgeNum":22,"leadingEdgeId":"31165;33445;40653;252554;37216;33782;40958;37247;43651;32566;45827;41140;32256;31581;39962;32608;33638;42745;42692;40014;34995;32360"}];
+var background = [{"geneSet":"dme03015","enrichmentScore":-0.352104169100204,"normalizedEnrichmentScore":-0.943446154791319,"pValue":0.618999999381,"FDR":1,"leadingEdgeNum":5},{"geneSet":"dme01230","enrichmentScore":-0.334038381956997,"normalizedEnrichmentScore":-0.880062258884414,"pValue":0.705705704999294,"FDR":1,"leadingEdgeNum":9},{"geneSet":"dme04145","enrichmentScore":-0.326638546566921,"normalizedEnrichmentScore":-0.910440162846934,"pValue":0.73999999926,"FDR":1,"leadingEdgeNum":14},{"geneSet":"dme04146","enrichmentScore":-0.332766376890113,"normalizedEnrichmentScore":-0.875422526137389,"pValue":0.741741740999257,"FDR":1,"leadingEdgeNum":9},{"geneSet":"dme03013","enrichmentScore":-0.302189806863675,"normalizedEnrichmentScore":-0.85148589928742,"pValue":0.853999999146,"FDR":1,"leadingEdgeNum":4},{"geneSet":"dme00982","enrichmentScore":-0.298086993282638,"normalizedEnrichmentScore":-0.775795297978079,"pValue":0.898797594289782,"FDR":1,"leadingEdgeNum":19},{"geneSet":"dme04080","enrichmentScore":-0.293517239364712,"normalizedEnrichmentScore":-0.808417123900308,"pValue":0.898999999101,"FDR":1,"leadingEdgeNum":33},{"geneSet":"dme00980","enrichmentScore":-0.297556094110023,"normalizedEnrichmentScore":-0.772622500845,"pValue":0.900900899999098,"FDR":1,"leadingEdgeNum":19},{"geneSet":"dme00512","enrichmentScore":-0.284436555129549,"normalizedEnrichmentScore":-0.737058700573228,"pValue":0.927638190022474,"FDR":1,"leadingEdgeNum":11},{"geneSet":"dme00230","enrichmentScore":-0.281750383065935,"normalizedEnrichmentScore":-0.785951789555115,"pValue":0.935999999064,"FDR":1,"leadingEdgeNum":14},{"geneSet":"dme04310","enrichmentScore":-0.269207234545124,"normalizedEnrichmentScore":-0.757934153768591,"pValue":0.957999999042,"FDR":1,"leadingEdgeNum":8},{"geneSet":"dme04213","enrichmentScore":-0.240229651641393,"normalizedEnrichmentScore":-0.630936795032185,"pValue":0.988955822300245,"FDR":1,"leadingEdgeNum":14},{"geneSet":"dme00983","enrichmentScore":-0.235910659558926,"normalizedEnrichmentScore":-0.634189318773419,"pValue":0.990999999009,"FDR":1,"leadingEdgeNum":23},{"geneSet":"dme01100","enrichmentScore":-0.256692866032903,"normalizedEnrichmentScore":-0.793871979645147,"pValue":0.998999999001,"FDR":1,"leadingEdgeNum":114},{"geneSet":"dme04140","enrichmentScore":-0.109977065042013,"normalizedEnrichmentScore":-0.303356471249491,"pValue":0.999999999,"FDR":1,"leadingEdgeNum":3},{"geneSet":"dme04141","enrichmentScore":-0.192123436706148,"normalizedEnrichmentScore":-0.539566245249392,"pValue":0.999999999,"FDR":1,"leadingEdgeNum":5},{"geneSet":"dme04150","enrichmentScore":-0.159491213918758,"normalizedEnrichmentScore":-0.428468914584936,"pValue":0.999999999,"FDR":1,"leadingEdgeNum":6}];
+var geneTables = {"dme00190":[{"userId":"CG31644","geneSymbol":"CG31644","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=318868","entrezgene":"318868","score":-4.3429},{"userId":"CG43206","geneSymbol":"CG43206","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=12797919","entrezgene":"12797919","score":-7.203},{"userId":"CG44296","geneSymbol":"CG44296","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=19835750","entrezgene":"19835750","score":-4.4936},{"userId":"CG6629","geneSymbol":"CG6629","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41324","entrezgene":"41324","score":-7.4347},{"userId":"Vha100-3","geneSymbol":"Vha100-3","geneName":"Vacuolar H[+] ATPase 100kD subunit 3","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=246543","entrezgene":"246543","score":-4.9609},{"userId":"Vha14-2","geneSymbol":"Vha14-2","geneName":"Vacuolar H[+] ATPase 14kD subunit 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40748","entrezgene":"40748","score":-4.5749},{"userId":"Vha16-2","geneSymbol":"Vha16-2","geneName":"Vacuolar H[+] ATPase 16kD subunit 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39282","entrezgene":"39282","score":-5.6543},{"userId":"Vha16-4","geneSymbol":"Vha16-4","geneName":"Vacuolar H[+] ATPase 16kD subunit 4","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36900","entrezgene":"36900","score":-7.5459},{"userId":"Vha16-5","geneSymbol":"Vha16-5","geneName":"Vacuolar H[+] ATPase 16kD subunit 5","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34482","entrezgene":"34482","score":-6.8125},{"userId":"Vha36-2","geneSymbol":"Vha36-2","geneName":"Vacuolar H[+] ATPase 36kD subunit 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36328","entrezgene":"36328","score":-4.7383},{"userId":"Vha68-3","geneSymbol":"Vha68-3","geneName":"Vacuolar H[+] ATPase 68kD subunit 3","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34695","entrezgene":"34695","score":-4.3045},{"userId":"VhaAC39-2","geneSymbol":"VhaAC39-2","geneName":"Vacuolar H[+] ATPase AC39 subunit 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42739","entrezgene":"42739","score":-5.7594},{"userId":"VhaM9.7-d","geneSymbol":"VhaM9.7-d","geneName":"Vacuolar H[+] ATPase M9.7 subunit d","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42041","entrezgene":"42041","score":-6.2497},{"userId":"VhaPPA1-2","geneSymbol":"VhaPPA1-2","geneName":"Vacuolar H[+] ATPase PPA1 subunit 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41806","entrezgene":"41806","score":-5.3273}],"dme00330":[{"userId":"CG11828","geneSymbol":"CG11828","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43416","entrezgene":"43416","score":-4.8141},{"userId":"CG13611","geneSymbol":"CG13611","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42892","entrezgene":"42892","score":-5.9439},{"userId":"CG15864","geneSymbol":"CG15864","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=50001","entrezgene":"50001","score":-3.3402},{"userId":"CG18231","geneSymbol":"CG18231","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40026","entrezgene":"40026","score":-3.8823},{"userId":"CG32199","geneSymbol":"CG32199","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40028","entrezgene":"40028","score":-4.3457},{"userId":"CG32201","geneSymbol":"CG32201","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=317911","entrezgene":"317911","score":-5.8169},{"userId":"CG34345","geneSymbol":"CG34345","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=5740402","entrezgene":"5740402","score":-3.8967},{"userId":"CG4546","geneSymbol":"CG4546","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41922","entrezgene":"41922","score":-3.8379},{"userId":"CG6661","geneSymbol":"CG6661","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39556","entrezgene":"39556","score":-8.2436},{"userId":"CG9698","geneSymbol":"CG9698","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43629","entrezgene":"43629","score":-4.5238},{"userId":"PH4alphaMP","geneSymbol":"PH4alphaMP","geneName":"prolyl-4-hydroxylase-alpha MP","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43624","entrezgene":"43624","score":-3.1029},{"userId":"PH4alphaNE1","geneSymbol":"PH4alphaNE1","geneName":"prolyl-4-hydroxylase-alpha NE1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43625","entrezgene":"43625","score":-5.5757},{"userId":"PH4alphaNE2","geneSymbol":"PH4alphaNE2","geneName":"prolyl-4-hydroxylase-alpha NE2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43628","entrezgene":"43628","score":-6.8442},{"userId":"PH4alphaNE3","geneSymbol":"PH4alphaNE3","geneName":"prolyl-4-hydroxylase-alpha NE3","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326114","entrezgene":"326114","score":-6.0764},{"userId":"PH4alphaSG1","geneSymbol":"PH4alphaSG1","geneName":"prolyl-4-hydroxylase-alpha SG1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326112","entrezgene":"326112","score":-3.8028},{"userId":"PH4alphaSG2","geneSymbol":"PH4alphaSG2","geneName":"prolyl-4-hydroxylase-alpha SG2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43623","entrezgene":"43623","score":-4.3498},{"userId":"S-Lap1","geneSymbol":"S-Lap1","geneName":"Sperm-Leucylaminopeptidase 1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=38986","entrezgene":"38986","score":-3.6507},{"userId":"S-Lap2","geneSymbol":"S-Lap2","geneName":"Sperm-Leucylaminopeptidase 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326209","entrezgene":"326209","score":-7.1172},{"userId":"S-Lap4","geneSymbol":"S-Lap4","geneName":"Sperm-Leucylaminopeptidase 4","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326188","entrezgene":"326188","score":-5.4847},{"userId":"S-Lap8","geneSymbol":"S-Lap8","geneName":"Sperm-Leucylaminopeptidase 8","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36844","entrezgene":"36844","score":-4.2125},{"userId":"loopin-1","geneSymbol":"loopin-1","geneName":"loopin-1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36847","entrezgene":"36847","score":-4.278}],"dme01200":[{"userId":"CG10748","geneSymbol":"CG10748","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39469","entrezgene":"39469","score":-6.9217},{"userId":"CG11249","geneSymbol":"CG11249","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40409","entrezgene":"40409","score":-4.8855},{"userId":"CG11291","geneSymbol":"CG11291","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37541","entrezgene":"37541","score":-6.359},{"userId":"CG2964","geneSymbol":"CG2964","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33475","entrezgene":"33475","score":-5.1145},{"userId":"CG32487","geneSymbol":"CG32487","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=38358","entrezgene":"38358","score":-5.9106},{"userId":"CG3483","geneSymbol":"CG3483","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37900","entrezgene":"37900","score":-4.6562},{"userId":"CG4706","geneSymbol":"CG4706","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41326","entrezgene":"41326","score":-9.0499},{"userId":"CG5432","geneSymbol":"CG5432","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43189","entrezgene":"43189","score":-5.8324},{"userId":"CG6140","geneSymbol":"CG6140","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39281","entrezgene":"39281","score":-5.5859},{"userId":"CG6255","geneSymbol":"CG6255","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42326","entrezgene":"42326","score":-4.7762},{"userId":"CG6629","geneSymbol":"CG6629","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41324","entrezgene":"41324","score":-7.4347},{"userId":"CG7362","geneSymbol":"CG7362","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41787","entrezgene":"41787","score":-5.9744},{"userId":"CG7848","geneSymbol":"CG7848","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36839","entrezgene":"36839","score":-4.6865},{"userId":"CG9010","geneSymbol":"CG9010","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36904","entrezgene":"36904","score":-6.3209},{"userId":"CG9314","geneSymbol":"CG9314","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34198","entrezgene":"34198","score":-5.7589},{"userId":"Hex-t1","geneSymbol":"Hex-t1","geneName":"Hex-t1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=117364","entrezgene":"117364","score":-4.6316},{"userId":"Hex-t2","geneSymbol":"Hex-t2","geneName":"Hex-t2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43191","entrezgene":"43191","score":-8.6142}],"dme03050":[{"userId":"Prosalpha3T","geneSymbol":"Prosalpha3T","geneName":"Proteasome alpha3 subunit, Testis-specific","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43679","entrezgene":"43679","score":-7.7729},{"userId":"Prosalpha4T1","geneSymbol":"Prosalpha4T1","geneName":"Proteasome alpha4 subunit, Testis-specific 1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42457","entrezgene":"42457","score":-8.0301},{"userId":"Prosalpha6T","geneSymbol":"Prosalpha6T","geneName":"Proteasome alpha6 subunit, Testis-specific","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34726","entrezgene":"34726","score":-7.824},{"userId":"Prosbeta2R1","geneSymbol":"Prosbeta2R1","geneName":"Proteasome beta2 subunit-related 1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31511","entrezgene":"31511","score":-6.7317},{"userId":"Prosbeta4R1","geneSymbol":"Prosbeta4R1","geneName":"Proteasome beta4 subunit-related 1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33449","entrezgene":"33449","score":-5.9079},{"userId":"Prosbeta4R2","geneSymbol":"Prosbeta4R2","geneName":"Proteasome beta4 subunit-related 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33451","entrezgene":"33451","score":-6.1538},{"userId":"Rpn12R","geneSymbol":"Rpn12R","geneName":"Regulatory particle non-ATPase 12-related","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=2768973","entrezgene":"2768973","score":-7.0514}],"dme04624":[{"userId":"GNBP1","geneSymbol":"GNBP1","geneName":"Gram-negative bacteria binding protein 1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40034","entrezgene":"40034","score":-1.5353},{"userId":"IM3","geneSymbol":"IM3","geneName":"Immune induced molecule 3","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=50209","entrezgene":"50209","score":0.7863},{"userId":"Myd88","geneSymbol":"Myd88","geneName":"Myd88","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=35956","entrezgene":"35956","score":0.4502},{"userId":"PGRP-LC","geneSymbol":"PGRP-LC","geneName":"Peptidoglycan recognition protein LC","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39063","entrezgene":"39063","score":-0.8309},{"userId":"PGRP-SA","geneSymbol":"PGRP-SA","geneName":"Peptidoglycan recognition protein SA","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32099","entrezgene":"32099","score":-1.454},{"userId":"PGRP-SD","geneSymbol":"PGRP-SD","geneName":"Peptidoglycan recognition protein SD","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=38858","entrezgene":"38858","score":-1.9583},{"userId":"Rel","geneSymbol":"Rel","geneName":"Relish","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41087","entrezgene":"41087","score":0.6056},{"userId":"Tab2","geneSymbol":"Tab2","geneName":"TAK1-associated binding protein 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37216","entrezgene":"37216","score":0.6026},{"userId":"Takl2","geneSymbol":"Takl2","geneName":"Tak1-like 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42692","entrezgene":"42692","score":-2.5309},{"userId":"Tl","geneSymbol":"Tl","geneName":"Toll","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43222","entrezgene":"43222","score":0.7216},{"userId":"Uev1A","geneSymbol":"Uev1A","geneName":"Ubiquitin-conjugating enzyme variant 1A","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=38613","entrezgene":"38613","score":0.6001},{"userId":"ben","geneSymbol":"ben","geneName":"bendless","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32358","entrezgene":"32358","score":0.5086},{"userId":"cact","geneSymbol":"cact","geneName":"cactus","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34969","entrezgene":"34969","score":0.6657},{"userId":"casp","geneSymbol":"casp","geneName":"caspar","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36769","entrezgene":"36769","score":0.6537},{"userId":"dl","geneSymbol":"dl","geneName":"dorsal","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=35047","entrezgene":"35047","score":0.4567},{"userId":"eff","geneSymbol":"eff","geneName":"effete","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41785","entrezgene":"41785","score":0.6054},{"userId":"hep","geneSymbol":"hep","geneName":"hemipterous","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32256","entrezgene":"32256","score":0.4578},{"userId":"lic","geneSymbol":"lic","geneName":"licorne","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32257","entrezgene":"32257","score":0.5627},{"userId":"slmb","geneSymbol":"slmb","geneName":"supernumerary limbs","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42504","entrezgene":"42504","score":0.5683},{"userId":"spirit","geneSymbol":"spirit","geneName":"Serine Protease Immune Response Integrator","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31797","entrezgene":"31797","score":-1.6335},{"userId":"spz","geneSymbol":"spz","geneName":"spatzle","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43256","entrezgene":"43256","score":0.7419}],"dme04142":[{"userId":"CG11406","geneSymbol":"CG11406","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37877","entrezgene":"37877","score":-4.936},{"userId":"CG17134","geneSymbol":"CG17134","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34494","entrezgene":"34494","score":-6.9298},{"userId":"CG18301","geneSymbol":"CG18301","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34451","entrezgene":"34451","score":-5.1661},{"userId":"CG5863","geneSymbol":"CG5863","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42096","entrezgene":"42096","score":-5.4914},{"userId":"Lip3","geneSymbol":"Lip3","geneName":"Lip3","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41643","entrezgene":"41643","score":-6.8595},{"userId":"Vha100-3","geneSymbol":"Vha100-3","geneName":"Vacuolar H[+] ATPase 100kD subunit 3","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=246543","entrezgene":"246543","score":-4.9609},{"userId":"Vha16-2","geneSymbol":"Vha16-2","geneName":"Vacuolar H[+] ATPase 16kD subunit 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39282","entrezgene":"39282","score":-5.6543},{"userId":"Vha16-4","geneSymbol":"Vha16-4","geneName":"Vacuolar H[+] ATPase 16kD subunit 4","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36900","entrezgene":"36900","score":-7.5459},{"userId":"Vha16-5","geneSymbol":"Vha16-5","geneName":"Vacuolar H[+] ATPase 16kD subunit 5","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34482","entrezgene":"34482","score":-6.8125},{"userId":"VhaAC39-2","geneSymbol":"VhaAC39-2","geneName":"Vacuolar H[+] ATPase AC39 subunit 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42739","entrezgene":"42739","score":-5.7594},{"userId":"VhaPPA1-2","geneSymbol":"VhaPPA1-2","geneName":"Vacuolar H[+] ATPase PPA1 subunit 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41806","entrezgene":"41806","score":-5.3273}],"dme00010":[{"userId":"CG10202","geneSymbol":"CG10202","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36649","entrezgene":"36649","score":-5.4065},{"userId":"CG10996","geneSymbol":"CG10996","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32345","entrezgene":"32345","score":-6.4011},{"userId":"CG11249","geneSymbol":"CG11249","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40409","entrezgene":"40409","score":-4.8855},{"userId":"CG13334","geneSymbol":"CG13334","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36510","entrezgene":"36510","score":-5.6083},{"userId":"CG2964","geneSymbol":"CG2964","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33475","entrezgene":"33475","score":-5.1145},{"userId":"CG4988","geneSymbol":"CG4988","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34586","entrezgene":"34586","score":-4.9671},{"userId":"CG5432","geneSymbol":"CG5432","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43189","entrezgene":"43189","score":-5.8324},{"userId":"CG7362","geneSymbol":"CG7362","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41787","entrezgene":"41787","score":-5.9744},{"userId":"CG9010","geneSymbol":"CG9010","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36904","entrezgene":"36904","score":-6.3209},{"userId":"Hex-t1","geneSymbol":"Hex-t1","geneName":"Hex-t1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=117364","entrezgene":"117364","score":-4.6316},{"userId":"Hex-t2","geneSymbol":"Hex-t2","geneName":"Hex-t2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43191","entrezgene":"43191","score":-8.6142}],"dme00620":[{"userId":"Acyp","geneSymbol":"Acyp","geneName":"Acylphosphatase","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34807","entrezgene":"34807","score":-7.2145},{"userId":"CG10748","geneSymbol":"CG10748","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39469","entrezgene":"39469","score":-6.9217},{"userId":"CG10970","geneSymbol":"CG10970","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31830","entrezgene":"31830","score":-4.7227},{"userId":"CG11052","geneSymbol":"CG11052","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=49997","entrezgene":"49997","score":-3.7059},{"userId":"CG11249","geneSymbol":"CG11249","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40409","entrezgene":"40409","score":-4.8855},{"userId":"CG13334","geneSymbol":"CG13334","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36510","entrezgene":"36510","score":-5.6083},{"userId":"CG2964","geneSymbol":"CG2964","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33475","entrezgene":"33475","score":-5.1145},{"userId":"CG31874","geneSymbol":"CG31874","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=318995","entrezgene":"318995","score":-3.4849},{"userId":"CG34161","geneSymbol":"CG34161","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=5740441","entrezgene":"5740441","score":-6.4075},{"userId":"CG4095","geneSymbol":"CG4095","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31606","entrezgene":"31606","score":-3.5663},{"userId":"CG6140","geneSymbol":"CG6140","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39281","entrezgene":"39281","score":-5.5859},{"userId":"CG7024","geneSymbol":"CG7024","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31407","entrezgene":"31407","score":-3.446},{"userId":"CG7362","geneSymbol":"CG7362","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41787","entrezgene":"41787","score":-5.9744},{"userId":"CG7848","geneSymbol":"CG7848","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36839","entrezgene":"36839","score":-4.6865}],"dme04120":[{"userId":"CG17030","geneSymbol":"CG17030","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=38591","entrezgene":"38591","score":-6.3182},{"userId":"CG2574","geneSymbol":"CG2574","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32190","entrezgene":"32190","score":-4.815},{"userId":"CG43089","geneSymbol":"CG43089","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=12798588","entrezgene":"12798588","score":-7.0761},{"userId":"CG5440","geneSymbol":"CG5440","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33318","entrezgene":"33318","score":-6.0344},{"userId":"Roc1b","geneSymbol":"Roc1b","geneName":"Regulator of cullins 1b","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=53445","entrezgene":"53445","score":-5.2356},{"userId":"Ubc84D","geneSymbol":"Ubc84D","geneName":"Ubiquitin conjugating enzyme 84D","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40900","entrezgene":"40900","score":-6.3011},{"userId":"fzr2","geneSymbol":"fzr2","geneName":"fizzy-related 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37808","entrezgene":"37808","score":-6.9763}],"dme03018":[{"userId":"CG15262","geneSymbol":"CG15262","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34901","entrezgene":"34901","score":-7.6406},{"userId":"Hsp60B","geneSymbol":"Hsp60B","geneName":"Heat shock protein 60B","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=48572","entrezgene":"48572","score":-4.3416},{"userId":"Hsp60C","geneSymbol":"Hsp60C","geneName":"Heat shock protein 60C","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33796","entrezgene":"33796","score":-5.02},{"userId":"Hsp60D","geneSymbol":"Hsp60D","geneName":"Heat shock protein 60D","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34763","entrezgene":"34763","score":-8.6118},{"userId":"Rcd-1r","geneSymbol":"Rcd-1r","geneName":"Rcd-1 related","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34229","entrezgene":"34229","score":-5.4732}],"dme00480":[{"userId":"CG15116","geneSymbol":"CG15116","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37194","entrezgene":"37194","score":-4.1972},{"userId":"CG17636","geneSymbol":"CG17636","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=5740847","entrezgene":"5740847","score":-3.3632},{"userId":"CG2111","geneSymbol":"CG2111","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31995","entrezgene":"31995","score":-4.5887},{"userId":"CG33177","geneSymbol":"CG33177","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32438","entrezgene":"32438","score":-2.943},{"userId":"CG3502","geneSymbol":"CG3502","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37695","entrezgene":"37695","score":-3.7216},{"userId":"CG9806","geneSymbol":"CG9806","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31994","entrezgene":"31994","score":-5.8528},{"userId":"GstD4","geneSymbol":"GstD4","geneName":"Glutathione S transferase D4","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=48337","entrezgene":"48337","score":-3.488},{"userId":"GstD5","geneSymbol":"GstD5","geneName":"Glutathione S transferase D5","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=48338","entrezgene":"48338","score":-3.2201},{"userId":"GstD6","geneSymbol":"GstD6","geneName":"Glutathione S transferase D6","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=48339","entrezgene":"48339","score":-3.8928},{"userId":"GstD7","geneSymbol":"GstD7","geneName":"Glutathione S transferase D7","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=48340","entrezgene":"48340","score":-3.0604},{"userId":"S-Lap1","geneSymbol":"S-Lap1","geneName":"Sperm-Leucylaminopeptidase 1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=38986","entrezgene":"38986","score":-3.6507},{"userId":"S-Lap2","geneSymbol":"S-Lap2","geneName":"Sperm-Leucylaminopeptidase 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326209","entrezgene":"326209","score":-7.1172},{"userId":"S-Lap3","geneSymbol":"S-Lap3","geneName":"Sperm-Leucylaminopeptidase 3","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326187","entrezgene":"326187","score":-4.8351},{"userId":"S-Lap4","geneSymbol":"S-Lap4","geneName":"Sperm-Leucylaminopeptidase 4","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=326188","entrezgene":"326188","score":-5.4847},{"userId":"S-Lap7","geneSymbol":"S-Lap7","geneName":"Sperm-Leucylaminopeptidase 7","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36524","entrezgene":"36524","score":-4.9958},{"userId":"S-Lap8","geneSymbol":"S-Lap8","geneName":"Sperm-Leucylaminopeptidase 8","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36844","entrezgene":"36844","score":-4.2125},{"userId":"loopin-1","geneSymbol":"loopin-1","geneName":"loopin-1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=36847","entrezgene":"36847","score":-4.278}],"dme04214":[{"userId":"Cyt-c-d","geneSymbol":"Cyt-c-d","geneName":"Cytochrome c distal","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=34995","entrezgene":"34995","score":-4.4419},{"userId":"Drp1","geneSymbol":"Drp1","geneName":"Dynamin related protein 1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33445","entrezgene":"33445","score":0.6346},{"userId":"Eip74EF","geneSymbol":"Eip74EF","geneName":"Ecdysone-induced protein 74EF","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=39962","entrezgene":"39962","score":-0.3976},{"userId":"Lam","geneSymbol":"Lam","geneName":"Lamin","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33782","entrezgene":"33782","score":0.5853},{"userId":"Marf","geneSymbol":"Marf","geneName":"Mitochondrial assembly regulatory factor","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31581","entrezgene":"31581","score":0.4129},{"userId":"PEK","geneSymbol":"PEK","geneName":"pancreatic eIF-2alpha kinase","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40653","entrezgene":"40653","score":0.6208},{"userId":"Ras85D","geneSymbol":"Ras85D","geneName":"Ras oncogene at 85D","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=41140","entrezgene":"41140","score":0.4642},{"userId":"Tab2","geneSymbol":"Tab2","geneName":"TAK1-associated binding protein 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37216","entrezgene":"37216","score":0.6026},{"userId":"Takl2","geneSymbol":"Takl2","geneName":"Tak1-like 2","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42692","entrezgene":"42692","score":-2.5309},{"userId":"Traf4","geneSymbol":"Traf4","geneName":"TNF-receptor-associated factor 4","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=33638","entrezgene":"33638","score":-1.4206},{"userId":"betaNACtes1","geneSymbol":"betaNACtes1","geneName":"Nascent-associated complex beta-subunit-like, testis 1","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32360","entrezgene":"32360","score":-5.359},{"userId":"bic","geneSymbol":"bic","geneName":"bicaudal","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=45827","entrezgene":"45827","score":0.4736},{"userId":"eIF5","geneSymbol":"eIF5","geneName":"eukaryotic translation initiation factor 5","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32566","entrezgene":"32566","score":0.5045},{"userId":"fzo","geneSymbol":"fzo","geneName":"fuzzy onions","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=42745","entrezgene":"42745","score":-1.5296},{"userId":"grim","geneSymbol":"grim","geneName":"grim","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40014","entrezgene":"40014","score":-2.7756},{"userId":"hep","geneSymbol":"hep","geneName":"hemipterous","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32256","entrezgene":"32256","score":0.4578},{"userId":"hpo","geneSymbol":"hpo","geneName":"hippo","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=37247","entrezgene":"37247","score":0.5497},{"userId":"mei-41","geneSymbol":"mei-41","geneName":"meiotic 41","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=32608","entrezgene":"32608","score":-0.5518},{"userId":"puc","geneSymbol":"puc","geneName":"puckered","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=40958","entrezgene":"40958","score":0.5831},{"userId":"sav","geneSymbol":"sav","geneName":"salvador","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=252554","entrezgene":"252554","score":0.617},{"userId":"usp","geneSymbol":"usp","geneName":"ultraspiracle","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=31165","entrezgene":"31165","score":0.6691},{"userId":"wts","geneSymbol":"wts","geneName":"warts","gLink":"https://www.ncbi.nlm.nih.gov/gene/?term=43651","entrezgene":"43651","score":0.5405}]};
+var clusters = {"ap":{"clusters":[["dme00330"],["dme01200","dme00010","dme00620"],["dme03050"],["dme04624"],["dme04142","dme00190"],["dme04120"],["dme03018"],["dme00480"],["dme04214"]],"representatives":["dme00330","dme01200","dme03050","dme04624","dme04142","dme04120","dme03018","dme00480","dme04214"]},"wsc":{"representatives":["dme00190","dme01200","dme04624","dme00330","dme03050","dme00620","dme04142","dme04120","dme00480","dme03018"],"coverage":[0.8406]}};
+
+wgLib({
+	enrichDatabase: "pathway_KEGG",
+	organism: "dmelanogaster",
+	hostName: "http://www.webgestalt.org",
+	enrichment: enrichment,
+	background: background,
+	geneTables: geneTables,
+	clusters: clusters,
+	enrichMethod: "gsea",
+		standardId: "entrezgene",
+	volcano: {
+		labelTypes: ["geneSet", "description"],
+				dimensions: { width: 960, height: 500 },
+		autoPlaceLabels: true,
+		y: "FDR",
+
+		x: "normalizedEnrichmentScore",
+		xLabel: "normalizedEnrichmentScore",
+		xTransform: null,
+		radius: "leadingEdgeNum",
+		color: "leadingEdgeNum",
+			tooltipContent: ["geneSet", "description", "normalizedEnrichmentScore", "FDR", "pValue", "leadingEdgeNum"]
+					
+
+	},
+	bar: {
+		dimensions: { width: 960, height: 300 },
+		labelWidth: 200,
+		tooltipContent: ["geneSet", "description", "enrichmentRatio", "FDR", "pValue", "overlap"],
+		valueKey: "normalizedEnrichmentScore",
+		xLabel: "Normalized Enrichment Score"
+			}
+})
+
+
+</script>
+<footer class="footer has-text-centered">
+<p>WebGestalt is currently developed and maintained by Yuxing Liao, Suhas Vasaikar, Zhiao Shi and Bing Zhang at the <a target="_new" href=http://www.zhang-lab.org> Zhang Lab</a>. Other people who have made significant contribution to the project include Jing Wang, Dexter Duncan, Stefan Kirov and Jay Snoddy.</p>
+<p><b>Funding credits:</b> NIH/NCI (U24 CA210954); Leidos (15X038); CPRIT (RR160027); NIH/NIAAA (U01 AA016662, U01 AA013512); NIH/NIDA (P01 DA015027); NIH/NIMH (P50 MH078028, P50 MH096972); NIH/NCI (U24 CA159988); NIH/NIGMS (R01 GM088822).
+</p>
+</footer></body>
+</html>

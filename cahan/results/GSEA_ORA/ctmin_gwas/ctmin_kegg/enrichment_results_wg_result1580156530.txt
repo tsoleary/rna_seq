@@ -1,0 +1,11 @@
+geneSet	description	link	size	overlap	expect	enrichmentRatio	pValue	FDR	overlapId	userId
+dme04080	Neuroactive ligand-receptor interaction	http://www.kegg.jp/kegg-bin/show_pathway?dme04080+37892+42133	56	2	0.3865704424223408	5.173701298701299	0.05596968792111001	1	37892;42133	mAChR-A;Lgr1
+dme00564	Glycerophospholipid metabolism	http://www.kegg.jp/kegg-bin/show_pathway?dme00564+35738+33824	63	2	0.4348917477251334	4.598845598845599	0.06896227359144746	1	35738;33824	Gpdh;Dgk
+dme04146	Peroxisome	http://www.kegg.jp/kegg-bin/show_pathway?dme04146+42833+43772	91	2	0.6281769689363037	3.183816183816184	0.12893992889395456	1	42833;43772	CG12268;CG2316
+dme00730	Thiamine metabolism	http://www.kegg.jp/kegg-bin/show_pathway?dme00730+41236	21	1	0.1449639159083778	6.898268398268398	0.13577884716100186	1	41236	CG5361
+dme00350	Tyrosine metabolism	http://www.kegg.jp/kegg-bin/show_pathway?dme00350+41133	22	1	0.15186695952306245	6.5847107438016526	0.14178417418641465	1	41133	GstZ2
+dme02010	ABC transporters	http://www.kegg.jp/kegg-bin/show_pathway?dme02010+43772	22	1	0.15186695952306245	6.5847107438016526	0.14178417418641465	1	43772	CG2316
+dme04330	Notch signaling pathway	http://www.kegg.jp/kegg-bin/show_pathway?dme04330+36555	22	1	0.15186695952306245	6.5847107438016526	0.14178417418641465	1	36555	mam
+dme00900	Terpenoid backbone biosynthesis	http://www.kegg.jp/kegg-bin/show_pathway?dme00900+42803	27	1	0.18638217759648573	5.365319865319865	0.1712181374867071	1	42803	Hmgcr
+dme00981	Insect hormone biosynthesis	http://www.kegg.jp/kegg-bin/show_pathway?dme00981+36780	27	1	0.18638217759648573	5.365319865319865	0.1712181374867071	1	36780	Jhe
+dme04320	Dorso-ventral axis formation	http://www.kegg.jp/kegg-bin/show_pathway?dme04320+33611	28	1	0.1932852212111704	5.173701298701299	0.17698813779534406	1	33611	capu

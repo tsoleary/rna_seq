@@ -1,0 +1,11 @@
+geneSet	description	link	size	overlap	expect	enrichmentRatio	pValue	FDR	overlapId	userId
+dme03015	mRNA surveillance pathway	http://www.kegg.jp/kegg-bin/show_pathway?dme03015+43944+33437	73	2	0.32067775337307813	6.23679060665362	0.03942415825944501	1	43944;33437	CG3515;sbr
+dme04013	MAPK signaling pathway	http://www.kegg.jp/kegg-bin/show_pathway?dme04013+48973+34132	93	2	0.4085346721054283	4.895545314900153	0.06105229952774893	1	48973;34132	Btk29A;Src64B
+dme04150	mTOR signaling pathway	http://www.kegg.jp/kegg-bin/show_pathway?dme04150+45307+40090	96	2	0.42171320991528083	4.742559523809524	0.06459204412757247	1	45307;40090	fz;fz2
+dme04392	Hippo signaling pathway	http://www.kegg.jp/kegg-bin/show_pathway?dme04392+42734	16	1	0.07028553498588014	14.227678571428571	0.06817200928517375	1	42734	Rassf
+dme04310	Wnt signaling pathway	http://www.kegg.jp/kegg-bin/show_pathway?dme04310+45307+40090	100	2	0.4392845936617509	4.5528571428571425	0.0694211464410569	1	45307;40090	fz;fz2
+dme00062	Fatty acid elongation	http://www.kegg.jp/kegg-bin/show_pathway?dme00062+39860	17	1	0.07467838092249765	13.390756302521007	0.07228604014925644	1	39860	Baldspot
+dme00730	Thiamine metabolism	http://www.kegg.jp/kegg-bin/show_pathway?dme00730+35218	21	1	0.09224976466896768	10.840136054421768	0.08857408716494664	1	35218	CG16771
+dme01040	Biosynthesis of unsaturated fatty acids	http://www.kegg.jp/kegg-bin/show_pathway?dme01040+39860	25	1	0.10982114841543772	9.105714285714285	0.10459625456656985	1	39860	Baldspot
+dme00600	Sphingolipid metabolism	http://www.kegg.jp/kegg-bin/show_pathway?dme00600+326219	28	1	0.12299968622529024	8.130102040816327	0.11644081176529009	1	326219	Sk2
+dme04341	Hedgehog signaling pathway	http://www.kegg.jp/kegg-bin/show_pathway?dme04341+35851	38	1	0.16692814559146532	5.9906015037593985	0.1548801714666057	1	35851	ptc

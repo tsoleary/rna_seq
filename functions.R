@@ -180,7 +180,9 @@ plot_scatter_side_density_xy = function( xy_data,
     labs(x = labs_x, y = labs_y, color = labs_sets, size = labs_sets) +
     guides() +
     theme_bw() +
-    theme(plot.margin = margin(t = -4, r = -4, b = 2, l = 2, unit = "pt"))
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.margin = margin(t = -4, r = -4, b = 2, l = 2, unit = "pt"))
   p_x_density = ggplot(mapping = aes_string(x = x_, color = set_density_)) +
     geom_line(data = xy_data, stat = "density", color = bg.density.color) +
     geom_line(data = xy_data[get(set_density_) != bg.density.string], stat = "density") +
@@ -292,8 +294,11 @@ plot_scatter_side_density_assemble = function(components,
   p_y_density = components$y_density
   
   
-  #p_legend = cowplot::get_legend(p_scatter)
+  p_legend = cowplot::get_legend(p_scatter)
   d_legend = cowplot::get_legend(p_y_density)
+  
+  legends = cowplot::plot_grid(plotlist = c(list(p_legend), list(d_legend)),
+                               sscale = 0.5)
   
   grobs_y = sync_height(list(p_scatter + 
                                guides(color = "none", size = "none"), 
@@ -304,7 +309,9 @@ plot_scatter_side_density_assemble = function(components,
                             p_x_density + 
                               guides(color = "none")))
   
-  pg = cowplot::plot_grid(plotlist = c(grobs_x[2], list(d_legend), grobs_y), 
+  
+  
+  pg = cowplot::plot_grid(plotlist = c(grobs_x[2], list(legends), grobs_y), 
                           rel_widths = c(2, 1), rel_heights = c(1,2))
   if(main_title != ""){
     pg = cowplot::plot_grid(
