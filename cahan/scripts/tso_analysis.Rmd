@@ -704,6 +704,26 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps,
                           cat.col = c("blue", "red", "purple"), 
                           cat.fontfamily = "serif",
                           cat.fontface = "bold")
+# without thermal breadth
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
+                              CTmax = ctmax_snps),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max])),
+                          imagetype = "png",
+                          filename = "gwas_5_venn_diagram_ct.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
 ```
 
 ```{r venn_diagram_5_genes, include = FALSE}
@@ -739,6 +759,26 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene,
                           cat.col = c("blue", "red", "purple"), 
                           cat.fontfamily = "serif",
                           cat.fontface = "bold")
+# without thermal breadth
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene, 
+                              CTmax = ctmax_genes$gene),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max])),                          
+                          imagetype = "png",
+                          filename = "gwas_5_genes_venn_diagram_ct.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
 ```
 
 ```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-5) associated with each phenotype. B. The unique genes associated with those top SNPs"}
@@ -749,6 +789,22 @@ p1 <- cowplot::ggdraw() +
 
 p2 <- cowplot::ggdraw() + 
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_genes_venn_diagram.png",
+                      scale = 0.9)
+
+cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+
+```
+
+### Without thermal breadth
+
+```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-5) associated with each phenotype. B. The unique genes associated with those top SNPs"}
+
+p1 <- cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_venn_diagram_ct.png", 
+                      scale = 0.9)
+
+p2 <- cowplot::ggdraw() + 
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_genes_venn_diagram_ct.png",
                       scale = 0.9)
 
 cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
@@ -991,6 +1047,28 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps,
                           cat.col = c("blue", "red", "purple"), 
                           cat.fontfamily = "serif",
                           cat.fontface = "bold")
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
+                              CTmax = ctmax_snps),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max])),                          
+                          imagetype = "png",
+                          filename = "gwas_4_venn_diagram_ct.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+
 ```
 
 ```{r venn_diagram_4_genes, include = FALSE}
@@ -1028,6 +1106,26 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene,
                           cat.fontfamily = "serif",
                           rotation = 3,
                           cat.fontface = "bold")
+
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene, 
+                              CTmax = ctmax_genes$gene),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max])),                          
+                          imagetype = "png",
+                          filename = "gwas_4_genes_venn_diagram_ct.png",
+                          fill = c("blue", "red"),
+                          alpha = 0.5,
+                          label.col = c("white", "grey50", "white"),
+                          fontfamily = "serif",
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red"),
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
 ```
 
 ```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-4) associated with each phenotype. B. The unique genes associated with those top SNPs"}
@@ -1038,6 +1136,22 @@ p1 <- cowplot::ggdraw() +
 
 p2 <- cowplot::ggdraw() + 
   cowplot::draw_image(here::here("cahan/plots/gwas_4_genes_venn_diagram.png"),
+                      scale = 0.9)
+
+cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+
+```
+
+### Withouth thermal breadth
+
+```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-4) associated with each phenotype. B. The unique genes associated with those top SNPs"}
+
+p1 <- cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/gwas_4_venn_diagram_ct.png"), 
+                      scale = 0.9)
+
+p2 <- cowplot::ggdraw() + 
+  cowplot::draw_image(here::here("cahan/plots/gwas_4_genes_venn_diagram_ct.png"),
                       scale = 0.9)
 
 cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
