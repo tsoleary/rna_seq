@@ -1,8 +1,0 @@
-# Coverage: 1
-dme01100
-dme04080
-dme02010
-dme00982
-dme00830
-dme00330
-dme00040
