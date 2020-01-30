@@ -733,6 +733,38 @@ res_hot %>%
               delim = "^t", col_names = FALSE)
 
 
+# working on the transcription factors and seeing which differentially 
+# expressed genes and top GWAS genes are transcription factors
+
+dmel_tf <- read_delim(here::here("cahan/dmel_transcription_factors.txt"), 
+                      delim = "\t")
+
+res_hot %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene, log2FoldChange, padj) %>%
+  dplyr::arrange(gene)
+
+res_cold %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene, log2FoldChange, padj) %>%
+  dplyr::arrange(gene)
+
+gwas_hot_all %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene, ID, grps, AvgMixedPval) %>%
+  dplyr::arrange(gene)
+
+gwas_cold_all %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene, ID, grps, AvgMixedPval) %>%
+  dplyr::arrange(gene)
+
+
+
 
 
 
