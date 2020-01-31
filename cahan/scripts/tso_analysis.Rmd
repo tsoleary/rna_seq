@@ -114,6 +114,10 @@ temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
 total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
 #total <- full_join(total, gwas_tb, by = "gene", suffix = c("", ".tb"))
 # the termal breadth stuff to the 
+
+# add transcription factors
+dmel_tf <- read_delim(here::here("cahan/dmel_transcription_factors.txt"), 
+                      delim = "\t")
  
 # group by the significance
 deg_grouped <- group_deg(total, pval_cut = 0.01, lfc_cut = 0)
@@ -1414,4 +1418,232 @@ p2 <- cowplot::ggdraw() +
   cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"))
 
 cowplot::plot_grid(p1, p2, nrow = 2, labels = "AUTO")
+```
+
+
+# Transription factors
+
+## DEG
+
+```{r}
+# create a column that indicates where the deg
+res_cold$deg <- "Cold"
+res_hot$deg <- "Hot"
+
+
+comb_deg <- dplyr::bind_rows(res_cold, res_hot)
+
+
+t1 <- comb_deg %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::group_by(deg) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::count() %>%
+  dplyr::rename("TFs" = n)
+
+t2 <- comb_deg %>%
+  dplyr::filter(padj < 0.01) %>%  
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::group_by(deg, log2FoldChange < 0) %>%
+  dplyr::count() %>%
+  dplyr::rename("TFs" = n) %>% 
+  tidyr::pivot_wider(names_from = `log2FoldChange < 0`, values_from = TFs) %>%
+  dplyr::rename("Down-regulated" = `TRUE`, "Up-regulated" = `FALSE`)
+                    
+
+table <- full_join(t1, t2)
+
+table %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+### Heat-shock
+
+```{r}
+res_hot %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::group_by(log2FoldChange < 0) %>%
+  dplyr::arrange(`log2FoldChange < 0`, desc(log2FoldChange)) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(gene, log2FoldChange, padj) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Cold-shock
+```{r}
+res_cold %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::group_by(log2FoldChange < 0) %>%
+  dplyr::arrange(`log2FoldChange < 0`, desc(log2FoldChange)) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(gene, log2FoldChange, padj) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+
+
+
+
+
+### Cold-shock
+```{r}
+res_cold %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::group_by(log2FoldChange < 0) %>%
+  dplyr::arrange(`log2FoldChange < 0`, desc(log2FoldChange)) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(gene, log2FoldChange, padj) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Venn Diagram
+
+```{r, include = FALSE}
+cold_tf <- res_cold %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene)
+
+hot_tf <- res_hot %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene)
+
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(COLD = cold_tf$gene, 
+                              HOT = hot_tf$gene),
+                          category.names = c("COLD", "HOT"),
+                          imagetype = "png",
+                          filename = "deg_tf_venn_diagram.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "black", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r, fig.height = 4, fig.width = 4}
+cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/deg_tf_venn_diagram.png")
+```
+
+## GWAS
+
+### CTmax
+
+```{r}
+gwas_hot_all %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene, ID, grps, AvgMixedPval) %>%
+  dplyr::arrange(gene) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### CTmin
+
+```{r}
+gwas_cold_all %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene, ID, grps, AvgMixedPval) %>%
+  dplyr::arrange(gene) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Venn diagram
+
+```{r, include = FALSE}
+ctmin_tf <- gwas_cold_all %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene)
+
+ctmax_tf <- gwas_hot_all %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::select(gene)
+
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_tf$gene, 
+                              CTmax = ctmax_tf$gene),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max])),
+                          imagetype = "png",
+                          filename = "gwas_tf_venn_diagram.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r, fig.height = 4, fig.width = 4}
+cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_tf_venn_diagram.png")
+```
+
+## Venn diagram of all
+
+```{r, include = FALSE}
+
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(HOT = hot_tf$gene,
+                                   COLD = cold_tf$gene,
+                                   CTmin = ctmin_tf$gene, 
+                                   CTmax = ctmax_tf$gene),
+                          category.names = c("COLD", "HOT", expression("CT"[min]),
+                                             expression("CT"[max])),
+                          imagetype = "png",
+                          filename = "tf_venn_diagram.png",
+                          fill = c("blue", "red", "blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red", "blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
 ```
