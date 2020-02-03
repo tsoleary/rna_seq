@@ -1558,11 +1558,12 @@ cowplot::ggdraw() +
 gwas_hot_all %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::select(gene, ID, grps, AvgMixedPval) %>%
+  dplyr::select(gene, grps, AvgMixedPval) %>%
   dplyr::arrange(gene) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
+  scroll_box(width = "100%", height = "100%")
 ```
 
 ### CTmin
@@ -1571,11 +1572,12 @@ gwas_hot_all %>%
 gwas_cold_all %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::select(gene, ID, grps, AvgMixedPval) %>%
+  dplyr::select(gene, grps, AvgMixedPval) %>%
   dplyr::arrange(gene) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
+  scroll_box(width = "100%", height = "100%")
 ```
 
 ### Venn diagram
@@ -1619,11 +1621,7 @@ cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_tf_venn_diagram.png")
 ```
 
-## Venn diagram of all
-
 ```{r, include = FALSE}
-
-
 # dont want it to evaluate every time
 setwd(here::here("cahan/plots"))
 VennDiagram::venn.diagram(x = list(HOT = hot_tf$gene,
@@ -1647,3 +1645,9 @@ VennDiagram::venn.diagram(x = list(HOT = hot_tf$gene,
                           cat.fontfamily = "serif",
                           cat.fontface = "bold")
 ```
+
+```{r, fig.height = 4, fig.width = 4}
+cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/tf_venn_diagram.png")
+```
+
