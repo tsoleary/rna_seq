@@ -1,4 +1,13 @@
-# Frontiers Paper
+---
+title: Frontiers paper methods
+author: TS O'Leary
+output:
+  rmarkdown::html_document:
+    theme: lumen
+    number_sections: true
+    toc: true
+    toc_float: true
+---
 
 Right now this is just an incomplete rough draft of the methods that I was involved in.
 
@@ -6,9 +15,9 @@ Right now this is just an incomplete rough draft of the methods that I was invol
 
 ## Differential Expression
 
-The raw reads were mapped to DM6...
+The raw reads were mapped to the _Drosophila melaogaster_ reference genome (Release 6) using STAR (info from Seth ?). Those aligned reads were mapped to genes using featureCounts (info from Seth about version?).
 
-RNAseq count data of heat shock and cold shock versus the control were analyzed using the DESeq2 package [version X ;@Love2014]. The default normalization was used. Differential gene expression was called at an FDR of 1% (padj < 0.01) with no log fold-change cut off.  
+The RNAseq count data of heat shock and cold shock were compared to the control were analyzed using the DESeq2 package (version 1.24.0; @Love2014) in R (version 3.6.1). The default normalization was used. Differential gene expression was called at an FDR of 1% (Benjamini-Hochberg corrected p-value < 0.01). 
 
 ## Integration with the GWAS
 
