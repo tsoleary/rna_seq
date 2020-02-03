@@ -1,14 +1,3 @@
----
-title: Frontiers paper methods
-author: TS O'Leary
-output:
-  rmarkdown::html_document:
-    theme: lumen
-    number_sections: true
-    toc: true
-    toc_float: true
----
-
 Right now this is just an incomplete rough draft of the methods that I was involved in.
 
 # Methods
