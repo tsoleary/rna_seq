@@ -341,6 +341,75 @@ ggmaplot_test(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
   guides(color = guide_legend(override.aes = list(shape = 20))) 
 ```
 
+# Expression Venn Diagrams
+
+```{r}
+res_cold_up <- res_cold %>%
+  dplyr::filter(padj < 0.01 & log2FoldChange > 0)
+res_hot_up <- res_hot %>%
+  dplyr::filter(padj < 0.01 & log2FoldChange > 0)
+res_cold_down <- res_cold %>%
+  dplyr::filter(padj < 0.01 & log2FoldChange < 0)
+res_hot_down <- res_hot %>%
+  dplyr::filter(padj < 0.01 & log2FoldChange < 0)
+```
+
+## Up-regulated genes
+
+```{r, include = FALSE}
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(COLD = res_cold_up$gene, 
+                              HOT = res_hot_up$gene),
+                          category.names = c("COLD", "HOT"),
+                          imagetype = "png",
+                          filename = "deg_hot_cold_up.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 1,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/deg_hot_cold_up.png")
+```
+
+## Down-regulated genes
+
+```{r, include = FALSE}
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(COLD = res_cold_down$gene, 
+                              HOT = res_hot_down$gene),
+                          category.names = c("COLD", "HOT"),
+                          imagetype = "png",
+                          filename = "deg_hot_cold_down.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 1,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/deg_hot_cold_down.png")
+```
+
 
 # Top 50 differentially expressed genes
 
