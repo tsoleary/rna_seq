@@ -413,6 +413,8 @@ cowplot::ggdraw() +
 
 # Top 50 differentially expressed genes
 
+[Download full DESeq2 gene expression results](https://tsoleary.github.io/rna_seq/cahan/results/deg_hot_cold.zip)
+
 ## Heat shock
 
 ```{r table_top_DEG_hot}
