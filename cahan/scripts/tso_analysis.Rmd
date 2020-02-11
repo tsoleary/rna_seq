@@ -1626,13 +1626,23 @@ cowplot::ggdraw() +
 ### CTmax
 
 ```{r}
-gwas_hot_all %>%
+ctmax_tf_df <- gwas_hot_all %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::select(gene, grps, AvgMixedPval) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
   dplyr::arrange(gene) %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  kable() %>%
+  dplyr::distinct(gene, .keep_all = TRUE) 
+
+ctmax_deg_tf <- deg %>%
+  dplyr::filter(gene %in% ctmax_tf_df$gene) %>%
+  dplyr::select(gene, log2FoldChange.hot, padj.hot)
+
+dplyr::full_join(ctmax_tf_df, ctmax_deg_tf) %>%
+    mutate(padj.hot = cell_spec(padj.hot, "html", 
+                                color = ifelse(padj.hot < 0.01, "red", "grey50")),
+           log2FoldChange.hot = cell_spec(log2FoldChange.hot, "html", 
+                                color = ifelse(log2FoldChange.hot > 0, "red", "blue"))) %>%
+  kable(format = "html", escape = F) %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "100%")
 ```
@@ -1640,13 +1650,23 @@ gwas_hot_all %>%
 ### CTmin
 
 ```{r}
-gwas_cold_all %>%
+ctmin_tf_df <- gwas_cold_all %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::select(gene, grps, AvgMixedPval) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
   dplyr::arrange(gene) %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  kable() %>%
+  dplyr::distinct(gene, .keep_all = TRUE) 
+
+ctmin_deg_tf <- deg %>%
+  dplyr::filter(gene %in% ctmin_tf_df$gene) %>%
+  dplyr::select(gene, log2FoldChange.cold, padj.cold)
+
+dplyr::full_join(ctmin_tf_df, ctmin_deg_tf) %>%
+    mutate(padj.cold = cell_spec(padj.cold, "html", 
+                                color = ifelse(padj.cold < 0.01, "red", "grey50")),
+           log2FoldChange.cold = cell_spec(log2FoldChange.cold, "html", 
+                                color = ifelse(log2FoldChange.cold > 0, "red", "blue"))) %>%
+  kable(format = "html", escape = F) %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "100%")
 ```
@@ -1721,4 +1741,3 @@ VennDiagram::venn.diagram(x = list(HOT = hot_tf$gene,
 cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/tf_venn_diagram.png")
 ```
-
