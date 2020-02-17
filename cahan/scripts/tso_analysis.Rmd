@@ -1630,7 +1630,7 @@ ctmax_tf_df <- gwas_hot_all %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
   dplyr::select(gene, AvgMixedPval) %>%
-  dplyr::arrange(gene) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
   dplyr::distinct(gene, .keep_all = TRUE) 
 
 ctmax_deg_tf <- deg %>%
@@ -1654,7 +1654,7 @@ ctmin_tf_df <- gwas_cold_all %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
   dplyr::select(gene, AvgMixedPval) %>%
-  dplyr::arrange(gene) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
   dplyr::distinct(gene, .keep_all = TRUE) 
 
 ctmin_deg_tf <- deg %>%
