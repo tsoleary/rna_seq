@@ -4,7 +4,7 @@ author: "TS O'Leary"
 output:
   rmarkdown::html_document:
     theme: lumen
-    number_sections: true
+    number_sections: false
     toc: true
     toc_float: true
 ---
