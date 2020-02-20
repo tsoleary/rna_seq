@@ -284,9 +284,27 @@ commandsRun(string.cmd)
 
 
 ################################################################################
+# how are my top genes related
+# https://bioconductor.github.io/BiocWorkshops/cytoscape-automation-in-r-using-rcy3.html#use-case-1---how-are-my-top-genes-related
 
+require(RCy3)
+cytoscapePing()
+
+RNASeq_gene_scores <- read.table( 
+  file.path(getwd(),"230_Isserlin_RCy3_intro","data","TCGA_OV_RNAseq_All_edgeR_scores.txt"),
+  header = TRUE, sep = "\t", quote="\"", stringsAsFactors = FALSE)
 
 # heat and cold shock data -----------------------------------------------------
 
-res_cold %>%
-  filter()
+cold_deg <- res_cold %>%
+  dplyr::filter(padj < 0.01)
+
+
+commandsHelp("help string")
+commandsHelp("help string protein query")
+
+cold_deg_string_interaction_cmd <- paste('string gene query taxonID=7227 limit=150 cutoff=0.9 query="', paste(cold_deg$gene, collapse = ","), '"', sep = "")
+commandsGET(cold_deg_string_interaction_cmd)
+
+mesen_string_interaction_cmd <- paste('string protein query taxonID=7227 limit=150 cutoff=0.9 query="',paste(cold_deg$gene, collapse=","),'"',sep="")
+commandsGET(mesen_string_interaction_cmd)
