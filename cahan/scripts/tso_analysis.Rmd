@@ -1755,3 +1755,41 @@ VennDiagram::venn.diagram(x = list(HOT = hot_tf$gene,
 cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/tf_venn_diagram.png")
 ```
+
+# Non-differentially expressed GWAS hits
+
+## CTmin
+
+```{r}
+gwas_cold_all %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::left_join(res_cold, by = "gene") %>%
+  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::arrange(AvgMixedPval) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+## CTmax
+
+```{r}
+gwas_hot_all %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::left_join(res_hot, by = "gene") %>%
+  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::arrange(AvgMixedPval) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+
