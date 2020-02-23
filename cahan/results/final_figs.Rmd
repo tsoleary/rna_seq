@@ -204,25 +204,28 @@ cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
 # dev.off()
 
 p1 <- cowplot::ggdraw() +
-  cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"))
+  cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"), scale = 1) +
+  cowplot::draw_label("CTmin", y = 0.9, size = 18, fontface = "bold")
 
 p2 <- cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_venn_diagram_ct.png", 
-                      scale = 1.2)
+                      scale = 1) +
+  cowplot::draw_label("SNPs", y = 0.95, size = 18, fontface = "bold")
 
 p_top <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c("A", "C"))
 
 
 p1 <- cowplot::ggdraw() + 
-  cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"))
+  cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"), scale = 1) +
+  cowplot::draw_label("CTmax", y = 0.9, size = 18, fontface = "bold")
 
 p2 <- cowplot::ggdraw() +
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_genes_venn_diagram_ct.png", scale = 1.2)
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_genes_venn_diagram_ct.png", scale = 1) +
+  cowplot::draw_label("Genes", y = 0.95, size = 18, fontface = "bold")
 
 p_bottom <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c("B", "D"))
 
 cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
-
 ```
 
 # Figure 3: DEG & GWAS integration
@@ -295,7 +298,15 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
 
 # Figure 4: GO BP GWAS DEG overlap
 
-add figure 4 here
+```{r, fig.height = 9, fig.width = 7.5}
+p1 <- cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/go_hot_genes.png"))
+
+p2 <- cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/go_cold_genes.png"), scale = 1)
+
+cowplot::plot_grid(p1, p2, nrow = 2, rel_heights = c(38,28), labels = "AUTO")
+```
 
 # Suplementary Information
 
