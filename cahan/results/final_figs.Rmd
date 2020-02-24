@@ -3,7 +3,7 @@ title: Sketch of the final figures
 output:
   rmarkdown::html_document:
     theme: lumen
-    number_sections: true
+    number_sections: false
     toc: true
     toc_float: true
 ---
@@ -305,7 +305,7 @@ p1 <- cowplot::ggdraw() +
 p2 <- cowplot::ggdraw() +
   cowplot::draw_image(here::here("cahan/plots/go_cold_genes.png"), scale = 1)
 
-cowplot::plot_grid(p1, p2, nrow = 2, rel_heights = c(38,28), labels = "AUTO")
+cowplot::plot_grid(p1, p2, nrow = 2, rel_heights = c(39,29), labels = "AUTO")
 ```
 
 # Suplementary Information
