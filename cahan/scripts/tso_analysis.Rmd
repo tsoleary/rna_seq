@@ -40,6 +40,11 @@ gwas_cold_all <- read.table("CTmin/gwas.top.4.annot", header = TRUE)
 gwas_hot_all <- read.table("CTmax/gwas.top.4.annot", header = TRUE)
 gwas_tb_all <- read.table("ThermalBreadth/gwas.top.4.annot", header = TRUE)
 
+# the gwas with only 10^-5 to get effect sizes
+gwas_cold_5 <- read.table("CTmin/gwas.top.annot", header = TRUE)
+gwas_hot_5 <- read.table("CTmax/gwas.top.annot", header = TRUE)
+gwas_tb_5 <- read.table("ThermalBreadth/gwas.top.annot", header = TRUE)
+
 # # load all the gwas snps for the manhattan plot
 # gwas_cold_manhat <- read_delim("CTmin/gwas.all.assoc", 
 #                                delim = " ", 
@@ -91,6 +96,11 @@ gwas_cold_all <- gwas_dgrp_gene_annot(gwas_cold_all)
 gwas_hot_all <- gwas_dgrp_gene_annot(gwas_hot_all)
 gwas_tb_all <- gwas_dgrp_gene_annot(gwas_tb_all)
 
+
+gwas_cold_5 <- gwas_dgrp_gene_annot(gwas_cold_5)
+gwas_hot_5 <- gwas_dgrp_gene_annot(gwas_hot_5)
+gwas_tb_5 <- gwas_dgrp_gene_annot(gwas_tb_5)
+
 # filter the gwas so there is only the pvalues that reach the cut off level ----
 pval_cut <- 10^-5
 
@@ -99,6 +109,13 @@ gwas_cold <- gwas_cold_all %>%
 gwas_hot <- gwas_hot_all %>%
   filter(AvgMixedPval < pval_cut)
 gwas_tb <- gwas_tb_all %>%
+  filter(AvgMixedPval < pval_cut)
+
+gwas_cold_5 <- gwas_cold_5 %>%
+  filter(AvgMixedPval < pval_cut)
+gwas_hot_5 <- gwas_hot_5 %>%
+  filter(AvgMixedPval < pval_cut)
+gwas_tb_5 <- gwas_tb_5 %>%
   filter(AvgMixedPval < pval_cut)
 
 # create a combined df with deg and gwas for each alone ------------------------
@@ -891,8 +908,8 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ### All hits
 
 ```{r table_top_gwas_hot_all}
-gwas_hot %>%
-  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+gwas_hot_5 %>%
+  dplyr::select(ID, gene, grps, AvgEff, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -932,8 +949,8 @@ gwas_hot %>%
 ### All hits 
 
 ```{r table_top_gwas_cold_all}
-gwas_cold %>%
-  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+gwas_cold_5 %>%
+  dplyr::select(ID, gene, grps, AvgEff, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
