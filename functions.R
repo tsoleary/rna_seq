@@ -948,80 +948,29 @@ ggmaplot_test <- function (data, fdr = 0.05, fc = 1.5, genenames = NULL,
 
 # function to get the gene from the dgrp .top.annot file -----------------------
 
-gwas_dgrp_gene_annot <- function(dat){
+gwas_dgrp_annot <- function(dat){
+  # extract only the bit at the beginning
+  x <- stringr::str_extract(dat$GeneAnnotation, 
+                            "SiteClass\\[[\\w\\W|]+\\],")
   
+  # remove the SiteClass and brackets etc.
+  dat$annot <- stringr::str_remove(stringr::str_remove(x, "SiteClass\\["), 
+                                   "\\],")
   
-  # get the grp info and combine back df ----
-  annot_split <- str_split(dat$GeneAnnotation, "\\|")
-  # the third item is where the snp is located, intron, syn coding etc.
-  dat$grps <- sapply(annot_split, "[[", 3)
-  
-  
-  # get all the gene symbols-----
-  mult_genes <- str_split(dat$GeneAnnotation, ";")
-  annot_split_mult <- sapply(mult_genes, "str_split", "\\|")
-  
-  gene_list <- vector(mode = "list", length = length(annot_split_mult))
-  
-  for (i in 1:length(annot_split_mult)) {
-    
-    list_4  <- which(lengths(annot_split_mult[[i]]) == 4)
-    list_10 <- which(lengths(annot_split_mult[[i]]) == 10 | 
-                       lengths(annot_split_mult[[i]]) == 11 )
-    list_13 <- which(lengths(annot_split_mult[[i]]) == 13 | 
-                       lengths(annot_split_mult[[i]]) == 14 |
-                       lengths(annot_split_mult[[i]]) == 15)
-    
-    sym_4 <- c()
-    sym_10 <- c()
-    sym_13 <- c()
-    
-    if(!is_empty(list_4)){
-      for (k in list_4){
-        x <- annot_split_mult[[i]][[c(k, 2)]]
-        sym_4 <- c(sym_4, x)
-      }
-    }
-    
-    if(!is_empty(list_10)){
-      for (k in list_10){
-        x <- annot_split_mult[[i]][[c(k, 6)]]
-        sym_10 <- c(sym_10, x)
-      }
-    }
-    
-    if(!is_empty(list_13)){
-      for (k in list_13){
-        x <- annot_split_mult[[i]][[c(k, 2)]]
-        sym_13 <- c(sym_13, x)
-      }
-    }
-    all_symbols <- c(sym_4, sym_10, sym_13)
-    unique_symbols <- unique(all_symbols[all_symbols != ""])
-    gene_list[[i]] <- unique_symbols
-  }
-  
-  # gwas 
-  genes <- c()
-  for (i in 1:length(gene_list)){
-    if (length(gene_list[[i]]) == 0){
-      genes[i] <- ""
-    } else {
-      genes[i] <- paste(gene_list[[i]], collapse = " ")
-    }
-  }
-  dat$gene <- genes
-  
-  df <- dat %>% 
-    separate(col = gene, into = c("gene", "gene2"), sep = " ") %>%
-    pivot_longer(gene:gene2, names_to = "lab", values_to = "gene", 
-                 values_drop_na = TRUE)
-  
-
+  # split up different genes and save fbgn, gene, feature, and pos in new columns
+  df <- dat %>%
+    tidyr::separate(col = annot, into = c("gene1", "gene2"), sep = ";") %>%
+    tidyr::pivot_longer(gene1:gene2, names_to = "lab", values_to = "gene",
+                        values_drop_na = TRUE) %>%
+    tidyr::separate(col = gene, 
+                    into = c("fbgn", "gene", "feature", "pos"), sep = "\\|") 
   
   return(df)
-  
 }
+
+
+
+
 
 # function to group the genes by differential expression -----------------------
 
