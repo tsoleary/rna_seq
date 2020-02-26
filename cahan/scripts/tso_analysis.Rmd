@@ -92,14 +92,14 @@ pheno <- pheno %>%
 
 # annotated all the gene symbols for the gwas output  --------------------------
 
-gwas_cold_all <- gwas_dgrp_gene_annot(gwas_cold_all)
-gwas_hot_all <- gwas_dgrp_gene_annot(gwas_hot_all)
-gwas_tb_all <- gwas_dgrp_gene_annot(gwas_tb_all)
+gwas_cold_all <- gwas_dgrp_annot(gwas_cold_all)
+gwas_hot_all <- gwas_dgrp_annot(gwas_hot_all)
+gwas_tb_all <- gwas_dgrp_annot(gwas_tb_all)
 
 
-gwas_cold_5 <- gwas_dgrp_gene_annot(gwas_cold_5)
-gwas_hot_5 <- gwas_dgrp_gene_annot(gwas_hot_5)
-gwas_tb_5 <- gwas_dgrp_gene_annot(gwas_tb_5)
+gwas_cold_5 <- gwas_dgrp_annot(gwas_cold_5)
+gwas_hot_5 <- gwas_dgrp_annot(gwas_hot_5)
+gwas_tb_5 <- gwas_dgrp_annot(gwas_tb_5)
 
 # filter the gwas so there is only the pvalues that reach the cut off level ----
 pval_cut <- 10^-5
@@ -909,7 +909,7 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 
 ```{r table_top_gwas_hot_all}
 gwas_hot_5 %>%
-  dplyr::select(ID, gene, grps, AvgEff, AvgMixedPval) %>%
+  dplyr::select(ID, gene, feature, pos, AvgEff, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -918,11 +918,11 @@ gwas_hot_5 %>%
 
 ### Group count
 
-```{r table_top_gwas_hot_grps}
+```{r table_top_gwas_hot_feature}
 gwas_hot %>%
-  group_by(grps) %>%
+  group_by(feature) %>%
   dplyr::count() %>%
-  filter(grps != "") %>%
+  filter(feature != "") %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -950,7 +950,7 @@ gwas_hot %>%
 
 ```{r table_top_gwas_cold_all}
 gwas_cold_5 %>%
-  dplyr::select(ID, gene, grps, AvgEff, AvgMixedPval) %>%
+  dplyr::select(ID, gene, feature, pos, AvgEff, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -959,10 +959,10 @@ gwas_cold_5 %>%
 
 ### Group count
 
-```{r table_top_gwas_cold_grps}
+```{r table_top_gwas_cold_feature}
 gwas_cold %>%
-  group_by(grps) %>%
-  filter(grps != "") %>%
+  group_by(feature) %>%
+  filter(feature != "") %>%
   dplyr::count() %>%
   arrange(desc(n)) %>%
   kable() %>%
@@ -990,7 +990,7 @@ gwas_cold %>%
 
 ```{r table_top_gwas_tb_all}
 gwas_tb %>%
-  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -999,10 +999,10 @@ gwas_tb %>%
 
 ### Group count
 
-```{r table_top_gwas_tb_grps}
+```{r table_top_gwas_tb_feature}
 gwas_tb %>%
-  group_by(grps) %>%
-  filter(grps != "") %>%
+  group_by(feature) %>%
+  filter(feature != "") %>%
   dplyr::count() %>%
   arrange(desc(n)) %>%
   kable() %>%
@@ -1270,7 +1270,7 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 
 ```{r table_top_gwas_hot_all_4}
 gwas_hot_all %>%
-  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -1279,11 +1279,11 @@ gwas_hot_all %>%
 
 ### Group count
 
-```{r table_top_gwas_hot_grps_4}
+```{r table_top_gwas_hot_feature_4}
 gwas_hot_all %>%
-  group_by(grps) %>%
+  group_by(feature) %>%
   dplyr::count() %>%
-  filter(grps != "") %>%
+  filter(feature != "") %>%
   arrange(desc(n)) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -1311,7 +1311,7 @@ gwas_hot_all %>%
 
 ```{r table_top_gwas_cold_all_4}
 gwas_cold_all %>%
-  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -1320,10 +1320,10 @@ gwas_cold_all %>%
 
 ### Group count
 
-```{r table_top_gwas_cold_grps_4}
+```{r table_top_gwas_cold_feature_4}
 gwas_cold_all %>%
-  group_by(grps) %>%
-  filter(grps != "") %>%
+  group_by(feature) %>%
+  filter(feature != "") %>%
   dplyr::count() %>%
   arrange(desc(n)) %>%
   kable() %>%
@@ -1351,7 +1351,7 @@ gwas_cold_all %>%
 
 ```{r table_top_gwas_tb_all_4}
 gwas_tb_all %>%
-  dplyr::select(ID, gene, grps, AvgMixedPval) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
@@ -1360,10 +1360,10 @@ gwas_tb_all %>%
 
 ### Group count
 
-```{r table_top_gwas_tb_grps_4}
+```{r table_top_gwas_tb_feature_4}
 gwas_tb_all %>%
-  group_by(grps) %>%
-  filter(grps != "") %>%
+  group_by(feature) %>%
+  filter(feature != "") %>%
   dplyr::count() %>%
   arrange(desc(n)) %>%
   kable() %>%
