@@ -386,6 +386,7 @@ gwas_hot_5 %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
+
 #### Gene counts
 
 ```{r}
@@ -395,6 +396,19 @@ gwas_hot_5 %>%
   filter(gene != "") %>%
   dplyr::count() %>%
   arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Regulatory features
+
+```{r}
+gwas_dgrp_reg_annot(gwas_hot_5) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval, contains("reg_")) %>%
+  dplyr::filter(!is.na(reg_flybaseID)) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
+  arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
@@ -442,6 +456,19 @@ gwas_cold_5 %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
+#### Regulatory features
+
+```{r}
+gwas_dgrp_reg_annot(gwas_cold_5) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval, contains("reg_")) %>%
+  dplyr::filter(!is.na(reg_flybaseID)) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
 ### Thermal Breadth
 
 #### All hits
@@ -478,6 +505,19 @@ gwas_tb %>%
   filter(gene != "") %>%
   dplyr::count() %>%
   arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Regulatory features
+
+```{r}
+gwas_dgrp_reg_annot(gwas_tb) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval, contains("reg_")) %>%
+  dplyr::filter(!is.na(reg_flybaseID)) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
+  arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
@@ -764,6 +804,19 @@ gwas_hot %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
+#### Regulatory features
+
+```{r}
+gwas_dgrp_reg_annot(gwas_hot) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval, contains("reg_")) %>%
+  dplyr::filter(!is.na(reg_flybaseID)) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
 ### CTmin
 
 #### All hits 
@@ -805,6 +858,19 @@ gwas_cold %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
+#### Regulatory features
+
+```{r}
+gwas_dgrp_reg_annot(gwas_cold) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval, contains("reg_")) %>%
+  dplyr::filter(!is.na(reg_flybaseID)) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
 ### Thermal Breadth
 
 #### All hits
@@ -841,6 +907,19 @@ gwas_tb %>%
   filter(gene != "") %>%
   dplyr::count() %>%
   arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Regulatory features
+
+```{r}
+gwas_dgrp_reg_annot(gwas_tb) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval, contains("reg_")) %>%
+  dplyr::filter(!is.na(reg_flybaseID)) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
+  arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
