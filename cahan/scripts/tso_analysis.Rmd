@@ -4,13 +4,13 @@ author: "TS O'Leary"
 output:
   rmarkdown::html_document:
     theme: lumen
-    number_sections: false
+    number_sections: true
     toc: true
     toc_float: true
 ---
 
 ```{r setup, include=FALSE}
-# don't show cose, warnings or messages
+# don't show echos, warnings or messages
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 # don't make the log files for the VennDiagram package
 futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
@@ -18,683 +18,482 @@ futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 # load these required packages
 require(tidyverse)
 require(ggpubr)
-require(AnnotationDbi)
-require(org.Dm.eg.db)
-require(ggcorrplot)
 require(seqsetvis)
 require(ssvRecipes)
 require(knitr)
 require(kableExtra)
+
+# source the functions and load the data
 source(here::here("functions.R"))
+source(here::here("cahan/scripts/load_data.R"))
+```
 
-# load the differentially expressed genes results
-setwd(here::here("cahan/results"))
-res_cold <- read.csv(list.files(pattern = "cold_results"))
-res_hot <- read.csv(list.files(pattern = "hot_results"))
-deg <- full_join(res_cold, res_hot, by = "gene", suffix = c(".cold", ".hot"))
+# **Genome wide association study**
 
-# load the gwas results
-setwd(here::here("DRGP_GWAS"))
-pheno <- read.csv("pheno.csv")
-gwas_cold_all <- read.table("CTmin/gwas.top.4.annot", header = TRUE)
-gwas_hot_all <- read.table("CTmax/gwas.top.4.annot", header = TRUE)
-gwas_tb_all <- read.table("ThermalBreadth/gwas.top.4.annot", header = TRUE)
+## Phenotypes
 
-# the gwas with only 10^-5 to get effect sizes
-gwas_cold_5 <- read.table("CTmin/gwas.top.annot", header = TRUE)
-gwas_hot_5 <- read.table("CTmax/gwas.top.annot", header = TRUE)
-gwas_tb_5 <- read.table("ThermalBreadth/gwas.top.annot", header = TRUE)
+### Figure 1
 
-# # load all the gwas snps for the manhattan plot
-# gwas_cold_manhat <- read_delim("CTmin/gwas.all.assoc", 
-#                                delim = " ", 
-#                                col_names = TRUE)
-# gwas_hot_manhat <- read_delim("CTmax/gwas.all.assoc", 
-#                               delim = " ", 
-#                               col_names = TRUE)
-# 
-# # wrangle the manhat dfs for qqman
-# gwas_cold_manhat <- gwas_cold_manhat %>%
-#   separate(ID, into = c("CHR", "BP", "type")) %>%
-#   mutate(CHR = case_when(CHR == "2L" ~ 1,
-#                          CHR == "2R" ~ 2,
-#                          CHR == "3L" ~ 3,
-#                          CHR == "3R" ~ 4,
-#                          CHR == "4" ~ 5,
-#                          CHR == "X" ~ 6)) %>%
-#   dplyr::filter(!is.na(AvgMixedPval) | !is.na(CHR) | !is.na(BP))
-# 
-# gwas_cold_manhat$P <- gwas_cold_manhat$AvgMixedPval
-# gwas_cold_manhat$BP <- as.numeric(gwas_cold_manhat$BP)
-# 
-# 
-# gwas_hot_manhat <- gwas_hot_manhat %>%
-#   separate(ID, into = c("CHR", "BP", "type")) %>%
-#   mutate(CHR = case_when(CHR == "2L" ~ 1,
-#                          CHR == "2R" ~ 2,
-#                          CHR == "3L" ~ 3,
-#                          CHR == "3R" ~ 4,
-#                          CHR == "4" ~ 5,
-#                          CHR == "X" ~ 6)) %>%
-#   dplyr::filter(!is.na(AvgMixedPval) | !is.na(CHR) | !is.na(BP))
-# 
-# gwas_hot_manhat$P <- gwas_hot_manhat$AvgMixedPval
-# gwas_hot_manhat$BP <- as.numeric(gwas_hot_manhat$BP)
+```{r, fig.height = 5, fig.width = 7}
+p1 <- ggplot(pheno %>%
+               filter(type == "ctmin") %>%
+               group_by(line_DGRP) %>%
+               summarize(temp = mean(temp)), 
+             aes(x = temp)) + 
+        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+        labs(x = expression(CT[min] * ~ "(°C)"),
+             y = "Counts") +
+        xlim(c(0, 10)) +
+        ylim(c(0, 33)) + 
+        annotate("text", x = 7.5, y = 17.5, label = expression(H^2 *" = 0.25"),
+                 size = 4) +
+        theme_classic()
+
+p2 <- ggplot(pheno %>%
+               filter(type == "ctmax") %>%
+               group_by(line_DGRP) %>%
+               summarize(temp = mean(temp)), 
+             aes(x = temp)) + 
+        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
+        labs(x = expression(CT[max] * ~ "(°C)"), 
+             y = "Counts") +
+        xlim(c(35, 45)) +
+        ylim(c(0, 33)) +
+        annotate("text", x = 42.5, y = 17.5, label = expression(H^2 *" = 0.29"),
+                 size = 4) +
+        theme_classic()
+
+top_row <- cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+
+my.formula <- y ~ x
+p3 <- ggplot(pheno %>%
+               pivot_wider(names_from = type, values_from = temp) %>%
+               group_by(line_DGRP) %>%
+               summarize(ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+             aes(x = ctmin, y = ctmax)) +
+        geom_point(fill = "grey50", shape = 21) +
+        geom_smooth(method = "lm", 
+                    linetype = "dashed", 
+                    se = FALSE, formula = my.formula, color = "grey50") +
+        ggpmisc::stat_poly_eq(formula = my.formula, 
+                              aes(label = ..rr.label..),
+                              parse = TRUE, label.x = "right", label.y = "bottom") + 
+        labs(x = expression(CT[min] * ~ "(°C)"), 
+             y = expression(CT[max] * ~ "(°C)")) +
+        theme_classic() +
+        theme(plot.margin = unit(c(t = 0.25, r = 3.5, b = 0, l = 3.5), "cm"))
+
+cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
+```
 
 
-# wrangle the phenotypes
-pheno <- pheno %>%
-  pivot_longer(cols = starts_with("ct"), 
-               names_to = "type",
-               values_to = "temp") %>%
-  separate(type, into = c("type", "sex") ,sep = "_")
+### Thermal Breadth Correlation
+
+```{r, fig.height = 3.5, fig.width = 7}
+my.formula <- y ~ x
+p1 <- ggplot(pheno %>%
+         pivot_wider(names_from = type, values_from = temp) %>%
+         mutate(tb = ctmax - ctmin) %>%
+         group_by(line_DGRP) %>%
+         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+        aes(x = ctmin, y = tb)) +
+        geom_point(fill = "grey50", shape = 21) +
+        geom_smooth(method = "lm", 
+                    linetype = "dashed", 
+                    se = FALSE, formula = my.formula, color = "grey50") +
+        ggpmisc::stat_poly_eq(formula = my.formula, 
+                              aes(label = ..rr.label..),
+                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        labs(x = expression(CT[min] * ~ "(°C)"), 
+             y = "Thermal Breadth (°C)") +
+        theme_classic()
   
 
-# annotated all the gene symbols for the gwas output  --------------------------
+p2 <- ggplot(pheno %>%
+         pivot_wider(names_from = type, values_from = temp) %>%
+         mutate(tb = ctmax - ctmin) %>%
+         group_by(line_DGRP) %>%
+         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+        aes(x = ctmax, y = tb)) +
+        geom_point(fill = "grey50", shape = 21) +
+        geom_smooth(method = "lm", 
+                    linetype = "dashed", 
+                    se = FALSE, formula = my.formula, color = "grey50") +
+        ggpmisc::stat_poly_eq(formula = my.formula, 
+                              aes(label = ..rr.label..),
+                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        labs(x = expression(CT[max] * ~ "(°C)"), 
+             y = "Thermal Breadth (°C)") +
+        theme_classic()
 
-gwas_cold_all <- gwas_dgrp_annot(gwas_cold_all)
-gwas_hot_all <- gwas_dgrp_annot(gwas_hot_all)
-gwas_tb_all <- gwas_dgrp_annot(gwas_tb_all)
-
-
-gwas_cold_5 <- gwas_dgrp_annot(gwas_cold_5)
-gwas_hot_5 <- gwas_dgrp_annot(gwas_hot_5)
-gwas_tb_5 <- gwas_dgrp_annot(gwas_tb_5)
-
-# filter the gwas so there is only the pvalues that reach the cut off level ----
-pval_cut <- 10^-5
-
-gwas_cold <- gwas_cold_all %>%
-  filter(AvgMixedPval < pval_cut)
-gwas_hot <- gwas_hot_all %>%
-  filter(AvgMixedPval < pval_cut)
-gwas_tb <- gwas_tb_all %>%
-  filter(AvgMixedPval < pval_cut)
-
-gwas_cold_5 <- gwas_cold_5 %>%
-  filter(AvgMixedPval < pval_cut)
-gwas_hot_5 <- gwas_hot_5 %>%
-  filter(AvgMixedPval < pval_cut)
-gwas_tb_5 <- gwas_tb_5 %>%
-  filter(AvgMixedPval < pval_cut)
-
-# create a combined df with deg and gwas for each alone ------------------------
-comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
-comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
-  
-# create a data.frame with info for the individual ma_plots --------------------
-deg_gwas_cold <- left_join(res_cold, gwas_cold, by = "gene")
-deg_gwas_hot <- left_join(res_hot, gwas_hot, by = "gene")
-
-# create a data.frame with all the info for the plotting later -----------------
-temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
-total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
-#total <- full_join(total, gwas_tb, by = "gene", suffix = c("", ".tb"))
-# the termal breadth stuff to the 
-
-# add transcription factors
-dmel_tf <- read_delim(here::here("cahan/dmel_transcription_factors.txt"), 
-                      delim = "\t")
- 
-# group by the significance
-deg_grouped <- group_deg(total, pval_cut = 0.01, lfc_cut = 0)
-
-# colors for the shared unique scatter plot  
-##############
-# create a parameters space where all these go later .....
-clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
-legend.font.size <- 12
+cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ```
 
-# MA plots {.tabset .tabset-fade .tabset-pills}
+## Manhattan plots
 
-All MA plots now have an FDR of 0.01 and no fold-change cutoff.
+```{r, fig.height = 4.5, fig.width = 6}
+p1 <- cowplot::ggdraw() +
+  cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"))
 
-## No gene labels
+p2 <- cowplot::ggdraw() + 
+  cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"))
 
-**Cold v Ctrl MA plot**
-
-```{r ma_plot_cold_no_lab}
-ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
-         fdr = 0.01, fc = 0, size = 1,
-         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
-         genenames = as.vector(res_cold$gene),
-         legend = "top", top = 0,
-         select.top.method = "padj",
-         font.label = c("bold", 11), label.rectangle = TRUE,
-         font.legend = "bold",
-         font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size))
+cowplot::plot_grid(p1, p2, nrow = 2, labels = "AUTO")
 ```
 
-**Hot v Ctrl MA plot**
+## **Strict cutoff 10<sup>-5</sup>**
 
-```{r ma_plot_hot_no_lab}
-ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
-         fdr = 0.01, fc = 0, size = 1,
-         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
-         genenames = as.vector(res_hot$gene),
-         legend = "top", top = 0,
-         select.top.method = "padj",
-         font.label = c("bold", 11), label.rectangle = TRUE,
-         font.legend = "bold",
-         font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size))
-```
-
-## Labeled by padj
-
-**Cold v Ctrl MA plot**
-
-```{r ma_plot_cold_lab_padj}
-ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
-         fdr = 0.01, fc = 0, size = 1,
-         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
-         genenames = as.vector(res_cold$gene),
-         legend = "top", top = 20,
-         select.top.method = "padj",
-         font.label = c("bold", 11), label.rectangle = TRUE,
-         font.legend = "bold",
-         font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) 
-```
-
-**Hot v Ctrl MA plot**
-
-```{r ma_plot_hot_lab_padj}
-ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
-         fdr = 0.01, fc = 0, size = 1,
-         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
-         genenames = as.vector(res_hot$gene),
-         legend = "top", top = 20,
-         select.top.method = "padj",
-         font.label = c("bold", 11), label.rectangle = TRUE,
-         font.legend = "bold",
-         font.main = "bold",
-         ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) 
-```
-
-## GWAS points
-
-**Cold v Ctrl MA plot**
-
-```{r ma_plot_cold_gwas_distinct}
-deg_gwas_cold_distinct <- deg_gwas_cold %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  dplyr::filter(baseMean > 0)
-
-ggmaplot_gwas(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
-              fdr = 0.01, fc = 0, size = 1,
-              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
-              genenames = as.vector(deg_gwas_cold_distinct$gene),
-              legend = "top", top = 0,
-              select.top.method = "gwas",
-              font.label = c("bold", 11), label.rectangle = TRUE,
-              font.legend = "bold",
-              font.main = "bold",
-              ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size))
-```
-
-**Hot v Ctrl MA plot**
-
-```{r ma_plot_hot_gwas_distinct}
-deg_gwas_hot_distinct <- deg_gwas_hot %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  dplyr::filter(baseMean > 0)
-
-ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
-              fdr = 0.01, fc = 0, size = 1,
-              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
-              genenames = as.vector(deg_gwas_hot_distinct$gene),
-              legend = "top", top = 0,
-              select.top.method = "gwas",
-              font.label = c("bold", 11), label.rectangle = TRUE,
-              font.legend = "bold",
-              font.main = "bold",
-              ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size))
-```
-
-
-## GWAS labels
-
-**Cold v Ctrl MA plot**
-
-```{r ma_plot_cold_lab_gwas_distinct}
-deg_gwas_cold_distinct <- deg_gwas_cold %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  dplyr::filter(baseMean > 0)
-
-ggmaplot_test(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
-              fdr = 0.01, fc = 0, size = 1,
-              color_sig = FALSE,
-              genenames = as.vector(deg_gwas_cold_distinct$gene),
-              legend = "top", top = 20,
-              select.top.method = "gwas",
-              font.label = c("bold", 11), 
-              font.label.sig = c(11, "bold", "black"),
-              label.rectangle = TRUE,
-              font.legend = "bold",
-              font.main = "bold",
-              ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) + 
-  guides(color = guide_legend(override.aes = list(shape = 20)))
-```
-
-**Hot v Ctrl MA plot**
-
-```{r ma_plot_hot_lab_gwas_distinct}
-deg_gwas_hot_distinct <- deg_gwas_hot %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  dplyr::filter(baseMean > 0)
-
-ggmaplot_test(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
-              fdr = 0.01, fc = 0, size = 1,
-              color_sig = FALSE,
-              genenames = as.vector(deg_gwas_hot_distinct$gene),
-              legend = "top", top = 11,
-              select.top.method = "gwas",
-              font.label = c("bold", 11), 
-              font.label.sig = c(11, "bold", "black"),
-              label.rectangle = TRUE,
-              font.legend = "bold",
-              font.main = "bold",
-              ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) + 
-  guides(color = guide_legend(override.aes = list(shape = 20))) 
-```
-
-
-## GWAS labels colored by DEG sig
-
-**Cold v Ctrl MA plot**
-
-```{r ma_plot_cold_lab_gwas_deg}
-deg_gwas_cold_distinct <- deg_gwas_cold %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  dplyr::filter(baseMean > 0)
-
-ggmaplot_test(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
-              fdr = 0.01, fc = 0, size = 1,
-              color_sig = TRUE,
-              genenames = as.vector(deg_gwas_cold_distinct$gene),
-              legend = "top", top = 22,
-              select.top.method = "gwas",
-              font.label = c("bold", 11), 
-              font.label.sig = c(11, "bold", "firebrick"),
-              label.rectangle = TRUE,
-              font.legend = "bold",
-              font.main = "bold",
-              ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) + 
-  guides(color = guide_legend(override.aes = list(shape = 20)))
-```
-
-**Hot v Ctrl MA plot**
-
-```{r ma_plot_hot_lab_gwas_deg}
-deg_gwas_hot_distinct <- deg_gwas_hot %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  dplyr::filter(baseMean > 0)
-
-ggmaplot_test(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
-              fdr = 0.01, fc = 0, size = 1,
-              color_sig = TRUE,
-              genenames = as.vector(deg_gwas_hot_distinct$gene),
-              legend = "top", top = 11,
-              select.top.method = "gwas",
-              font.label = c("bold", 11), 
-              font.label.sig = c(11, "bold", "firebrick"),
-              label.rectangle = TRUE,
-              font.legend = "bold",
-              font.main = "bold",
-              ggtheme = ggplot2::theme_minimal()) + 
-  theme(legend.text = element_text(size = legend.font.size)) + 
-  guides(color = guide_legend(override.aes = list(shape = 20))) 
-```
-
-# Expression Venn Diagrams
+### Summary
 
 ```{r}
-res_cold_up <- res_cold %>%
-  dplyr::filter(padj < 0.01 & log2FoldChange > 0)
-res_hot_up <- res_hot %>%
-  dplyr::filter(padj < 0.01 & log2FoldChange > 0)
-res_cold_down <- res_cold %>%
-  dplyr::filter(padj < 0.01 & log2FoldChange < 0)
-res_hot_down <- res_hot %>%
-  dplyr::filter(padj < 0.01 & log2FoldChange < 0)
-```
-
-## Up-regulated genes
-
-```{r, include = FALSE}
-setwd(here::here("cahan/plots"))
-VennDiagram::venn.diagram(x = list(COLD = res_cold_up$gene, 
-                              HOT = res_hot_up$gene),
-                          category.names = c("COLD", "HOT"),
-                          imagetype = "png",
-                          filename = "deg_hot_cold_up.png",
-                          fill = c("blue", "red"), 
-                          alpha = 0.5,
-                          label.col = "white", 
-                          fontfamily = "serif", 
-                          fontface = "bold",
-                          cat.cex = 2,
-                          cat.dist = .1,
-                          margin = .1,
-                          cex = 1,
-                          cat.col = c("blue", "red"), 
-                          cat.fontfamily = "serif",
-                          cat.fontface = "bold")
-```
-
-```{r}
-cowplot::ggdraw() +
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/deg_hot_cold_up.png")
-```
-
-## Down-regulated genes
-
-```{r, include = FALSE}
-setwd(here::here("cahan/plots"))
-VennDiagram::venn.diagram(x = list(COLD = res_cold_down$gene, 
-                              HOT = res_hot_down$gene),
-                          category.names = c("COLD", "HOT"),
-                          imagetype = "png",
-                          filename = "deg_hot_cold_down.png",
-                          fill = c("blue", "red"), 
-                          alpha = 0.5,
-                          label.col = "white", 
-                          fontfamily = "serif", 
-                          fontface = "bold",
-                          cat.cex = 2,
-                          cat.dist = .1,
-                          margin = .1,
-                          cex = 1,
-                          cat.col = c("blue", "red"), 
-                          cat.fontfamily = "serif",
-                          cat.fontface = "bold")
-```
-
-```{r}
-cowplot::ggdraw() +
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/deg_hot_cold_down.png")
-```
-
-
-# Top 50 differentially expressed genes
-
-[Download full DESeq2 gene expression results](https://tsoleary.github.io/rna_seq/cahan/results/deg_hot_cold.zip)
-
-## Heat shock
-
-```{r table_top_DEG_hot}
-deg_grouped %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  group_by(hot_fc) %>%
-  top_n(n = -50, wt = padj.hot) %>%
-  dplyr::select(gene, hot_fc, log2FoldChange.hot, padj.hot) %>%
-  arrange(hot_fc, padj.hot) %>%
-  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-## Cold shock
-
-```{r table_top_DEG_cold}
-deg_grouped %>%
-  group_by(cold_fc) %>%
-  distinct(gene, .keep_all = TRUE) %>%
-  top_n(n = -50, wt = padj.cold) %>%
-  dplyr::select(gene, cold_fc, log2FoldChange.cold, padj.cold) %>%
-  arrange(cold_fc, padj.cold) %>%
-  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-# DEG LFC scatter & GWAS Density {.tabset .tabset-fade .tabset-pills}
-
-## GWAS scatter & density plots  (10<sup>-5</sup>)
-
-```{r scatter_and_density_plots, fig.height = 7, fig.width = 7}
-color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
-
-# the function from seqsetvis requires a sequential column in the data.frame
-deg_grouped$id <- seq_len(nrow(deg_grouped))
-
-deg_simple <- deg_grouped %>%
-  dplyr::select(gene, log2FoldChange.hot, 
-                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
-  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
-                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
-                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
-                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "both"))
-
-# order the levels of the factor for plotting purposes to get NS on bottom
-deg_simple$groupn <- as.factor(deg_simple$groupn)
-
-deg_simple$groupn <- factor(deg_simple$groupn, levels = c("Shared: 6113", 
-                                                          "Sig1 Shared: 3218", 
-                                                          "Unique: 14",
-                                                          "Sig1 Unique: 103",
-                                                          "NS: 6428"))
-
-deg_simple_distinct <- deg_simple %>%
-  distinct(gene, .keep_all = TRUE)
-
-plot_scatter_side_density_xy(deg_simple_distinct, 
-                             x_ = "log2FoldChange.cold", 
-                             y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
-                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
-                             bg.string = "NS: 6428",
-                             bg.density.string = "Other",
-                             labs_sets_density = "GWAS",
-                             id_ = "id", 
-                             set_ = "groupn", 
-                             set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
-                             sets.colors = color_set,
-                             n_auto_label = 0)
-```
-
-```{r density_plots_5, fig.height = 4, fig.width = 7}
-ggplot(deg_simple_distinct) +
-  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_distinct, stat = "density") +
-  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_distinct, stat = "density") +
-  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
-  labs(x = "log2FoldChange vs. Ctrl", 
-       color = "GWAS", 
-       caption = "Cold dashed line\nHot solid line") +
-  theme_classic()
-```
-
-```{r, fig.height = 4, fig.width = 7}
-ggplot(deg_simple_distinct) +
-  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_distinct %>%
-              dplyr::filter(gwas_g != "CTmin"), stat = "density") +
-  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_distinct %>%
-              dplyr::filter(gwas_g != "CTmax"), stat = "density") +
-  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
-  labs(x = "log2FoldChange vs. Ctrl", 
-       color = "GWAS", 
-       caption = "Cold dashed line\nHot solid line") +
-  theme_classic()
-```
-
-```{r ks_test_tab_5_distinct}
-# do comparison for both hot and cold
-tab_hot <- ks.pairwise(deg_simple_distinct, "log2FoldChange.hot") 
-tab_cold <- ks.pairwise(deg_simple_distinct, "log2FoldChange.cold")
-df <- cbind(tab_hot, tab_cold[2])
-colnames(df) <- c("GWAS distributions", "Heat-shock", "Cold-shock")
-
-# create a table for the output
-df %>%
-  kable(caption = 
-          "K.S. pairwise comparisons of the distributions of top GWAS genes under shock") %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-
-```
-
-
-## GWAS scatter & density plots (10<sup>-4</sup>)
-
-```{r scatter_and_density_plots_cut_4, fig.height = 7, fig.width = 7}
-# filter the gwas so there is only the pvalues that reach the cut off level ----
-pval_cut_4 <- 10^-4
-
-gwas_cold_4 <- gwas_cold_all %>%
-  filter(AvgMixedPval < pval_cut_4)
-gwas_hot_4 <- gwas_hot_all %>%
-  filter(AvgMixedPval < pval_cut_4)
-
-# create a data.frame with all the info for the plotting later -----------------
-temp <- left_join(deg, gwas_cold_4, by = "gene", suffix = c("", ".cold"))
-total_4 <- full_join(temp, gwas_hot_4, by = "gene", suffix = c(".cold", ".hot"))
-
-# group by the significance
-deg_grouped_4 <- group_deg(total_4, pval_cut = 0.01, lfc_cut = 0)
-
-
-color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
-
-# the function from seqsetvis requires a sequential column in the data.frame
-deg_grouped_4$id <- seq_len(nrow(deg_grouped_4))
-
-deg_simple_4 <- deg_grouped_4 %>%
-  dplyr::select(gene, log2FoldChange.hot, 
-                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
-  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
-                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
-                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
-                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin_CTmax"))
-
-deg_simple_distinct_4 <- deg_simple_4 %>%
-  distinct(gene, .keep_all = TRUE)
-
-
-deg_simple_distinct_4 <- deg_simple_distinct_4 %>%
-  separate(gwas_g, into = c("gwas_g", "gwas_g2"), sep = "_") %>%
-  pivot_longer(gwas_g:gwas_g2, names_to = "type", values_to = "gwas_g", 
-               values_drop_na = TRUE)
-
-# order the levels of the factor for plotting purposes to get NS on bottom
-deg_simple_distinct_4$groupn <- as.factor(deg_simple_distinct_4$groupn)
-
-deg_simple_distinct_4$groupn <- factor(deg_simple_distinct_4$groupn, 
-                                       levels =  c("Shared: 6228",
-                                                   "Sig1 Shared: 3266", 
-                                                   "Unique: 14",
-                                                   "Sig1 Unique: 106",
-                                                   "NS: 6485"))
-
-plot_scatter_side_density_xy(deg_simple_distinct_4, 
-                             x_ = "log2FoldChange.cold", 
-                             y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
-                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
-                             bg.string = "NS: 6485",
-                             bg.density.string = "Other",
-                             labs_sets_density = "Top GWAS-associated genes",
-                             id_ = "id", 
-                             set_ = "groupn", 
-                             set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
-                             sets.colors = color_set,
-                             n_auto_label = 0)
-```
-
-```{r density_plots_4, fig.height = 4, fig.width = 7}
-ggplot(deg_simple_distinct_4) +
-  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_distinct_4, stat = "density") +
-  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_distinct_4, stat = "density") +
-  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
-  labs(x = "log 2 fold change vs. Ctrl", 
-       color = "GWAS", 
-       caption = "Cold dashed line\nHot solid line") +
-  theme_classic()
-```
-
-```{r density_plots_5_dia, fig.height = 4, fig.width = 7}
-ggplot(deg_simple_distinct_4) +
-  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
-            data = deg_simple_distinct_4 %>%
-              dplyr::filter(gwas_g != "CTmin"), stat = "density") +
-  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
-            linetype = "dashed", data = deg_simple_distinct_4 %>%
-              dplyr::filter(gwas_g != "CTmax"), stat = "density") +
-  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
-  labs(x = "log2FoldChange vs. Ctrl", 
-       color = "GWAS", 
-       caption = "Cold dashed line\nHot solid line") +
-  theme_classic()
-```
-
-
-```{r ks_test_tab_4_distinct}
-# do comparison for both hot and cold
-tab_hot <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.hot") 
-tab_cold <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.cold")
-df <- cbind(tab_hot, tab_cold[2])
-colnames(df) <- c("GWAS distributions", "Heat-shock", "Cold-shock")
-
-# create a table for the output
-df %>%
-  kable(caption = 
-          "K.S. pairwise comparisons of the distributions of top GWAS genes under shock") %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-
-## GWAS scatter with relevant density plot
-
-```{r, fig.height = 7, fig.width = 7}
-plot_scatter_side_density_xy_rel(deg_simple_distinct_4, 
-                             x_ = "log2FoldChange.cold", 
-                             y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
-                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
-                             bg.string = "NS: 6485",
-                             bg.density.string = "Other",
-                             labs_sets_density = "Top GWAS-associated genes",
-                             id_ = "id", 
-                             set_ = "groupn", 
-                             set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
-                             sets.colors = color_set,
-                             n_auto_label = 0)
-```
-
-
-# GWAS (pval cutoff 10^-5)
-
-## Summary
-
-```{r gwas_hot_summary}
 # get only the SNPs identified in the GWAS
-comb_hot_filt <- comb_hot %>%
+comb_hot_filt_5 <- deg_gwas_hot_5 %>%
   filter(!is.na(ID))
 
-comb_cold_filt <- comb_cold %>%
+comb_cold_filt_5 <- deg_gwas_cold_5 %>%
+  filter(!is.na(ID))
+
+
+# create a column that indicates where the snps are from
+comb_hot_filt_5$gwas <- "CTmax"
+comb_cold_filt_5$gwas <- "CTmin"
+gwas_tb_5$gwas <- "ThermalBreadth"
+
+
+comb_gwas_5 <- dplyr::bind_rows(comb_hot_filt_5, comb_cold_filt_5, gwas_tb_5)
+
+
+t1 <- comb_gwas_5 %>%
+  group_by(gwas) %>%
+  distinct(ID, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("SNPs" = n)
+
+t2 <- comb_gwas_5 %>%
+  group_by(gwas) %>%
+  distinct(ID, .keep_all = TRUE) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::count() %>%
+  dplyr::rename("SNPs annotated to genes" = n)
+
+t3 <- comb_gwas_5 %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("Unique genes" = n)
+
+t4 <- comb_gwas_5 %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(padj <= 0.01) %>%
+  dplyr::count() %>%
+  dplyr::rename("Sig DEGs" = n)
+
+t5 <- comb_gwas_5 %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::count() %>%
+  dplyr::rename("NS DEGs" = n)
+
+t6 <- comb_gwas_5 %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "" & is.na(baseMean) | baseMean == 0) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("No RNAseq data" = n)
+
+t7 <- full_join(t1, t2) %>%
+  full_join(t3) %>%
+  full_join(t4) %>%
+  full_join(t5) %>%
+  full_join(t6)
+
+t7$`No RNAseq data` <- t7$`No RNAseq data` %>% replace_na(0)
+
+table <- t7 %>%
+  dplyr::rename(GWAS = gwas) 
+
+table %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+### Venn Diagram: SNPs & Genes
+
+```{r, include = FALSE}
+ctmin_snps <- comb_gwas_5$ID[comb_gwas_5$gwas == "CTmin"]
+ctmax_snps <- comb_gwas_5$ID[comb_gwas_5$gwas == "CTmax"]
+tb_snps <- comb_gwas_5$ID[comb_gwas_5$gwas == "ThermalBreadth"]
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
+                              CTmax = ctmax_snps, 
+                              ThermalBreadth = tb_snps),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max]),
+                                             "Thermal Breadth"),
+                          imagetype = "png",
+                          filename = "gwas_5_venn_diagram.png",
+                          fill = c("blue", "red", "purple"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red", "purple"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+# without thermal breadth
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
+                              CTmax = ctmax_snps),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max])),
+                          imagetype = "png",
+                          filename = "gwas_5_venn_diagram_ct.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r venn_diagram_5_genes, include = FALSE}
+ctmin_genes <- comb_gwas_5 %>%
+  dplyr::filter(gwas == "CTmin" & gene != "") %>%
+  dplyr::distinct(gene)
+ctmax_genes <- comb_gwas_5 %>%
+  dplyr::filter(gwas == "CTmax" & gene != "") %>%
+  dplyr::distinct(gene)
+tb_genes <- comb_gwas_5 %>%
+  dplyr::filter(gwas == "ThermalBreadth" & gene != "") %>%
+  dplyr::distinct(gene)
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene, 
+                              CTmax = ctmax_genes$gene, 
+                              ThermalBreadth = tb_genes$gene),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max]),
+                                             "Thermal Breadth"),                          
+                          imagetype = "png",
+                          filename = "gwas_5_genes_venn_diagram.png",
+                          fill = c("blue", "red", "purple"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red", "purple"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+# without thermal breadth
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene, 
+                              CTmax = ctmax_genes$gene),
+                          category.names = c(expression("CT"[min]),
+                                             expression("CT"[max])),                          
+                          imagetype = "png",
+                          filename = "gwas_5_genes_venn_diagram_ct.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 3,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 3,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-5) associated with each phenotype. B. The unique genes associated with those top SNPs"}
+
+p1 <- cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_venn_diagram.png", 
+                      scale = 0.9)
+
+p2 <- cowplot::ggdraw() + 
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_genes_venn_diagram.png",
+                      scale = 0.9)
+
+cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+
+```
+
+Without thermal breadth
+
+```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-5) associated with each phenotype. B. The unique genes associated with those top SNPs"}
+
+p1 <- cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_venn_diagram_ct.png", 
+                      scale = 0.9)
+
+p2 <- cowplot::ggdraw() + 
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_genes_venn_diagram_ct.png",
+                      scale = 0.9)
+
+cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+
+```
+
+### CTmax
+
+#### All hits
+
+```{r}
+gwas_hot_5 %>%
+  dplyr::select(ID, gene, feature, pos, AvgEff, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>% 
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Feature count
+
+```{r}
+gwas_hot_5 %>%
+  group_by(feature) %>%
+  dplyr::count() %>%
+  filter(feature != "") %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+#### Gene counts
+
+```{r}
+gwas_hot_5 %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+
+### CTmin
+
+#### All hits 
+
+```{r}
+gwas_cold_5 %>%
+  dplyr::select(ID, gene, feature, pos, AvgEff, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Feature count
+
+```{r}
+gwas_cold_5 %>%
+  group_by(feature) %>%
+  filter(feature != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+#### Gene counts
+
+```{r}
+gwas_cold_5 %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Thermal Breadth
+
+#### All hits
+
+```{r}
+gwas_tb %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Feature count
+
+```{r}
+gwas_tb %>%
+  group_by(feature) %>%
+  filter(feature != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+#### Gene counts
+
+```{r}
+gwas_tb %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+## **Relaxed cutoff 10<sup>-4</sup>**
+
+### Summary
+
+```{r}
+comb_cold_all <- full_join(res_cold, gwas_cold, by = "gene")
+comb_hot_all <- full_join(res_hot, gwas_hot, by = "gene")
+
+
+# get only the SNPs identified in the GWAS
+comb_hot_filt <- comb_hot_all %>%
+  filter(!is.na(ID))
+
+comb_cold_filt <- comb_cold_all %>%
   filter(!is.na(ID))
 
 
@@ -767,352 +566,9 @@ table %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
-## Venn Diagram: SNPs & Genes
+### Venn Diagram: SNPs & Genes
 
-```{r venn_diagram_5, include = FALSE}
-ctmin_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmin"]
-ctmax_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmax"]
-tb_snps <- comb_gwas$ID[comb_gwas$gwas == "ThermalBreadth"]
-
-# dont want it to evaluate every time
-setwd(here::here("cahan/plots"))
-VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
-                              CTmax = ctmax_snps, 
-                              ThermalBreadth = tb_snps),
-                          category.names = c(expression("CT"[min]),
-                                             expression("CT"[max]),
-                                             "Thermal Breadth"),
-                          imagetype = "png",
-                          filename = "gwas_5_venn_diagram.png",
-                          fill = c("blue", "red", "purple"), 
-                          alpha = 0.5,
-                          label.col = "white", 
-                          fontfamily = "serif", 
-                          fontface = "bold",
-                          cat.cex = 2,
-                          cat.dist = .1,
-                          margin = .1,
-                          cex = 2,
-                          cat.col = c("blue", "red", "purple"), 
-                          cat.fontfamily = "serif",
-                          cat.fontface = "bold")
-# without thermal breadth
-setwd(here::here("cahan/plots"))
-VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps, 
-                              CTmax = ctmax_snps),
-                          category.names = c(expression("CT"[min]),
-                                             expression("CT"[max])),
-                          imagetype = "png",
-                          filename = "gwas_5_venn_diagram_ct.png",
-                          fill = c("blue", "red"), 
-                          alpha = 0.5,
-                          label.col = "white", 
-                          fontfamily = "serif", 
-                          fontface = "bold",
-                          cat.cex = 2,
-                          cat.dist = .1,
-                          margin = .1,
-                          cex = 2,
-                          cat.col = c("blue", "red"), 
-                          cat.fontfamily = "serif",
-                          cat.fontface = "bold")
-```
-
-```{r venn_diagram_5_genes, include = FALSE}
-ctmin_genes <- comb_gwas %>%
-  dplyr::filter(gwas == "CTmin" & gene != "") %>%
-  dplyr::distinct(gene)
-ctmax_genes <- comb_gwas %>%
-  dplyr::filter(gwas == "CTmax" & gene != "") %>%
-  dplyr::distinct(gene)
-tb_genes <- comb_gwas %>%
-  dplyr::filter(gwas == "ThermalBreadth" & gene != "") %>%
-  dplyr::distinct(gene)
-
-# dont want it to evaluate every time
-setwd(here::here("cahan/plots"))
-VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene, 
-                              CTmax = ctmax_genes$gene, 
-                              ThermalBreadth = tb_genes$gene),
-                          category.names = c(expression("CT"[min]),
-                                             expression("CT"[max]),
-                                             "Thermal Breadth"),                          
-                          imagetype = "png",
-                          filename = "gwas_5_genes_venn_diagram.png",
-                          fill = c("blue", "red", "purple"), 
-                          alpha = 0.5,
-                          label.col = "white", 
-                          fontfamily = "serif", 
-                          fontface = "bold",
-                          cat.cex = 2,
-                          cat.dist = .1,
-                          margin = .1,
-                          cex = 2,
-                          cat.col = c("blue", "red", "purple"), 
-                          cat.fontfamily = "serif",
-                          cat.fontface = "bold")
-# without thermal breadth
-setwd(here::here("cahan/plots"))
-VennDiagram::venn.diagram(x = list(CTmin = ctmin_genes$gene, 
-                              CTmax = ctmax_genes$gene),
-                          category.names = c(expression("CT"[min]),
-                                             expression("CT"[max])),                          
-                          imagetype = "png",
-                          filename = "gwas_5_genes_venn_diagram_ct.png",
-                          fill = c("blue", "red"), 
-                          alpha = 0.5,
-                          label.col = "white", 
-                          fontfamily = "serif", 
-                          fontface = "bold",
-                          cat.cex = 3,
-                          cat.dist = .1,
-                          margin = .1,
-                          cex = 3,
-                          cat.col = c("blue", "red"), 
-                          cat.fontfamily = "serif",
-                          cat.fontface = "bold")
-```
-
-```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-5) associated with each phenotype. B. The unique genes associated with those top SNPs"}
-
-p1 <- cowplot::ggdraw() +
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_venn_diagram.png", 
-                      scale = 0.9)
-
-p2 <- cowplot::ggdraw() + 
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_genes_venn_diagram.png",
-                      scale = 0.9)
-
-cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
-
-```
-
-### Without thermal breadth
-
-```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-5) associated with each phenotype. B. The unique genes associated with those top SNPs"}
-
-p1 <- cowplot::ggdraw() +
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_venn_diagram_ct.png", 
-                      scale = 0.9)
-
-p2 <- cowplot::ggdraw() + 
-  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_5_genes_venn_diagram_ct.png",
-                      scale = 0.9)
-
-cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
-
-```
-
-## CTmax
-
-### All hits
-
-```{r table_top_gwas_hot_all}
-gwas_hot_5 %>%
-  dplyr::select(ID, gene, feature, pos, AvgEff, AvgMixedPval) %>%
-  arrange(AvgMixedPval) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-### Group count
-
-```{r table_top_gwas_hot_feature}
-gwas_hot %>%
-  group_by(feature) %>%
-  dplyr::count() %>%
-  filter(feature != "") %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-### Gene counts
-
-```{r table_top_gwas_hot_genes}
-gwas_hot %>%
-  dplyr::select(gene) %>%
-  group_by(gene) %>%
-  filter(gene != "") %>%
-  dplyr::count() %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-
-## CTmin
-
-### All hits 
-
-```{r table_top_gwas_cold_all}
-gwas_cold_5 %>%
-  dplyr::select(ID, gene, feature, pos, AvgEff, AvgMixedPval) %>%
-  arrange(AvgMixedPval) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-### Group count
-
-```{r table_top_gwas_cold_feature}
-gwas_cold %>%
-  group_by(feature) %>%
-  filter(feature != "") %>%
-  dplyr::count() %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-### Gene counts
-
-```{r table_top_gwas_cold_genes}
-gwas_cold %>%
-  dplyr::select(gene) %>%
-  group_by(gene) %>%
-  filter(gene != "") %>%
-  dplyr::count() %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-## Thermal Breadth
-
-### All hits
-
-```{r table_top_gwas_tb_all}
-gwas_tb %>%
-  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
-  arrange(AvgMixedPval) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-### Group count
-
-```{r table_top_gwas_tb_feature}
-gwas_tb %>%
-  group_by(feature) %>%
-  filter(feature != "") %>%
-  dplyr::count() %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-### Gene counts
-
-```{r table_top_gwas_tb_genes}
-gwas_tb %>%
-  dplyr::select(gene) %>%
-  group_by(gene) %>%
-  filter(gene != "") %>%
-  dplyr::count() %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-# GWAS Tables (pval cutoff 10^-4)
-
-## Summary
-
-```{r gwas_hot_summary4}
-comb_cold_all <- full_join(res_cold, gwas_cold_all, by = "gene")
-comb_hot_all <- full_join(res_hot, gwas_hot_all, by = "gene")
-
-
-# get only the SNPs identified in the GWAS
-comb_hot_filt <- comb_hot_all %>%
-  filter(!is.na(ID))
-
-comb_cold_filt <- comb_cold_all %>%
-  filter(!is.na(ID))
-
-
-# create a column that indicates where the snps are from
-comb_hot_filt$gwas <- "CTmax"
-comb_cold_filt$gwas <- "CTmin"
-gwas_tb_all$gwas <- "ThermalBreadth"
-
-
-comb_gwas <- dplyr::bind_rows(comb_hot_filt, comb_cold_filt, gwas_tb_all)
-
-
-t1 <- comb_gwas %>%
-  group_by(gwas) %>%
-  distinct(ID, .keep_all = TRUE) %>%
-  dplyr::count() %>%
-  dplyr::rename("SNPs" = n)
-
-t2 <- comb_gwas %>%
-  group_by(gwas) %>%
-  distinct(ID, .keep_all = TRUE) %>%
-  dplyr::filter(gene != "") %>%
-  dplyr::count() %>%
-  dplyr::rename("SNPs annotated to genes" = n)
-
-t3 <- comb_gwas %>%
-  group_by(gwas) %>%
-  dplyr::filter(gene != "") %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::count() %>%
-  dplyr::rename("Unique genes" = n)
-
-t4 <- comb_gwas %>%
-  group_by(gwas) %>%
-  dplyr::filter(gene != "") %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::filter(padj <= 0.01) %>%
-  dplyr::count() %>%
-  dplyr::rename("Sig DEGs" = n)
-
-t5 <- comb_gwas %>%
-  group_by(gwas) %>%
-  dplyr::filter(gene != "") %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::filter(padj > 0.01) %>%
-  dplyr::count() %>%
-  dplyr::rename("NS DEGs" = n)
-
-t6 <- comb_gwas %>%
-  group_by(gwas) %>%
-  dplyr::filter(gene != "" & is.na(baseMean) | baseMean == 0) %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::count() %>%
-  dplyr::rename("No RNAseq data" = n)
-
-t7 <- full_join(t1, t2) %>%
-  full_join(t3) %>%
-  full_join(t4) %>%
-  full_join(t5) %>%
-  full_join(t6)
-
-t7$`No RNAseq data` <- t7$`No RNAseq data` %>% replace_na(0)
-
-table <- t7 %>%
-  dplyr::rename(GWAS = gwas) 
-
-table %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-## Venn Diagram: SNPs & Genes
-
-```{r venn_diagram_4_snps, include = FALSE}
+```{r, include = FALSE}
 ctmin_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmin"]
 ctmax_snps <- comb_gwas$ID[comb_gwas$gwas == "CTmax"]
 tb_snps <- comb_gwas$ID[comb_gwas$gwas == "ThermalBreadth"]
@@ -1168,7 +624,7 @@ VennDiagram::venn.diagram(x = list(CTmin = ctmin_snps,
 
 ```
 
-```{r venn_diagram_4_genes, include = FALSE}
+```{r, include = FALSE}
 ctmin_genes <- comb_gwas %>%
   dplyr::filter(gwas == "CTmin" & gene != "") %>%
   dplyr::distinct(gene)
@@ -1248,7 +704,7 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 
 ```
 
-### Withouth thermal breadth
+Withouth thermal breadth
 
 ```{r, fig.height = 3.5, fig.width = 7, fig.cap = "A) The top GWAS SNPs (10^-4) associated with each phenotype. B. The unique genes associated with those top SNPs"}
 
@@ -1264,12 +720,12 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 
 ```
 
-## CTmax
+### CTmax
 
-### All hits
+#### All hits
 
-```{r table_top_gwas_hot_all_4}
-gwas_hot_all %>%
+```{r}
+gwas_hot %>%
   dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
@@ -1277,10 +733,10 @@ gwas_hot_all %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
-### Group count
+#### Feature count
 
-```{r table_top_gwas_hot_feature_4}
-gwas_hot_all %>%
+```{r}
+gwas_hot %>%
   group_by(feature) %>%
   dplyr::count() %>%
   filter(feature != "") %>%
@@ -1290,10 +746,68 @@ gwas_hot_all %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
-### Gene counts
+#### Gene counts
 
-```{r table_top_gwas_hot_genes_4}
-gwas_hot_all %>%
+```{r}
+gwas_hot %>%
+  dplyr::select(gene) %>%
+  group_by(gene) %>%
+  filter(gene != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Non-differentially expressed GWAS hits
+
+```{r}
+gwas_hot %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::left_join(res_hot, by = "gene") %>%
+  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::arrange(AvgMixedPval) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+
+### CTmin
+
+#### All hits 
+
+```{r}
+gwas_cold %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
+  arrange(AvgMixedPval) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Feature count
+
+```{r}
+gwas_cold %>%
+  group_by(feature) %>%
+  filter(feature != "") %>%
+  dplyr::count() %>%
+  arrange(desc(n)) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+#### Gene counts
+
+```{r}
+gwas_cold %>%
   dplyr::select(gene) %>%
   group_by(gene) %>%
   filter(gene != "") %>%
@@ -1305,12 +819,29 @@ gwas_hot_all %>%
 ```
 
 
-## CTmin
+#### Non-differentially expressed GWAS hits
 
-### All hits 
+```{r}
+gwas_cold %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::left_join(res_cold, by = "gene") %>%
+  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::arrange(AvgMixedPval) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
 
-```{r table_top_gwas_cold_all_4}
-gwas_cold_all %>%
+### Thermal Breadth
+
+#### All hits
+
+```{r}
+gwas_tb %>%
   dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
@@ -1318,10 +849,10 @@ gwas_cold_all %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
-### Group count
+#### Feature count
 
-```{r table_top_gwas_cold_feature_4}
-gwas_cold_all %>%
+```{r}
+gwas_tb %>%
   group_by(feature) %>%
   filter(feature != "") %>%
   dplyr::count() %>%
@@ -1331,10 +862,10 @@ gwas_cold_all %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
-### Gene counts
+#### Gene counts
 
-```{r table_top_gwas_cold_genes_4}
-gwas_cold_all %>%
+```{r}
+gwas_tb %>%
   dplyr::select(gene) %>%
   group_by(gene) %>%
   filter(gene != "") %>%
@@ -1343,308 +874,6 @@ gwas_cold_all %>%
   kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
-```
-
-## Thermal Breadth
-
-### All hits
-
-```{r table_top_gwas_tb_all_4}
-gwas_tb_all %>%
-  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
-  arrange(AvgMixedPval) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-### Group count
-
-```{r table_top_gwas_tb_feature_4}
-gwas_tb_all %>%
-  group_by(feature) %>%
-  filter(feature != "") %>%
-  dplyr::count() %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-### Gene counts
-
-```{r table_top_gwas_tb_genes_4}
-gwas_tb_all %>%
-  dplyr::select(gene) %>%
-  group_by(gene) %>%
-  filter(gene != "") %>%
-  dplyr::count() %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-# Phenotypes {.tabset .tabset-fade .tabset-pills}
-
-## Figure 1
-```{r, fig.height = 3.5, fig.width = 7}
-p1 <- ggplot(pheno %>%
-               filter(type == "ctmin") %>%
-               group_by(line_DGRP) %>%
-               summarize(temp = mean(temp)), 
-             aes(x = temp)) + 
-        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
-        labs(x = expression(CT[min] * ~ "(°C)"),
-             y = "Counts") +
-        xlim(c(0, 10)) +
-        ylim(c(0, 33)) + 
-        annotate("text", x = 7.5, y = 17.5, label = expression(H^2 *" = 0.25"),
-                 size = 4) +
-        theme_classic()
-
-p2 <- ggplot(pheno %>%
-               filter(type == "ctmax") %>%
-               group_by(line_DGRP) %>%
-               summarize(temp = mean(temp)), 
-             aes(x = temp)) + 
-        geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
-        labs(x = expression(CT[max] * ~ "(°C)"), 
-             y = "Counts") +
-        xlim(c(35, 45)) +
-        ylim(c(0, 33)) +
-        annotate("text", x = 42.5, y = 17.5, label = expression(H^2 *" = 0.29"),
-                 size = 4) +
-        theme_classic()
-
-cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
-```
-
-## Figure 1 (with the scatter plot)
-
-```{r, fig.height = 5, fig.width = 7}
-top_row <- cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
-
-my.formula <- y ~ x
-p3 <- ggplot(pheno %>%
-               pivot_wider(names_from = type, values_from = temp) %>%
-               group_by(line_DGRP) %>%
-               summarize(ctmin = mean(ctmin), ctmax = mean(ctmax)), 
-             aes(x = ctmin, y = ctmax)) +
-        geom_point(fill = "grey50", shape = 21) +
-        geom_smooth(method = "lm", 
-                    linetype = "dashed", 
-                    se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = "right", label.y = "bottom") + 
-        labs(x = expression(CT[min] * ~ "(°C)"), 
-             y = expression(CT[max] * ~ "(°C)")) +
-        theme_classic() +
-        theme(plot.margin = unit(c(t = 0.25, r = 3.5, b = 0, l = 3.5), "cm"))
-
-cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
-```
-
-
-## Thermal Breadth Correlation
-
-```{r, fig.height = 3.5, fig.width = 7}
-my.formula <- y ~ x
-p1 <- ggplot(pheno %>%
-         pivot_wider(names_from = type, values_from = temp) %>%
-         mutate(tb = ctmax - ctmin) %>%
-         group_by(line_DGRP) %>%
-         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
-        aes(x = ctmin, y = tb)) +
-        geom_point(fill = "grey50", shape = 21) +
-        geom_smooth(method = "lm", 
-                    linetype = "dashed", 
-                    se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
-        labs(x = expression(CT[min] * ~ "(°C)"), 
-             y = "Thermal Breadth (°C)") +
-        theme_classic()
-  
-
-p2 <- ggplot(pheno %>%
-         pivot_wider(names_from = type, values_from = temp) %>%
-         mutate(tb = ctmax - ctmin) %>%
-         group_by(line_DGRP) %>%
-         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
-        aes(x = ctmax, y = tb)) +
-        geom_point(fill = "grey50", shape = 21) +
-        geom_smooth(method = "lm", 
-                    linetype = "dashed", 
-                    se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
-        labs(x = expression(CT[max] * ~ "(°C)"), 
-             y = "Thermal Breadth (°C)") +
-        theme_classic()
-
-cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
-```
-
-# Manhattan plots
-
-```{r, fig.height = 4.5, fig.width = 6}
-# setwd(here::here("DRGP_GWAS"))
-# 
-# png("gwas_cold_manhattan.png", width = 600, height = 300)
-# qqman::manhattan(gwas_cold_manhat,
-#                  annotateTop = FALSE,
-#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
-#                  ylim = c(0, 8),
-#                  suggestiveline = -log10(1e-04),
-#                  genomewideline = -log10(1e-05))
-# dev.off()
-# 
-# 
-# png("gwas_hot_manhattan.png", width = 600, height = 300)
-# qqman::manhattan(gwas_hot_manhat,
-#                  annotateTop = FALSE,
-#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
-#                  ylim = c(0, 8),
-#                  suggestiveline = -log10(1e-04),
-#                  genomewideline = -log10(1e-05))
-# dev.off()
-
-p1 <- cowplot::ggdraw() +
-  cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"))
-
-p2 <- cowplot::ggdraw() + 
-  cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"))
-
-cowplot::plot_grid(p1, p2, nrow = 2, labels = "AUTO")
-```
-
-
-# Transription factors
-
-## DEG
-
-```{r}
-# create a column that indicates where the deg
-res_cold$deg <- "Cold"
-res_hot$deg <- "Hot"
-
-
-comb_deg <- dplyr::bind_rows(res_cold, res_hot)
-
-
-t1 <- comb_deg %>%
-  dplyr::filter(padj < 0.01) %>%
-  dplyr::group_by(deg) %>%
-  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::count() %>%
-  dplyr::rename("TFs" = n)
-
-t2 <- comb_deg %>%
-  dplyr::filter(padj < 0.01) %>%  
-  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::group_by(deg, log2FoldChange < 0) %>%
-  dplyr::count() %>%
-  dplyr::rename("TFs" = n) %>% 
-  tidyr::pivot_wider(names_from = `log2FoldChange < 0`, values_from = TFs) %>%
-  dplyr::rename("Down-regulated" = `TRUE`, "Up-regulated" = `FALSE`)
-                    
-
-table <- full_join(t1, t2)
-
-table %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-### Heat-shock
-
-```{r}
-res_hot %>%
-  dplyr::filter(padj < 0.01) %>%
-  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::group_by(log2FoldChange < 0) %>%
-  dplyr::arrange(`log2FoldChange < 0`, desc(log2FoldChange)) %>%
-  dplyr::ungroup() %>%
-  dplyr::select(gene, log2FoldChange, padj) %>%
-  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-### Cold-shock
-```{r}
-res_cold %>%
-  dplyr::filter(padj < 0.01) %>%
-  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::group_by(log2FoldChange < 0) %>%
-  dplyr::arrange(`log2FoldChange < 0`, desc(log2FoldChange)) %>%
-  dplyr::ungroup() %>%
-  dplyr::select(gene, log2FoldChange, padj) %>%
-  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-
-
-
-
-
-### Cold-shock
-```{r}
-res_cold %>%
-  dplyr::filter(padj < 0.01) %>%
-  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::group_by(log2FoldChange < 0) %>%
-  dplyr::arrange(`log2FoldChange < 0`, desc(log2FoldChange)) %>%
-  dplyr::ungroup() %>%
-  dplyr::select(gene, log2FoldChange, padj) %>%
-  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-### Venn Diagram
-
-```{r, include = FALSE}
-cold_tf <- res_cold %>%
-  dplyr::filter(padj < 0.01) %>%
-  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::select(gene)
-
-hot_tf <- res_hot %>%
-  dplyr::filter(padj < 0.01) %>%
-  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
-  dplyr::select(gene)
-
-
-# dont want it to evaluate every time
-setwd(here::here("cahan/plots"))
-VennDiagram::venn.diagram(x = list(COLD = cold_tf$gene, 
-                              HOT = hot_tf$gene),
-                          category.names = c("COLD", "HOT"),
-                          imagetype = "png",
-                          filename = "deg_tf_venn_diagram.png",
-                          fill = c("blue", "red"), 
-                          alpha = 0.5,
-                          label.col = "black", 
-                          fontfamily = "serif", 
-                          fontface = "bold",
-                          cat.cex = 2,
-                          cat.dist = .1,
-                          margin = .1,
-                          cex = 2,
-                          cat.col = c("blue", "red"), 
-                          cat.fontfamily = "serif",
-                          cat.fontface = "bold")
 ```
 
 ```{r, fig.height = 4, fig.width = 4}
@@ -1652,12 +881,12 @@ cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/deg_tf_venn_diagram.png")
 ```
 
-## GWAS
+## Transcription Factors
 
 ### CTmax
 
 ```{r}
-ctmax_tf_df <- gwas_hot_all %>%
+ctmax_tf_df <- gwas_hot %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
   dplyr::select(gene, AvgMixedPval) %>%
@@ -1681,7 +910,7 @@ dplyr::full_join(ctmax_tf_df, ctmax_deg_tf) %>%
 ### CTmin
 
 ```{r}
-ctmin_tf_df <- gwas_cold_all %>%
+ctmin_tf_df <- gwas_cold %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
   dplyr::select(gene, AvgMixedPval) %>%
@@ -1705,12 +934,12 @@ dplyr::full_join(ctmin_tf_df, ctmin_deg_tf) %>%
 ### Venn diagram
 
 ```{r, include = FALSE}
-ctmin_tf <- gwas_cold_all %>%
+ctmin_tf <- gwas_cold %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
   dplyr::select(gene)
 
-ctmax_tf <- gwas_hot_all %>%
+ctmax_tf <- gwas_hot %>%
   dplyr::filter(AvgMixedPval < 10^-4) %>%
   dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
   dplyr::select(gene)
@@ -1773,40 +1002,445 @@ cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/tf_venn_diagram.png")
 ```
 
-# Non-differentially expressed GWAS hits
+# **Expression**
 
-## CTmin
+## MA plots {.tabset .tabset-fade .tabset-pills}
+
+All MA plots now have an FDR of 0.01 and no fold-change cutoff.
+
+### No gene labels
+
+**Cold v Ctrl MA plot**
 
 ```{r}
-gwas_cold_all %>%
-  dplyr::filter(AvgMixedPval < 10^-4) %>%
-  dplyr::select(gene, AvgMixedPval) %>%
-  dplyr::arrange(gene, AvgMixedPval) %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::left_join(res_cold, by = "gene") %>%
-  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
-  dplyr::filter(padj > 0.01) %>%
-  dplyr::arrange(AvgMixedPval) %>%
-  kable(format = "html", escape = F) %>%
+ggmaplot(res_cold, main = expression("4°C" %->% "25°C"),
+         fdr = 0.01, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_cold$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+**Hot v Ctrl MA plot**
+
+```{r}
+ggmaplot(res_hot, main = expression("37°C" %->% "25°C"),
+         fdr = 0.01, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_hot$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+### GWAS points
+
+**Cold v Ctrl MA plot**
+
+```{r}
+deg_gwas_cold_distinct <- deg_gwas_cold %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
+
+ggmaplot_gwas(deg_gwas_cold_distinct %>%
+                distinct(gene, .keep_all = TRUE) %>%
+                 dplyr::filter(baseMean > 0), 
+              main = expression("4°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
+              genenames = as.vector(deg_gwas_cold_distinct$gene),
+              legend = "top", top = 0,
+              select.top.method = "gwas",
+              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+**Hot v Ctrl MA plot**
+
+```{r}
+deg_gwas_hot_distinct <- deg_gwas_hot %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
+
+ggmaplot_gwas(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              palette = c("#1465AC", "black", "#A6A6A680", "#B31B21"),
+              genenames = as.vector(deg_gwas_hot_distinct$gene),
+              legend = "top", top = 0,
+              select.top.method = "gwas",
+              font.label = c("bold", 11), label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+
+### GWAS colored labels
+
+**Cold v Ctrl MA plot**
+
+```{r}
+# color labels by deg
+
+deg_gwas_cold_distinct <- deg_gwas_cold %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
+
+ggmaplot_test(deg_gwas_cold_distinct, main = expression("4°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              color_sig = TRUE,
+              genenames = as.vector(deg_gwas_cold_distinct$gene),
+              legend = "top", top = 22,
+              select.top.method = "gwas",
+              font.label = c("bold", 11), 
+              font.label.sig = c(11, "bold", "firebrick"),
+              label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12)) + 
+  guides(color = guide_legend(override.aes = list(shape = 20)))
+```
+
+**Hot v Ctrl MA plot**
+
+```{r}
+# color labels by deg
+
+deg_gwas_hot_distinct <- deg_gwas_hot %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(baseMean > 0)
+
+ggmaplot_test(deg_gwas_hot_distinct, main = expression("37°C" %->% "25°C"),
+              fdr = 0.01, fc = 0, size = 1,
+              color_sig = TRUE,
+              genenames = as.vector(deg_gwas_hot_distinct$gene),
+              legend = "top", top = 11,
+              select.top.method = "gwas",
+              font.label = c("bold", 11), 
+              font.label.sig = c(11, "bold", "firebrick"),
+              label.rectangle = TRUE,
+              font.legend = "bold",
+              font.main = "bold",
+              ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12)) + 
+  guides(color = guide_legend(override.aes = list(shape = 20))) 
+```
+
+## Venn Diagrams
+
+```{r}
+res_cold_up <- res_cold %>%
+  dplyr::filter(padj < 0.01 & log2FoldChange > 0)
+res_hot_up <- res_hot %>%
+  dplyr::filter(padj < 0.01 & log2FoldChange > 0)
+res_cold_down <- res_cold %>%
+  dplyr::filter(padj < 0.01 & log2FoldChange < 0)
+res_hot_down <- res_hot %>%
+  dplyr::filter(padj < 0.01 & log2FoldChange < 0)
+```
+
+### Up-regulated genes
+
+```{r, fig.width = 5, fig.height = 3, include = FALSE}
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(COLD = res_cold_up$gene, 
+                              HOT = res_hot_up$gene),
+                          category.names = c("COLD", "HOT"),
+                          imagetype = "png",
+                          filename = "deg_hot_cold_up.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 1,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/deg_hot_cold_up.png")
+```
+
+### Down-regulated genes
+
+```{r, fig.width = 5, fig.height = 3,  include = FALSE}
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(COLD = res_cold_down$gene, 
+                              HOT = res_hot_down$gene),
+                          category.names = c("COLD", "HOT"),
+                          imagetype = "png",
+                          filename = "deg_hot_cold_down.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 1,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/deg_hot_cold_down.png")
+```
+
+
+## Top 50 DEGs
+
+[Download full DESeq2 gene expression results](https://tsoleary.github.io/rna_seq/cahan/results/deg_hot_cold.zip)
+
+### Heat-shock
+
+```{r}
+deg_grouped %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  group_by(hot_fc) %>%
+  top_n(n = -50, wt = padj.hot) %>%
+  dplyr::select(gene, hot_fc, log2FoldChange.hot, padj.hot) %>%
+  arrange(hot_fc, padj.hot) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### Cold-shock
+
+```{r}
+deg_grouped %>%
+  group_by(cold_fc) %>%
+  distinct(gene, .keep_all = TRUE) %>%
+  top_n(n = -50, wt = padj.cold) %>%
+  dplyr::select(gene, cold_fc, log2FoldChange.cold, padj.cold) %>%
+  arrange(cold_fc, padj.cold) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+## Transription factors
+
+### Summary
+
+```{r}
+# create a column that indicates where the deg
+res_cold$deg <- "Cold"
+res_hot$deg <- "Hot"
+
+
+comb_deg <- dplyr::bind_rows(res_cold, res_hot)
+
+
+t1 <- comb_deg %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::group_by(deg) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::count() %>%
+  dplyr::rename("TFs" = n)
+
+t2 <- comb_deg %>%
+  dplyr::filter(padj < 0.01) %>%  
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::group_by(deg, log2FoldChange < 0) %>%
+  dplyr::count() %>%
+  dplyr::rename("TFs" = n) %>% 
+  tidyr::pivot_wider(names_from = `log2FoldChange < 0`, values_from = TFs) %>%
+  dplyr::rename("Down-regulated" = `TRUE`, "Up-regulated" = `FALSE`)
+                    
+
+table <- full_join(t1, t2)
+
+table %>%
+  kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "100%")
 ```
 
-## CTmax
+#### Heat-shock
 
 ```{r}
-gwas_hot_all %>%
-  dplyr::filter(AvgMixedPval < 10^-4) %>%
-  dplyr::select(gene, AvgMixedPval) %>%
-  dplyr::arrange(gene, AvgMixedPval) %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::left_join(res_hot, by = "gene") %>%
-  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
-  dplyr::filter(padj > 0.01) %>%
-  dplyr::arrange(AvgMixedPval) %>%
-  kable(format = "html", escape = F) %>%
+res_hot %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::group_by(log2FoldChange < 0) %>%
+  dplyr::arrange(`log2FoldChange < 0`, desc(log2FoldChange)) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(gene, log2FoldChange, padj) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Cold-shock
+```{r}
+res_cold %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::group_by(log2FoldChange < 0) %>%
+  dplyr::arrange(`log2FoldChange < 0`, desc(log2FoldChange)) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(gene, log2FoldChange, padj) %>%
+  dplyr::mutate_if(is.numeric, funs(as.character(signif(., 4)))) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+#### Venn Diagram
+
+```{r, include = FALSE}
+
+# dont want it to evaluate every time
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(COLD = cold_tf$gene, 
+                              HOT = hot_tf$gene),
+                          category.names = c("COLD", "HOT"),
+                          imagetype = "png",
+                          filename = "deg_tf_venn_diagram.png",
+                          fill = c("blue", "red"), 
+                          alpha = 0.5,
+                          label.col = "black", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("blue", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
 ```
 
 
+
+
+# **Integrate DEGs and GWAS**
+
+## GWAS lfc expression density 
+
+```{r, fig.height = 7, fig.width = 7}
+# filter the gwas so there is only the pvalues that reach the cut off level ----
+pval_cut_4 <- 10^-4
+
+gwas_cold_4 <- gwas_cold %>%
+  filter(AvgMixedPval < pval_cut_4)
+gwas_hot_4 <- gwas_hot %>%
+  filter(AvgMixedPval < pval_cut_4)
+
+# create a data.frame with all the info for the plotting later -----------------
+temp <- left_join(deg, gwas_cold_4, by = "gene", suffix = c("", ".cold"))
+total_4 <- full_join(temp, gwas_hot_4, by = "gene", suffix = c(".cold", ".hot"))
+
+# group by the significance
+deg_grouped_4 <- group_deg(total_4, pval_cut = 0.01, lfc_cut = 0)
+
+
+color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
+
+# the function from seqsetvis requires a sequential column in the data.frame
+deg_grouped_4$id <- seq_len(nrow(deg_grouped_4))
+
+deg_simple_4 <- deg_grouped_4 %>%
+  dplyr::select(gene, log2FoldChange.hot, 
+                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
+  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
+                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
+                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
+                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin_CTmax"))
+
+deg_simple_distinct_4 <- deg_simple_4 %>%
+  distinct(gene, .keep_all = TRUE)
+
+
+deg_simple_distinct_4 <- deg_simple_distinct_4 %>%
+  separate(gwas_g, into = c("gwas_g", "gwas_g2"), sep = "_") %>%
+  pivot_longer(gwas_g:gwas_g2, names_to = "type", values_to = "gwas_g", 
+               values_drop_na = TRUE)
+
+# order the levels of the factor for plotting purposes to get NS on bottom
+deg_simple_distinct_4$groupn <- as.factor(deg_simple_distinct_4$groupn)
+
+deg_simple_distinct_4$groupn <- factor(deg_simple_distinct_4$groupn, 
+                                       levels =  c("Shared: 6228",
+                                                   "Sig1 Shared: 3266", 
+                                                   "Unique: 14",
+                                                   "Sig1 Unique: 106",
+                                                   "NS: 6485"))
+
+
+plot_scatter_side_density_xy_rel(deg_simple_distinct_4, 
+                             x_ = "log2FoldChange.cold", 
+                             y_ = "log2FoldChange.hot",
+                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
+                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
+                             bg.string = "NS: 6485",
+                             bg.density.string = "Other",
+                             labs_sets_density = "Top GWAS-associated genes",
+                             id_ = "id", 
+                             set_ = "groupn", 
+                             set_density_ = "gwas_g", 
+                             sets.density.colors = c("red", "blue", "yellow"),
+                             sets.colors = color_set,
+                             n_auto_label = 0)
+```
+
+## Density plot overlay
+
+```{r, fig.height = 4, fig.width = 7}
+ggplot(deg_simple_distinct_4) +
+  geom_line(mapping = aes(x = log2FoldChange.hot, color = gwas_g), 
+            data = deg_simple_distinct_4 %>%
+              dplyr::filter(gwas_g != "CTmin"), stat = "density") +
+  geom_line(mapping = aes(x = log2FoldChange.cold, color = gwas_g), 
+            linetype = "dashed", data = deg_simple_distinct_4 %>%
+              dplyr::filter(gwas_g != "CTmax"), stat = "density") +
+  scale_color_manual(values = c("red", "blue", "grey50"), drop = FALSE) +
+  labs(x = "log2FoldChange vs. Ctrl", 
+       color = "GWAS", 
+       caption = "Cold dashed line\nHot solid line") +
+  theme_classic()
+```
+
+## KS test
+
+```{r}
+# do comparison for both hot and cold
+tab_hot <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.hot") 
+tab_cold <- ks.pairwise(deg_simple_distinct_4, "log2FoldChange.cold")
+df <- cbind(tab_hot, tab_cold[2])
+colnames(df) <- c("GWAS distributions", "Heat-shock", "Cold-shock")
+
+# create a table for the output
+df %>%
+  kable(caption = 
+          "K.S. pairwise comparisons of the distributions of top GWAS genes under shock") %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
