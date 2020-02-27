@@ -968,8 +968,26 @@ gwas_dgrp_annot <- function(dat){
   return(df)
 }
 
+# function to get the gene from the dgrp .top.annot file -----------------------
 
-
+gwas_dgrp_reg_annot <- function(dat){
+  
+  # remove the parens
+  dat$annot <- stringr::str_remove_all(stringr::str_remove_all(dat$RegulationAnnotation, "\\("),
+                                       "\\)")
+  # get the max number of regulatory annotations to make column names when split 
+  num_regs <- max(stringr::str_count(dat$annot, pattern = ";") + 1)
+  
+  # split up different genes and save fbgn, gene, feature, and pos in new columns
+  df <- dat %>%
+    tidyr::separate(col = annot, into = paste("annot", 1:num_regs, sep = "_"), sep = ";") %>%
+    tidyr::pivot_longer(contains("annot_"), names_to = "lab_reg", values_to = "reg",
+                        values_drop_na = TRUE) %>%
+    tidyr::separate(col = reg, 
+                    into = c("reg_type", "reg_source", "reg_flybaseID"), sep = "\\|") 
+  
+  return(df)
+}
 
 
 # function to group the genes by differential expression -----------------------
