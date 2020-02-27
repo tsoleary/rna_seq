@@ -369,7 +369,8 @@ gwas_hot_5 %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>% 
-  scroll_box(width = "100%", height = "500px")
+  scroll_box(width = "100%", height = "500px") %>%
+  dplyr::rename("Distance to gene" = pos)
 ```
 
 #### Feature count
@@ -410,7 +411,8 @@ gwas_cold_5 %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
+  scroll_box(width = "100%", height = "500px") %>%
+  dplyr::rename("Distance to gene" = pos)
 ```
 
 #### Feature count
@@ -450,7 +452,8 @@ gwas_tb %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
+  scroll_box(width = "100%", height = "500px") %>%
+  dplyr::rename("Distance to gene" = pos)
 ```
 
 #### Feature count
@@ -730,7 +733,8 @@ gwas_hot %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
+  scroll_box(width = "100%", height = "500px") %>%
+  dplyr::rename("Distance to gene" = pos)
 ```
 
 #### Feature count
@@ -788,7 +792,8 @@ gwas_cold %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
+  scroll_box(width = "100%", height = "500px") %>%
+  dplyr::rename("Distance to gene" = pos)
 ```
 
 #### Feature count
@@ -846,7 +851,8 @@ gwas_tb %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
+  scroll_box(width = "100%", height = "500px") %>%
+  dplyr::rename("Distance to gene" = pos)
 ```
 
 #### Feature count

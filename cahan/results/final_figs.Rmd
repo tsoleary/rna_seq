@@ -17,9 +17,6 @@ futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 # load these required packages
 require(tidyverse)
 require(ggpubr)
-require(AnnotationDbi)
-require(org.Dm.eg.db)
-require(ggcorrplot)
 require(seqsetvis)
 require(ssvRecipes)
 require(knitr)
@@ -351,3 +348,6 @@ p2 <- ggplot(pheno %>%
 
 cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ```
+
+
+
