@@ -366,11 +366,11 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ```{r}
 gwas_hot_5 %>%
   dplyr::select(ID, gene, feature, pos, AvgEff, AvgMixedPval) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>% 
-  scroll_box(width = "100%", height = "500px") %>%
-  dplyr::rename("Distance to gene" = pos)
+  scroll_box(width = "100%", height = "500px") 
 ```
 
 #### Feature count
@@ -408,11 +408,11 @@ gwas_hot_5 %>%
 ```{r}
 gwas_cold_5 %>%
   dplyr::select(ID, gene, feature, pos, AvgEff, AvgMixedPval) %>%
+    dplyr::rename("Distance to gene" = pos) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px") %>%
-  dplyr::rename("Distance to gene" = pos)
+  scroll_box(width = "100%", height = "500px")
 ```
 
 #### Feature count
@@ -449,11 +449,11 @@ gwas_cold_5 %>%
 ```{r}
 gwas_tb %>%
   dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px") %>%
-  dplyr::rename("Distance to gene" = pos)
+  scroll_box(width = "100%", height = "500px")
 ```
 
 #### Feature count
@@ -729,12 +729,12 @@ cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 
 ```{r}
 gwas_hot %>%
-  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval)  %>%
+  dplyr::rename("Distance to gene" = pos) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px") %>%
-  dplyr::rename("Distance to gene" = pos)
+  scroll_box(width = "100%", height = "500px")
 ```
 
 #### Feature count
@@ -763,24 +763,6 @@ gwas_hot %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
 ```
-
-#### Non-differentially expressed GWAS hits
-
-```{r}
-gwas_hot %>%
-  dplyr::filter(AvgMixedPval < 10^-4) %>%
-  dplyr::select(gene, AvgMixedPval) %>%
-  dplyr::arrange(gene, AvgMixedPval) %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::left_join(res_hot, by = "gene") %>%
-  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
-  dplyr::filter(padj > 0.01) %>%
-  dplyr::arrange(AvgMixedPval) %>%
-  kable(format = "html", escape = F) %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
 
 ### CTmin
 
@@ -789,11 +771,11 @@ gwas_hot %>%
 ```{r}
 gwas_cold %>%
   dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
+  dplyr::rename("Distance to gene" = pos) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px") %>%
-  dplyr::rename("Distance to gene" = pos)
+  scroll_box(width = "100%", height = "500px") 
 ```
 
 #### Feature count
@@ -819,24 +801,6 @@ gwas_cold %>%
   dplyr::count() %>%
   arrange(desc(n)) %>%
   kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px")
-```
-
-
-#### Non-differentially expressed GWAS hits
-
-```{r}
-gwas_cold %>%
-  dplyr::filter(AvgMixedPval < 10^-4) %>%
-  dplyr::select(gene, AvgMixedPval) %>%
-  dplyr::arrange(gene, AvgMixedPval) %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::left_join(res_cold, by = "gene") %>%
-  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
-  dplyr::filter(padj > 0.01) %>%
-  dplyr::arrange(AvgMixedPval) %>%
-  kable(format = "html", escape = F) %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
 ```
@@ -847,12 +811,12 @@ gwas_cold %>%
 
 ```{r}
 gwas_tb %>%
-  dplyr::select(ID, gene, feature, pos, AvgMixedPval) %>%
+  dplyr::select(ID, gene, feature, pos, AvgMixedPval)  %>%
+  dplyr::rename("Distance to gene" = pos) %>%
   arrange(AvgMixedPval) %>%
   kable() %>%
   kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "500px") %>%
-  dplyr::rename("Distance to gene" = pos)
+  scroll_box(width = "100%", height = "500px")
 ```
 
 #### Feature count
@@ -1449,4 +1413,76 @@ df %>%
           "K.S. pairwise comparisons of the distributions of top GWAS genes under shock") %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "100%")
+```
+
+## Differentially expressed GWAS hits
+
+### CTmin
+
+```{r}
+gwas_cold %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::left_join(res_cold, by = "gene") %>%
+  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::arrange(AvgMixedPval) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### CTmax
+
+```{r}
+gwas_hot %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::left_join(res_cold, by = "gene") %>%
+  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
+  dplyr::filter(padj < 0.01) %>%
+  dplyr::arrange(AvgMixedPval) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+## Non-differentially expressed GWAS hits
+
+### CTmin
+
+```{r}
+gwas_cold %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::left_join(res_cold, by = "gene") %>%
+  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::arrange(AvgMixedPval) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+### CTmax
+
+```{r}
+gwas_hot %>%
+  dplyr::filter(AvgMixedPval < 10^-4) %>%
+  dplyr::select(gene, AvgMixedPval) %>%
+  dplyr::arrange(gene, AvgMixedPval) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::left_join(res_cold, by = "gene") %>%
+  dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
+  dplyr::filter(padj > 0.01) %>%
+  dplyr::arrange(AvgMixedPval) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
 ```
