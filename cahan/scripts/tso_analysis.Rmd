@@ -1442,7 +1442,7 @@ gwas_hot %>%
   dplyr::select(gene, AvgMixedPval) %>%
   dplyr::arrange(gene, AvgMixedPval) %>%
   dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::left_join(res_cold, by = "gene") %>%
+  dplyr::left_join(res_hot, by = "gene") %>%
   dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
   dplyr::filter(padj < 0.01) %>%
   dplyr::arrange(AvgMixedPval) %>%
@@ -1478,7 +1478,7 @@ gwas_hot %>%
   dplyr::select(gene, AvgMixedPval) %>%
   dplyr::arrange(gene, AvgMixedPval) %>%
   dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::left_join(res_cold, by = "gene") %>%
+  dplyr::left_join(res_hot, by = "gene") %>%
   dplyr::select(gene, log2FoldChange, padj, AvgMixedPval) %>%
   dplyr::filter(padj > 0.01) %>%
   dplyr::arrange(AvgMixedPval) %>%
