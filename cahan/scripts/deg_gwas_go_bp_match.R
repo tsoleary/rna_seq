@@ -155,3 +155,26 @@ write_csv(y, "deg_gwas_hot_bp_table-5.csv")
 xy <- full_join(x, y, by = "cat")
 
 write_csv(xy, "deg_gwas_hot_cold_comb_bp_table-5.csv")
+
+
+
+# using the gene list that Brent has generated match up the go terms with genes 
+# that are in the CTmin and CTmax ----------------------------------------------
+
+setwd(here::here("cahan/results"))
+ora_cold <- read_tsv("COLD_ORA_GOBP_genes.txt")
+ora_hot<- read_tsv("HOT_ORA_GOBP_genes.txt")
+gsea_cold <- read_tsv("COLD_GSEA_GOBP_genes.txt")
+gsea_hot<- read_tsv("HOT_GSEA_GOBP_genes.txt")
+
+ora_cold_match <- go_gene_match(dat = ora_cold, dat_match = gwas_cold)
+ora_hot_match <- go_gene_match(dat = ora_hot, dat_match = gwas_hot)
+gsea_cold_match <- go_gene_match(dat = gsea_cold, dat_match = gwas_cold)
+gsea_hot_match <- go_gene_match(dat = gsea_hot, dat_match = gwas_hot)
+
+
+write_tsv(ora_cold_match, "ora_cold_match_go_bp.txt")
+write_tsv(ora_hot_match, "ora_hot_match_go_bp.txt")
+write_tsv(gsea_cold_match, "gsea_cold_match_go_bp.txt")
+write_tsv(gsea_hot_match, "gsea_hot_match_go_bp.txt")
+
