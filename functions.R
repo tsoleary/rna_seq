@@ -981,7 +981,7 @@ gwas_dgrp_reg_annot <- function(dat){
   # split up different genes and save fbgn, gene, feature, and pos in new columns
   df <- dat %>%
     tidyr::separate(col = annot, into = paste("annot", 1:num_regs, sep = "_"), sep = ";") %>%
-    tidyr::pivot_longer(contains("annot_"), names_to = "lab_reg", values_to = "reg",
+    tidyr::pivot_longer(dplyr::contains("annot_"), names_to = "lab_reg", values_to = "reg",
                         values_drop_na = TRUE) %>%
     tidyr::separate(col = reg, 
                     into = c("reg_type", "reg_source", "reg_flybaseID"), sep = "\\|") 
@@ -1059,3 +1059,42 @@ ks.pairwise <- function(.data, dist) {
   
   return(df)
 }
+
+
+# function to get gobp results into long format --------------------------------
+go_gene_match <- function(dat, dat_match, pval_cut = 10^-4){
+  
+  # dat_match pval cut off
+  dat_match <- dat_match %>%
+    dplyr::filter(AvgMixedPval < pval_cut)
+  
+  # get the max number of regulatory annotations to make column names when split 
+  num_regs <- max(stringr::str_count(dat$genes, pattern = ";") + 1)
+  
+  # split up different genes and save fbgn, gene, feature, and pos in new columns
+  df <- dat %>%
+    tidyr::separate(col = genes, into = paste("gene", 1:num_regs, sep = "_"), sep = ";") %>%
+    tidyr::pivot_longer(dplyr::contains("gene_"), names_to = "lab", values_to = "gene",
+                        values_drop_na = TRUE) %>%
+    dplyr::filter(gene %in% dat_match$gene) %>%
+    dplyr::select(GO, gene) %>%
+    tidyr::pivot_wider(names_from = GO, 
+                       values_from = gene,
+                       values_fn = list(gene = list)) %>%
+    tidyr::pivot_longer(everything(),
+                        names_to = "GO",
+                        values_to = "gene_list")
+  
+  # make the gene_list a list separated by ;
+  df$genes <- vector(mode = "character", length = nrow(df))
+  for (i in 1:nrow(df)){
+    df$genes[i] <- paste(unlist(df$gene_list[i]), sep = "", collapse = ";")
+  }
+  
+  df <- df %>%
+    dplyr::select(GO, genes) 
+
+  return(df) 
+}
+
+
