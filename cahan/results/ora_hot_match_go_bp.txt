@@ -1,0 +1,106 @@
+GO	genes
+detection of stimulus	Gr61a
+sensory perception	Gr61a;svp;dpr8
+cell fate commitment	lola;twi;Src64B;fz;svp
+sensory organ development	beat-Ia;lola;Src64B;fz;Ten-m;svp;Moe
+central nervous system development	Prosap;Src64B;svp
+regionalization	twi;fz;Moe
+negative regulation of biosynthetic process	Oaz;CG42741;svp;twin
+positive regulation of RNA biosynthetic process	lola;Oaz;twi
+negative regulation of nucleobase-containing compound metabolic process	Oaz;CG42741;svp
+sensory system development	beat-Ia;lola;Src64B;fz;Ten-m;svp;Moe
+microtubule-based process	Ten-m;Moe
+cell morphogenesis involved in differentiation	beat-Ia;lola;Prosap;Src64B;fz;Ten-m;Moe
+embryonic pattern specification	fz;Moe
+taxis	beat-Ia;lola;Src64B;fz;Ten-m;svp;Moe
+neuron projection development	beat-Ia;lola;Prosap;Src64B;fz;Ten-m;Moe
+cell part morphogenesis	beat-Ia;lola;Prosap;Src64B;fz;Ten-m;Moe
+epithelial cell differentiation	Src64B;fz
+wing disc development	Btk29A;lola;fz;disco-r
+mitotic cell cycle	Claspin;Cdc6;Moe
+establishment or maintenance of cell polarity	lola;fz;svp;Grip;Moe
+head development	Prosap;Src64B
+axis specification	twi;Moe
+glutamate receptor signaling pathway	Prosap
+G protein-coupled receptor signaling pathway	fz
+leg disc development	Sp1
+photoreceptor cell differentiation	lola;Src64B;fz;Ten-m;svp;Moe
+localization of cell	fz
+regulation of cell differentiation	Prosap;Src64B;fz
+enzyme linked receptor protein signaling pathway	Src64B;svp
+appendage development	Btk29A;lola;fz;Sp1;disco-r
+regulation of anatomical structure morphogenesis	Src64B;fz;Moe
+epithelial tube morphogenesis	Btk29A;lola;twi;fz;svp;Moe;Sp1;disco-r
+mating	Btk29A;Moe
+embryonic morphogenesis	Btk29A;twi;svp
+positive regulation of cellular component organization	Prosap;fz;Moe
+establishment of tissue polarity	lola;fz;svp
+post-embryonic animal organ development	Btk29A;lola;fz;Moe;Sp1;disco-r
+morphogenesis of a polarized epithelium	lola;fz;svp
+regulation of cell projection organization	Prosap;fz
+response to oxygen-containing compound	svp
+epidermis development	fz
+second-messenger-mediated signaling	CngB;Cngl
+regulation of nervous system development	Prosap;Src64B;fz
+meiotic cell cycle	Btk29A;Src64B
+reproductive behavior	Btk29A;Moe
+chromatin organization	CG3515;HmgZ;HmgD
+growth	Prosap;Src64B;fz;Ten-m;Rassf;disco-r
+negative regulation of cell communication	fz;Rassf
+animal organ formation	fz
+regulation of phosphorus metabolic process	Src64B
+response to endogenous stimulus	Src64B;svp
+negative regulation of signaling	fz;Rassf
+protein phosphorylation	CG11221;Btk29A;Src64B
+cation transport	Prosap;CngB;Cngl
+regulation of protein modification process	Src64B
+regulation of cell cycle	Claspin;Cdc6;Moe
+cellular response to chemical stimulus	Src64B;svp
+post-embryonic animal morphogenesis	Btk29A;lola;fz;Moe;Sp1;disco-r
+cell-cell signaling	Prosap;twi;Src64B;fz;Ten-m;svp;Grip
+regulation of localization	Prosap;fz;svp;Moe;sbr
+stem cell differentiation	svp
+negative regulation of response to stimulus	fz;Rassf
+cognition	CG11221;Btk29A;Src64B
+metamorphosis	Btk29A;lola;fz;Moe;Sp1;disco-r
+formation of anatomical boundary	fz
+cytoplasm organization	Moe
+cell proliferation	fz;svp;Moe
+response to growth factor	Src64B
+muscle structure development	lola;twi;Grip
+digestive system development	twi;svp
+developmental maturation	Moe
+urogenital system development	twi;svp
+cell division	Cdc6;fz;twin
+tissue migration	fz
+regulation of cellular component biogenesis	Btk29A;Src64B;fz
+oocyte differentiation	Moe
+cuticle development	fz
+positive regulation of developmental process	Prosap;Src64B;fz;Rassf
+protein catabolic process	CG13085;CG4911
+protein polymerization	Btk29A
+positive regulation of multicellular organismal process	Prosap;Src64B;fz;Rassf
+positive regulation of molecular function	Src64B
+gliogenesis	svp
+positive regulation of protein metabolic process	Src64B
+organelle assembly	Prosap
+actin filament-based process	Btk29A;twi;Src64B;fz;Moe
+import into cell	Moe
+biological adhesion	beat-Ia;Src64B;fz;Ten-m;beat-VII;Grip;disco-r
+regulation of transferase activity	Src64B
+supramolecular fiber organization	Btk29A;Src64B;fz;Ten-m;Moe
+embryo development ending in birth or egg hatching	Btk29A
+organelle fission	Moe
+peptidyl-amino acid modification	CG3515;CG11221;Btk29A;Src64B
+cellularization	Btk29A;Src64B
+regulation of organelle organization	Btk29A;Src64B;fz;Moe
+negative regulation of developmental process	Src64B
+sex differentiation	Btk29A;lola
+reproductive system development	Btk29A;lola
+chromosome segregation	Moe
+ovarian nurse cell to oocyte transport	Btk29A;Src64B
+cell recognition	beat-Ia;lola;Ten-m
+germarium-derived egg chamber formation	Btk29A;Src64B
+cortical cytoskeleton organization	Moe
+dephosphorylation	CG16771
+regulation of anatomical structure size	Btk29A;lola;Src64B;fz

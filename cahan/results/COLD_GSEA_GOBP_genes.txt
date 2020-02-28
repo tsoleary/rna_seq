@@ -1,0 +1,11 @@
+GO	genes
+morphogenesis of follicular epithelium	Abi;CSN3;CSN6;Cbl;Cip4;Cul2;Dg;Dp;N;Patj;Scm;Src64B;aPKC;csw;egh;l(2)gl;lig;rin;scrib;shg;slmb;spoon;sqd
+endosomal transport	CG10103;CG13784;CG14184;CG18659;CG32758;CG4552;Hrs;Lrrk;MICAL-like;Mer;Rab11;Rab14;Rab35;Rab5;Rab6;Rab7;Rho1;RhoGAP68F;S;Snx3;Snx6;Stam;Vha68-2;Vps26;g;gish;kst;mop;scrib;wash
+anatomical structure regression	Atg1;Atg13;Atg17;Atg3;Atg7;Atg8a;BI-1;BRWD3;Cam;Eip74EF;Pak;Ptp52F;TER94;Trf2;Tsc1;Uba1;Ubi-p63E;bel;ctp;hdc;l(2)gl;l(3)psg2
+cytosolic transport	Abl;Acsl;CG13784;CG4552;Hrs;Khc;Lis-1;Lrrk;Nup154;Rab14;Rab6;Snx6;Vps26;comm;cpb;ena;g;lark;mop;sqh;wash
+genital disc development	Abd-B;Dll;Myo31DF;N;PDZ-GEF;Rab5;S;TfAP-2;btl;cad;dac;en;hep;ken;lbe;lbl;lz;otk;puc;slpr;spi;tnc;wg
+response to endoplasmic reticulum stress	BI-1;CG11873;CG11999;CG15814;CG33298;CG5823;CG6766;CG6923;CG8405;CG9003;CG9005;CG9518;ERp60;Hsc70-3;Ire1;Marf;Mtor;Opa1;PEK;PHGPx;Pdi;Rpt4R;TER94;Ugt;tw
+regulation of protein stability	Abl;Bap170;CSN3;CSN6;Cdc37;CkIIalpha;Cnx99A;Hsp83;Mlf;Nedd8;Ptp61F;Sin3A;Snx3;Usp7;cos;eff;puf;rdx;tws
+cortical cytoskeleton organization	Abi;Arpc2;Cdc42;Galphai;Hem;Lam;Moe;Rab11;Rab3-GEF;Rac1;Rbp;Rho1;RhoGAP100F;Rok;SCAR;Sry-alpha;Vrp1;WASp;chic;feo;fwd;l(2)gl;lilli;pav;pnut;polo;scra;sktl;sti;tsr
+hippo signaling	14-3-3epsilon;CG42788;Csk;Mer;Pez;Pp2A-29B;Rassf;Tao;d;dco;ds;ed;ft;hpo;kibra;mnb;mts;par-1;sav;wap;wts;yki
+regulation of membrane potential	Adar;CG12344;Ca-alpha1T;Dref;Elk;Fife;Grd;HisCl1;Hsc70-5;Irk2;Lcch3;Moe;NaCP60E;Nmdar1;NtR;Prestin;Prosap;Rab6;Shab;VGlut;cac;eag;nAChRalpha1;nAChRalpha2;nAChRalpha3;nAChRalpha5;nAChRalpha6;nAChRalpha7;nAChRbeta2;nAChRbeta3;ort;sei;shakB

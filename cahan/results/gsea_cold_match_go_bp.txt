@@ -1,0 +1,4 @@
+GO	genes
+morphogenesis of follicular epithelium	shg
+endosomal transport	CG32758
+cortical cytoskeleton organization	Rab3-GEF

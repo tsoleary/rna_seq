@@ -1,0 +1,11 @@
+GO	genes
+pole cell development	Cul3;CycE;Dhc64C;Fmr1;MCPH1;RhoGEF2;TER94;cnn;gcl;lost;me31B;osk;pgc;piwi;rump;scra;tacc;tor;tud;wun2
+response to topologically incorrect protein	BI-1;CG5199;Hsc70-3;Hsc70-4;Hsc70-5;Hsp68;Hsp70Bb;Hsp70Bbb;PEK;TER94;Xbp1;rdx
+regulation of protein stability	Abl;Bap170;CSN3;Cdc37;CkIIalpha;Cnx99A;DnaJ-1;Hsp83;Mlf;Nedd8;Ptp61F;Sgt1;Sin3A;Snx3;Sxl;Usp7;alien;cos;crb;eff;krz;puf;rdx;ric8a;tws
+cytosolic transport	Abl;CG15099;CG2747;GCC185;Khc;Klp98A;Lis-1;Nup154;Rab14;Rab6;Snx6;Vps26;Vps35;cher;comm;comt;cpb;ena;g;lark;loco;mop;scat;wash
+morphogenesis of follicular epithelium	Abi;CSN3;Cbl;Cip4;Cul2;Dp;N;Parp;Patj;Scm;Shc;Src64B;aPKC;alien;cher;crb;csw;egh;kug;l(2)gl;lig;loco;orb;ph-p;rin;scrib;shg;slmb;spoon
+organelle fusion	CDase;CG15399;GABA-B-R2;Pld;Rab11;Rab5;Rab7;Rab8;Rbsn-5;Sec22;Snap24;Syx13;Syx1A;Syx4;Syx5;Syx7;TER94;Tusp;Vamp7;comt;fs(1)Ya;fzo;msps;mtsh;park;polo;tacc;wisp
+circulatory system process	CCAP;CG32473;CG8773;CG8774;Crz;Ggamma1;H15;KCNQ;Nos;Ork1;RyR;Scgdelta;Sox102F;amn;cac;cyc;eag;for;how;loco;mid;pnr;rad;ru;tim;wry
+tube formation	Act5C;CG11966;CG45105;CG8213;Dhc64C;Dlic;Kr;Mmp1;Moe;Rab35;Rbcn-3A;Sec24CD;Vha68-2;btsz;gammaCOP;kkv;klar;knk;mmy;trh;wg
+hippo signaling	14-3-3epsilon;Csk;Mer;Mob4;Pez;Pp2A-29B;Rassf;Tao;crb;d;dco;ds;ed;ft;hpo;hppy;jub;kibra;mats;mnb;mts;par-1;sav;wap;wts;yki
+genital disc development	Abd-B;Btk29A;Dll;Dr;Myo31DF;N;PDZ-GEF;Rab5;S;TfAP-2;abd-A;bnl;btl;cad;dac;dpp;en;esg;hep;hh;ken;lbl;lz;otk;slpr;tnc;wg

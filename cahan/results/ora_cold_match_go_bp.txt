@@ -1,0 +1,91 @@
+GO	genes
+detection of stimulus	CG1339
+sensory perception	CG1339;Obp85a
+sensory organ development	rau;mam;shg;prom
+sensory system development	rau;mam;shg;prom
+cell morphogenesis involved in differentiation	robo3;erm;ham;shg;ago;Mp;Dscam3
+cell part morphogenesis	robo3;erm;ham;shg;ago;Mp;Dscam3
+neuron projection development	robo3;erm;ham;shg;ago;Mp;Dscam3
+regionalization	shg;osa
+cell fate commitment	ham;mam;osa
+central nervous system development	robo3;erm;mam;shg;ago
+negative regulation of biosynthetic process	erm
+positive regulation of RNA biosynthetic process	mam;osa
+G protein-coupled receptor signaling pathway	CG1339;Dgk;CG43795;mAChR-A;CG43373;Lgr1
+negative regulation of nucleobase-containing compound metabolic process	erm
+microtubule-based process	BBS4
+embryonic pattern specification	shg
+cell projection assembly	BBS4;shg
+taxis	robo3;erm;shg;ago;Mp;Dscam3
+axis specification	shg
+establishment of tissue polarity	shg
+cell-cell signaling	mAChR-A;osa;Rab3-GEF
+regulation of cell differentiation	erm;ham;shg;ago;osa
+chromatin organization	msl-2;osa
+cation transport	SerT;CG10960
+morphogenesis of a polarized epithelium	shg
+leg disc development	osa
+head development	robo3;erm;shg
+mating	Jhe;sra;intr
+chemosensory behavior	sra;rad
+epithelial cell differentiation	mam;shg
+cilium organization	BBS4
+mitotic cell cycle	ago
+embryo development ending in birth or egg hatching	shg
+establishment or maintenance of cell polarity	shg
+photoreceptor cell differentiation	rau;prom;osa
+enzyme linked receptor protein signaling pathway	rau
+wing disc development	mam;shg;osa
+meiotic cell cycle	sra
+regulation of nervous system development	erm;ham;ago;osa
+embryonic morphogenesis	mam;shg
+localization of cell	shg
+negative regulation of response to stimulus	CG4629;ago
+response to endogenous stimulus	rau;mAChR-A;Lgr1
+second-messenger-mediated signaling	CG43373;sra;Lgr1
+growth	shg;ago
+reproductive behavior	Jhe;sra;intr
+response to oxygen-containing compound	Jhe;mAChR-A
+developmental maturation	shg;Fili;osa
+cellular response to chemical stimulus	rau;mAChR-A;ago;Lgr1
+oocyte differentiation	shg
+inorganic ion transmembrane transport	CG10960
+negative regulation of cell communication	CG4629
+stem cell differentiation	ham;osa
+negative regulation of signaling	CG4629
+post-embryonic animal organ development	mam;shg;osa
+appendage development	mam;shg;osa
+regulation of cell cycle	ago;Rab3-GEF
+regulation of localization	shg
+peptidyl-amino acid modification	msl-2
+epithelial tube morphogenesis	mam;shg;ago;osa
+post-embryonic animal morphogenesis	mam;shg;osa
+gliogenesis	rau;ago
+import into cell	SerT
+cuticle development	Fili;osa
+metamorphosis	mam;shg;osa
+organelle fission	ago;sra
+organelle assembly	BBS4;CG42383;sra
+negative regulation of developmental process	erm;ago;osa
+biological adhesion	shg;Mp;Cad89D;Dscam3
+regulation of cell projection organization	ham
+protein phosphorylation	CG4629;Rab3-GEF
+response to growth factor	rau
+cell proliferation	erm;ham;ago;osa
+regulation of phosphorus metabolic process	sra;Rab3-GEF
+tissue migration	shg
+nucleus organization	CG42383;sra
+regulation of protein modification process	sra;Rab3-GEF
+maintenance of cell number	erm;mam;shg
+protein catabolic process	CG42383;ago
+positive regulation of developmental process	shg
+negative regulation of multicellular organismal process	erm;ago;osa
+locomotory behavior	Gpdh
+positive regulation of protein metabolic process	Rab3-GEF
+response to drug	Jhe;mAChR-A;CG32103
+cell death	Fili;Rab3-GEF
+pyridine-containing compound metabolic process	Gpdh
+cell recognition	robo3;Dscam3
+multi-multicellular organism process	intr
+cellular macromolecule catabolic process	CG42383;ago
+aminoglycan metabolic process	Mur89F
