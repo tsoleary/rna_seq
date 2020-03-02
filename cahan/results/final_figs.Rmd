@@ -21,104 +21,10 @@ require(seqsetvis)
 require(ssvRecipes)
 require(knitr)
 require(kableExtra)
+
+# source the functions and load the data
 source(here::here("functions.R"))
-
-# load the differentially expressed genes results
-setwd(here::here("cahan/results"))
-res_cold <- read.csv(list.files(pattern = "cold_results"))
-res_hot <- read.csv(list.files(pattern = "hot_results"))
-deg <- full_join(res_cold, res_hot, by = "gene", suffix = c(".cold", ".hot"))
-
-# load the gwas results
-setwd(here::here("DRGP_GWAS"))
-pheno <- read.csv("pheno.csv")
-gwas_cold_all <- read.table("CTmin/gwas.top.4.annot", header = TRUE)
-gwas_hot_all <- read.table("CTmax/gwas.top.4.annot", header = TRUE)
-gwas_tb_all <- read.table("ThermalBreadth/gwas.top.4.annot", header = TRUE)
-
-# # load all the gwas snps for the manhattan plot
-# gwas_cold_manhat <- read_delim("CTmin/gwas.all.assoc", 
-#                                delim = " ", 
-#                                col_names = TRUE)
-# gwas_hot_manhat <- read_delim("CTmax/gwas.all.assoc", 
-#                               delim = " ", 
-#                               col_names = TRUE)
-# 
-# # wrangle the manhat dfs for qqman
-# gwas_cold_manhat <- gwas_cold_manhat %>%
-#   separate(ID, into = c("CHR", "BP", "type")) %>%
-#   mutate(CHR = case_when(CHR == "2L" ~ 1,
-#                          CHR == "2R" ~ 2,
-#                          CHR == "3L" ~ 3,
-#                          CHR == "3R" ~ 4,
-#                          CHR == "4" ~ 5,
-#                          CHR == "X" ~ 6)) %>%
-#   dplyr::filter(!is.na(AvgMixedPval) | !is.na(CHR) | !is.na(BP))
-# 
-# gwas_cold_manhat$P <- gwas_cold_manhat$AvgMixedPval
-# gwas_cold_manhat$BP <- as.numeric(gwas_cold_manhat$BP)
-# 
-# 
-# gwas_hot_manhat <- gwas_hot_manhat %>%
-#   separate(ID, into = c("CHR", "BP", "type")) %>%
-#   mutate(CHR = case_when(CHR == "2L" ~ 1,
-#                          CHR == "2R" ~ 2,
-#                          CHR == "3L" ~ 3,
-#                          CHR == "3R" ~ 4,
-#                          CHR == "4" ~ 5,
-#                          CHR == "X" ~ 6)) %>%
-#   dplyr::filter(!is.na(AvgMixedPval) | !is.na(CHR) | !is.na(BP))
-# 
-# gwas_hot_manhat$P <- gwas_hot_manhat$AvgMixedPval
-# gwas_hot_manhat$BP <- as.numeric(gwas_hot_manhat$BP)
-
-
-# wrangle the phenotypes
-pheno <- pheno %>%
-  pivot_longer(cols = starts_with("ct"), 
-               names_to = "type",
-               values_to = "temp") %>%
-  separate(type, into = c("type", "sex") ,sep = "_")
-  
-
-# annotated all the gene symbols for the gwas output  --------------------------
-
-gwas_cold_all <- gwas_dgrp_gene_annot(gwas_cold_all)
-gwas_hot_all <- gwas_dgrp_gene_annot(gwas_hot_all)
-gwas_tb_all <- gwas_dgrp_gene_annot(gwas_tb_all)
-
-# filter the gwas so there is only the pvalues that reach the cut off level ----
-pval_cut <- 10^-5
-
-gwas_cold <- gwas_cold_all %>%
-  filter(AvgMixedPval < pval_cut)
-gwas_hot <- gwas_hot_all %>%
-  filter(AvgMixedPval < pval_cut)
-gwas_tb <- gwas_tb_all %>%
-  filter(AvgMixedPval < pval_cut)
-
-# create a combined df with deg and gwas for each alone ------------------------
-comb_cold <- full_join(res_cold, gwas_cold, by = "gene")
-comb_hot <- full_join(res_hot, gwas_hot, by = "gene")
-  
-# create a data.frame with info for the individual ma_plots --------------------
-deg_gwas_cold <- left_join(res_cold, gwas_cold, by = "gene")
-deg_gwas_hot <- left_join(res_hot, gwas_hot, by = "gene")
-
-# create a data.frame with all the info for the plotting later -----------------
-temp <- left_join(deg, gwas_cold, by = "gene", suffix = c("", ".cold"))
-total <- full_join(temp, gwas_hot, by = "gene", suffix = c(".cold", ".hot"))
-#total <- full_join(total, gwas_tb, by = "gene", suffix = c("", ".tb"))
-# the termal breadth stuff to the 
- 
-# group by the significance
-deg_grouped <- group_deg(total, pval_cut = 0.01, lfc_cut = 0)
-
-# colors for the shared unique scatter plot  
-##############
-# create a parameters space where all these go later .....
-clrs <- c("darkgrey", "goldenrod4", "goldenrod1", "coral", "coral4")
-legend.font.size <- 12
+source(here::here("cahan/scripts/load_data.R"))
 ```
 
 # Figure 1: Phenotypes
@@ -179,26 +85,6 @@ cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
 # Figure 2: Manhattan plots
 
 ```{r, fig.height = 5, fig.width = 7}
-# setwd(here::here("DRGP_GWAS"))
-# 
-# png("gwas_cold_manhattan.png", width = 600, height = 300)
-# qqman::manhattan(gwas_cold_manhat,
-#                  annotateTop = FALSE,
-#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
-#                  ylim = c(0, 8),
-#                  suggestiveline = -log10(1e-04),
-#                  genomewideline = -log10(1e-05))
-# dev.off()
-# 
-# 
-# png("gwas_hot_manhattan.png", width = 600, height = 300)
-# qqman::manhattan(gwas_hot_manhat,
-#                  annotateTop = FALSE,
-#                  chrlabs = c("2L", "2R", "3L", "3R", "4", "X"),
-#                  ylim = c(0, 8),
-#                  suggestiveline = -log10(1e-04),
-#                  genomewideline = -log10(1e-05))
-# dev.off()
 
 p1 <- cowplot::ggdraw() +
   cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"), scale = 1) +
@@ -231,9 +117,9 @@ cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
 # filter the gwas so there is only the pvalues that reach the cut off level ----
 pval_cut_4 <- 10^-4
 
-gwas_cold_4 <- gwas_cold_all %>%
+gwas_cold_4 <- gwas_cold %>%
   filter(AvgMixedPval < pval_cut_4)
-gwas_hot_4 <- gwas_hot_all %>%
+gwas_hot_4 <- gwas_hot %>%
   filter(AvgMixedPval < pval_cut_4)
 
 # create a data.frame with all the info for the plotting later -----------------
