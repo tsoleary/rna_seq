@@ -179,17 +179,9 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
                              n_auto_label = 0)
 ```
 
-# Figure 4: GO BP GWAS DEG overlap
+# Figure 4: ORA for GWAS with DEG ORA overlap
 
-```{r, fig.height = 9, fig.width = 7.5}
-p1 <- cowplot::ggdraw() +
-  cowplot::draw_image(here::here("cahan/plots/go_hot_genes.png"))
-
-p2 <- cowplot::ggdraw() +
-  cowplot::draw_image(here::here("cahan/plots/go_cold_genes.png"), scale = 1)
-
-cowplot::plot_grid(p1, p2, nrow = 2, rel_heights = c(39,29), labels = "AUTO")
-```
+![](https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/go_fig_lfc_order.png)
 
 # Suplementary Information
 
