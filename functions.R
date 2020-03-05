@@ -566,8 +566,8 @@ plot_scatter_side_density_assemble = function(components,
   p_y_density = components$y_density
   
   
-  # p_legend = cowplot::get_legend(p_scatter)
-  d_legend = cowplot::get_legend(p_y_density)
+  p_legend = cowplot::get_legend(p_scatter)
+  #d_legend = cowplot::get_legend(p_y_density)
   
   # legends = cowplot::plot_grid(plotlist = c(list(p_legend), list(d_legend)),
   #                              sscale = 0.5)
@@ -583,7 +583,7 @@ plot_scatter_side_density_assemble = function(components,
   
   
   
-  pg = cowplot::plot_grid(plotlist = c(grobs_x[2], list(d_legend), grobs_y), 
+  pg = cowplot::plot_grid(plotlist = c(grobs_x[2], list(p_legend), grobs_y), 
                           rel_widths = c(2, 1), rel_heights = c(1,2))
   if(main_title != ""){
     pg = cowplot::plot_grid(
@@ -1062,11 +1062,13 @@ ks.pairwise <- function(.data, dist) {
 
 
 # function to get gobp results into long format --------------------------------
-go_gene_match <- function(dat, dat_match, pval_cut = 10^-4){
+go_gene_match <- function(dat, dat_match, dat_deg, pval_cut = 10^-4){
   
   # dat_match pval cut off
   dat_match <- dat_match %>%
-    dplyr::filter(AvgMixedPval < pval_cut)
+    dplyr::filter(AvgMixedPval < pval_cut) %>%
+    dplyr::arrange(AvgMixedPval) %>%
+    dplyr::distinct(.keep_all = TRUE)
   
   # get the max number of regulatory annotations to make column names when split 
   num_regs <- max(stringr::str_count(dat$genes, pattern = ";") + 1)
@@ -1077,6 +1079,11 @@ go_gene_match <- function(dat, dat_match, pval_cut = 10^-4){
     tidyr::pivot_longer(dplyr::contains("gene_"), names_to = "lab", values_to = "gene",
                         values_drop_na = TRUE) %>%
     dplyr::filter(gene %in% dat_match$gene) %>%
+    dplyr::left_join(dat_match, by = "gene") %>%
+    dplyr::select(GO, gene, AvgMixedPval) %>%
+    dplyr::left_join(dat_deg, by = "gene") %>%
+    dplyr::select(GO, gene, AvgMixedPval, log2FoldChange, padj) %>%
+    dplyr::mutate(gene = paste(gene, AvgMixedPval, log2FoldChange, padj, sep = "_")) %>%
     dplyr::select(GO, gene) %>%
     tidyr::pivot_wider(names_from = GO, 
                        values_from = gene,
@@ -1094,6 +1101,47 @@ go_gene_match <- function(dat, dat_match, pval_cut = 10^-4){
   df <- df %>%
     dplyr::select(GO, genes) 
 
+  return(df) 
+}
+
+# match pvals, lfc, and go match -----------------------------------------------
+
+match_p_lfc <- function(dat, dat_ct, dat_deg){
+  # keep only the snp with the lowest pval for each gene
+  dat_ct <- dat_ct %>%
+    arrange(AvgMixedPval) %>%
+    distinct(gene, .keep_all = TRUE)
+  
+  # split up different genes and match with corresponding pvals, lfc, etc.
+  df <- dat %>%
+    tidyr::separate(col = gene, into = paste("gene", 1:num_regs, sep = "_"), sep = ";") %>%
+    tidyr::pivot_longer(dplyr::contains("gene_"), names_to = "lab", values_to = "gene",
+                        values_drop_na = TRUE) %>%
+    dplyr::left_join(dat_ct, by = "gene") %>%
+    dplyr::select(GO, gene, AvgMixedPval) %>%
+    dplyr::left_join(dat_deg, by = "gene") %>%
+    dplyr::select(GO, gene, AvgMixedPval, log2FoldChange, padj) %>%
+    dplyr::arrange(AvgMixedPval) %>%
+    dplyr::mutate(gene = paste(gene, AvgMixedPval, log2FoldChange, padj, sep = "_")) %>%
+    dplyr::select(GO, gene) %>%
+    tidyr::pivot_wider(names_from = GO, 
+                       values_from = gene,
+                       values_fn = list(gene = list)) %>%
+    tidyr::pivot_longer(everything(),
+                        names_to = "GO",
+                        values_to = "gene_list")
+  
+  # make the gene_list a list separated by ;
+  df$genes <- vector(mode = "character", length = nrow(df))
+  for (i in 1:nrow(df)){
+    df$genes[i] <- paste(unlist(df$gene_list[i]), sep = "", collapse = ";")
+  }
+  
+  df <- df %>%
+    dplyr::select(GO, genes) %>%
+    tidyr::separate(col = GO, into = c("GO", "match", "FDR"), sep = ";") %>%
+    dplyr::arrange(FDR)
+  
   return(df) 
 }
 
