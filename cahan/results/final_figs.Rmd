@@ -88,23 +88,23 @@ cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
 
 p1 <- cowplot::ggdraw() +
   cowplot::draw_image(here::here("DRGP_GWAS/gwas_cold_manhattan.png"), scale = 1) +
-  cowplot::draw_label("CTmin", y = 0.9, size = 18, fontface = "bold")
+  cowplot::draw_label(expression(CT[min]), y = 0.9, size = 18, fontface = "bold")
 
 p2 <- cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_venn_diagram_ct.png", 
                       scale = 1) +
-  cowplot::draw_label("SNPs", y = 0.95, size = 18, fontface = "bold")
+  cowplot::draw_label("SNPs", y = 0.95, size = 18)#, fontface = "bold")
 
 p_top <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c("A", "C"))
 
 
 p1 <- cowplot::ggdraw() + 
   cowplot::draw_image(here::here("DRGP_GWAS/gwas_hot_manhattan.png"), scale = 1) +
-  cowplot::draw_label("CTmax", y = 0.9, size = 18, fontface = "bold")
+  cowplot::draw_label(expression(CT[max]), y = 0.9, size = 18, fontface = "bold")
 
 p2 <- cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_genes_venn_diagram_ct.png", scale = 1) +
-  cowplot::draw_label("Genes", y = 0.95, size = 18, fontface = "bold")
+  cowplot::draw_label("Genes", y = 0.95, size = 18)#, fontface = "bold")
 
 p_bottom <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c("B", "D"))
 
@@ -173,6 +173,7 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
                              labs_sets_density = "Top GWAS-associated genes",
                              id_ = "id", 
                              set_ = "groupn", 
+                             labs_sets = "Differentially expressed\ngenes",
                              set_density_ = "gwas_g", 
                              sets.density.colors = c("red", "blue", "yellow"),
                              sets.colors = color_set,
