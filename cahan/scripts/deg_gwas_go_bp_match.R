@@ -178,3 +178,46 @@ write_tsv(ora_hot_match, "ora_hot_match_go_bp.txt")
 write_tsv(gsea_cold_match, "gsea_cold_match_go_bp.txt")
 write_tsv(gsea_hot_match, "gsea_hot_match_go_bp.txt")
 
+
+# NEW ORA GO RESULTS with new gene set sizes -----------------------------------
+
+setwd(here::here("cahan/results/GO_results_files"))
+
+# load df and save columns and names we want
+ora_CTmin <- read_tsv("CTmin_ORA_030120_enrichment_results.txt") %>%
+  select(description, userId, FDR) %>%
+  rename(GO = description, gene = userId)
+ora_CTmax <- read_tsv("CTmax_ORA_030120_enrichment_results.txt") %>%
+  select(description, userId, FDR) %>%
+  rename(GO = description, gene = userId)
+
+# load deg go results to see which match
+ora_cold <- read_tsv("Cold_DEG_ORA_030120_enrichment_results.txt") 
+ora_hot <- read_tsv("Hot_DEG_ORA_030120_enrichment_results.txt") 
+
+
+# match the go cats to ones that appear in the deg go cats
+ora_CTmin <- ora_CTmin %>%
+  mutate(match = case_when(GO %in% ora_cold$description ~ "match",
+                           !(GO %in% ora_cold$description) ~ "no")) %>%
+  mutate(GO = paste(GO, match, FDR, sep = ";")) %>%
+  select(GO, gene)
+
+ora_CTmax <- ora_CTmax %>%
+  mutate(match = case_when(GO %in% ora_hot$description ~ "match",
+                           !(GO %in% ora_hot$description) ~ "no")) %>%
+  mutate(GO = paste(GO, match, FDR, sep = ";")) %>%
+  select(GO, gene)
+
+# match with the pvals and lfc
+ora_CTmin_fig <- match_p_lfc(dat = ora_CTmin, dat_ct = gwas_cold, dat_deg = res_cold)
+ora_CTmax_fig <- match_p_lfc(dat = ora_CTmax, dat_ct = gwas_hot, dat_deg = res_hot)
+
+
+# write df to txt file
+setwd(here::here("cahan/results/GO_results_files"))
+write_tsv(ora_CTmin_fig, "CTmin_go_bp_fig.txt")
+write_tsv(ora_CTmax_fig, "CTmax_go_bp_fig.txt")
+
+
+
