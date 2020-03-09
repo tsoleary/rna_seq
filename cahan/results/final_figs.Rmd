@@ -93,7 +93,7 @@ p1 <- cowplot::ggdraw() +
 p2 <- cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_venn_diagram_ct.png", 
                       scale = 1) +
-  cowplot::draw_label("SNPs", y = 0.95, size = 18)#, fontface = "bold")
+  cowplot::draw_label("Allelic variants", y = 0.95, size = 18)#, fontface = "bold")
 
 p_top <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c("A", "C"))
 
