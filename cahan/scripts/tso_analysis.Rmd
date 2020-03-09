@@ -871,6 +871,25 @@ gwas_dgrp_reg_annot(gwas_cold) %>%
   scroll_box(width = "100%", height = "500px")
 ```
 
+### CTmin and CTmax Gene overlap
+
+```{r}
+gwas_hot %>%
+  filter(gene %in% gwas_cold$gene & gene != "") %>%
+  left_join(gwas_cold, by = ("gene"), suffix = c(".max", ".min")) %>%
+  select(ID.max, ID.min, gene) %>%
+  pivot_longer(cols = contains("ID"), names_to = "ID", values_to = "SNPs") %>%
+  mutate(ID = case_when(ID == "ID.min" ~ "CTmin",
+                        ID == "ID.max" ~ "CTmax")) %>%
+  group_by(ID) %>%
+  distinct(SNPs, .keep_all = TRUE) %>%
+  arrange(gene, ID) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+
+```
+
 ### Thermal Breadth
 
 #### All hits
