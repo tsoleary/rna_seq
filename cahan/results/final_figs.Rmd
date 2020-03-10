@@ -1,5 +1,5 @@
 ---
-title: Sketch of the final figures
+title: <b> Sketch of the final figures </b>
 output:
   rmarkdown::html_document:
     theme: lumen
@@ -27,7 +27,7 @@ source(here::here("functions.R"))
 source(here::here("cahan/scripts/load_data.R"))
 ```
 
-# Figure 1: Phenotypes
+# **Figure 1:** Phenotypes
 
 ```{r, fig.height = 5, fig.width = 7}
 p1 <- ggplot(pheno %>%
@@ -82,7 +82,7 @@ cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
 ```
 
 
-# Figure 2: Manhattan plots
+# **Figure 2:** Manhattan plots
 
 ```{r, fig.height = 5, fig.width = 7}
 
@@ -111,7 +111,7 @@ p_bottom <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c
 cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
 ```
 
-# Figure 3: DEG & GWAS integration
+# **Figure 3:** DEG & GWAS integration
 
 ```{r, fig.height = 7, fig.width = 7}
 # filter the gwas so there is only the pvalues that reach the cut off level ----
@@ -180,11 +180,108 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
                              n_auto_label = 0)
 ```
 
-# Figure 4: ORA for GWAS with DEG ORA overlap
+# **Figure 4:** ORA for GWAS
 
 ![](https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/go_fig_lfc_order.png)
 
-# Suplementary Information
+# **Table 1:** Gene counts
+
+```{r}
+comb_cold <- left_join(gwas_cold, res_cold, by = "gene")
+comb_hot <- left_join(gwas_hot, res_hot, by = "gene")
+
+# create a column that indicates where the snps are from
+comb_hot$gwas <- "CTmax"
+comb_cold$gwas <- "CTmin"
+
+comb_gwas <- dplyr::bind_rows(comb_hot, comb_cold)
+
+
+t1 <- comb_gwas %>%
+  group_by(gwas) %>%
+  distinct(ID, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("Relaxed SNPs" = n)
+
+t2 <- comb_gwas %>%
+  filter(AvgMixedPval < 10^-5) %>%
+  group_by(gwas) %>%
+  distinct(ID, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("Strict SNPs" = n)
+
+t3 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("Unique genes" = n)
+
+t4 <- comb_gwas %>%
+  group_by(gwas) %>%
+  dplyr::filter(gene != "") %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(padj <= 0.01) %>%
+  dplyr::count() %>%
+  dplyr::rename("DEGs" = n)
+
+t5 <- comb_gwas %>%
+  dplyr::group_by(gwas) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::count() %>%
+  dplyr::rename("TFs" = n)
+
+t6 <- comb_gwas %>%
+  dplyr::group_by(gwas) %>%
+  dplyr::filter(gene %in% dmel_tf$SYMBOL) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
+  dplyr::filter(padj <= 0.01) %>%
+  dplyr::count() %>%
+  dplyr::rename("DE TFs" = n)
+
+table <- full_join(t1, t2) %>%
+  full_join(t3) %>%
+  full_join(t4) %>%
+  full_join(t5) %>%
+  full_join(t6) %>%
+  rename(GWAS = gwas)
+
+table %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+
+# **Table 2:** Feature counts
+
+```{r}
+comb_gwas %>%
+  group_by(gwas, feature) %>%
+  dplyr::count() %>%
+  filter(feature != "") %>%
+  arrange(desc(n)) %>%
+  pivot_wider(names_from = "gwas", values_from = "n") %>%
+  ungroup(feature) %>%
+  mutate(CTmax = replace_na(CTmax, 0),
+         feature = str_replace_all(str_to_sentence(feature), "_", " ")) %>%
+  mutate(feature = case_when(feature == "Synonymous coding" ~ "Synonymous coding",
+                             feature == "Intron" ~ "Intron",
+                             feature == "Downstream" ~ "Downstream",
+                             feature == "Upstream" ~ "Upstream",
+                             feature == "Utr 3 prime" ~ "3' UTR",
+                             feature == "Utr 5 prime" ~ "5' UTR",
+                             feature == "Non synonymous coding" ~ "Non-synonymous coding",
+                             feature == "Exon" ~ "Exon",
+                             feature == "Start gained" ~ "Start gained")) %>%
+  rename(Feature = feature) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+# **Suplementary Information**
 
 ## Thermal Breadth Correlations
 
