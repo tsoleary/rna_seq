@@ -90,7 +90,7 @@ p3 <- ggplot(pheno %>%
 cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
 ```
 
-**Figure 1: Distribution of thermal limits in the DGRP.** Histograms of mean phenotypes across 100 DGRP lines for **(A)** CT$_{min}$ and **(B)** CT$_{max}$. **(C)** Correlation between line-means of CT$_{min}$ and CT$_{max}$.
+**Figure 1: Distribution of thermal limits in the DGRP.** Histograms of mean phenotypes across 100 DGRP lines for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>. **(C)** Correlation between line-means of CT<sub>min</sub> and CT<sub>max</sub>.
 
 
 
@@ -124,7 +124,7 @@ p_bottom <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c
 cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
 ```
 
-**Figure 2: Results of GWAS to identify polymorphisms associated with thermal tolerance.** Manhattan plots of the results from the GWAS for **(A)** CT$_{min}$ and **(B)** CT$_{max}$. The blue line corresponds to p < 1E-4 and the red line corresponds to p < 1E-5. The overlap of **(C)** allelic variants and **(D)** unique genes between CT$_{min}$ and CT$_{max}$ is also shown.
+**Figure 2: Results of GWAS to identify polymorphisms associated with thermal tolerance.** Manhattan plots of the results from the GWAS for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>. The blue line corresponds to p < 1E-4 and the red line corresponds to p < 1E-5. The overlap of **(C)** allelic variants and **(D)** unique genes between CT<sub>min</sub> and CT<sub>max</sub> is also shown.
 
 
 
@@ -200,7 +200,7 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
 ```
 
 
-**Figure 3: Scatter plot of the gene expression log-fold change of heat-shock (37°C) and cold-shock (4°C) relative to the 25°C control.** The density plots indicate the density of the genes that are associated with CT$_min$ (blue) or CT$_max$ (red) relative to the log fold change expression of all other genes (gray). 
+**Figure 3: Scatter plot of the gene expression log-fold change of heat-shock (37°C) and cold-shock (4°C) relative to the 25°C control.** The density plots indicate the density of the genes that are associated with CT<sub>min</sub> (blue) or CT<sub>max</sub> (red) relative to the log fold change expression of all other genes (gray). 
 
 
 
@@ -209,7 +209,49 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
 
 ![](https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/go_fig_lfc_order.png)
 
-**Figure 4: Expression patterns of GWAS genes within significantly over-represented GO biological process categories.**  All expression patterns are expressed relative to the 25°C control.   Bolded categories indicate those also over-represented in the full DEG dataset for the corresponding temperature extreme.  Bolded genes indicate significant differential gene expression at an FDR < 0.01.
+**Figure 4: Expression patterns of GWAS genes within significantly over-represented GO biological process categories.**  All expression patterns are expressed relative to the 25°C control. Bolded categories indicate those also over-represented in the full DEG dataset for the corresponding temperature extreme. Bolded genes indicate significant differential gene expression (FDR < 0.01).
+
+
+# **Figure 5:** Effect size & MAF
+
+```{r, fig.height = 5, fig.width = 4}
+
+x <- pheno %>%
+  group_by(line_DGRP, type) %>%
+  summarize(temp = mean(temp)) %>%
+  ungroup(line_DGRP) %>%
+  group_by(type) %>%
+  summarize(sd = sd(temp))
+
+p1 <- ggplot(gwas_hot_5 %>%
+               mutate(NormEff = AvgEff / x$sd[x$type == "ctmax"]), 
+        aes(x = NormEff, y = MAF)) +
+        geom_point(fill = "indianred1", shape = 21) +
+        geom_vline(xintercept = 0) +
+        labs(x = expression("Tolerance effect size" / sigma[p]), 
+             y = "Minor allele frequency") +
+        xlim(c(-1,1)) +
+        ylim(c(0,0.5)) +
+        theme_classic()
+
+p2 <- ggplot(gwas_cold_5 %>%
+               mutate(NormEff = (AvgEff / x$sd[x$type == "ctmin"]) * -1), 
+        aes(x = NormEff, y = MAF)) +
+        geom_point(fill = "lightskyblue", shape = 21) +
+        geom_vline(xintercept = 0) +
+        labs(x = expression("Tolerance effect size" / sigma[p]), 
+             y = "Minor allele frequency") +
+        xlim(c(-1,1)) +
+        ylim(c(0,0.5)) +
+        theme_classic()
+
+cowplot::plot_grid(p2, p1, nrow = 2, labels = "AUTO")
+```
+
+**Figure 5:** Scatter plot of the minor allele frequency versus the tolerance effect size normalized by the phenotypic variance ($\sigma_{p}$) for **(A)** CT<sub>min</sub> and  **(B)** CT<sub>max</sub>. 
+
+
+Positive values correspond to increased cold tolerance or increased heat tolerance.
 
 
 # **Table 1:** Gene counts
@@ -277,6 +319,7 @@ table <- full_join(t1, t2) %>%
 
 table %>%
   kable() %>%
+  kable_styling("striped") %>%
   row_spec(0, bold = TRUE, font_size = 12)
 ```
 
@@ -306,6 +349,7 @@ comb_gwas %>%
                              feature == "Start gained" ~ "Start gained")) %>%
   rename(Feature = feature) %>%
   kable() %>%
+  kable_styling("striped") %>%
   row_spec(0, bold = TRUE, font_size = 12)
 ```
 
@@ -388,7 +432,7 @@ p4 <- ggplot(pheno %>%
 cowplot::plot_grid(p1, p2, p3, p4, nrow = 2, labels = "AUTO")
 ```
 
-**Supplementary Figure X: (A)** Histograms of mean phenotypes across 100 DGRP lines for thermal breadth. **(B)** Correlation between sex-means for thermal breadth. Correlation between line-means of **(C)** thermal breadth and CT$_{min}$ and **(D)** thermal breadth and CT$_{max}$.
+**Supplementary Figure X: (A)** Histograms of mean phenotypes across 100 DGRP lines for thermal breadth. **(B)** Correlation between sex-means for thermal breadth. Correlation between line-means of **(C)** thermal breadth and CT<sub>min</sub> and **(D)** thermal breadth and CT<sub>max</sub>.
 
 
 
@@ -426,4 +470,11 @@ p2 <- ggplot(pheno %>%
 cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
 ```
 
-**Supplementary Figure X:** Correlation between sex-means for **(A)** CT$_{min}$ and **(B)** CT$_{max}$.
+**Supplementary Figure X:** Correlation between sex-means for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>.
+
+## Links to download supplementary tables
+
+[ORA GWAS & DEG Tables](https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/ora_gwas_deg_suppl.xlsx)
+
+[DEG Results & Tables](https://tsoleary.github.io/rna_seq/cahan/results/deg_suppl_info.xlsx)
+
