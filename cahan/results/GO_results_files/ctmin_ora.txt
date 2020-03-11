@@ -1,0 +1,7 @@
+GO ID	GO category	FDR	Enrichment Ratio	Genes
+GO:0031175	neuron projection development	0.0297	3.130477905671704	robo3, ham, erm, shg, EcR, dar1, ago, RhoGEF64C, Mp, trio, Dscam3, fru, twf, NetA
+GO:0007417	central nervous system development	0.0297	4.036848553387993	robo3, erm, shg, EcR, mam, ago, trio, sr, fru, twf
+GO:0032990	cell part morphogenesis	0.0392	2.989023081052067	robo3, ham, erm, shg, EcR, dar1, ago, RhoGEF64C, Mp, trio, Dscam3, fru, NetA
+GO:0042330	taxis	0.0392	3.2050130939019827	robo3, erm, shg, ago, RhoGEF64C, Mp, trio, Dscam3, fru, Hmgcr, NetA
+GO:0043062	extracellular structure organization	0.0392	7.244207677997632	psd, Btk29A, Mp, AdamTS-A, CG42342
+GO:0000904	cell morphogenesis involved in differentiation	0.0392	2.788946485362983	robo3, ham, erm, shg, EcR, dar1, ago, RhoGEF64C, Mp, trio, Dscam3, fru, NetA

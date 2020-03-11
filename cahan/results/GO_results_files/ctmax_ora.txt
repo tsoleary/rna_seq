@@ -1,0 +1,18 @@
+GO ID	GO category	FDR	Enrichment Ratio	Genes
+GO:0022610	biological adhesion	0.00134	7.097763048881524	beat-Ia, Pax, Lectin-galC1, fz, Ten-m, Src64B, beat-VII, disco-r, Grip
+GO:0042330	taxis	0.00789	4.62755901258575	beat-Ia, ptc, lola, fra, fz, fz2, Ten-m, Src64B, svp, Moe
+GO:0035272	exocrine system development	0.0103	7.874080882352941	Btk29A, twi, fra, fz, fz2, Src64B
+GO:0048732	gland development	0.0103	6.2214960058097315	Btk29A, twi, lola, fra, fz, fz2, Src64B
+GO:0032990	cell part morphogenesis	0.0184	3.6517476555839727	beat-Ia, ptc, lola, fra, Prosap, fz, fz2, Ten-m, Src64B, Moe
+GO:0031175	neuron projection development	0.0184	3.5513824980309248	beat-Ia, ptc, lola, fra, Prosap, fz, fz2, Ten-m, Src64B, Moe
+GO:0048880	sensory system development	0.0184	3.866556341206559	beat-Ia, ptc, lola, fra, fz, Ten-m, Src64B, svp, Moe
+GO:0097435	supramolecular fiber organization	0.0184	5.003671255736337	Btk29A, fz, sls, Ten-m, Src64B, Zasp66, Moe
+GO:0007267	cell-cell signaling	0.0184	3.4778549100799743	twi, Prosap, fz, fz2, Ten-m, Src64B, Glut1, kek6, svp, Grip
+GO:0000904	cell morphogenesis involved in differentiation	0.0194	3.4073101857375807	beat-Ia, ptc, lola, fra, Prosap, fz, fz2, Ten-m, Src64B, Moe
+GO:0008037	cell recognition	0.0208	7.117813226985709	beat-Ia, lola, fra, fz2, Ten-m
+GO:0046530	photoreceptor cell differentiation	0.0367	4.940599769319492	lola, fz, Ten-m, Src64B, svp, Moe
+GO:0060562	epithelial tube morphogenesis	0.0367	3.272345301757066	Btk29A, twi, ptc, lola, fz, svp, disco-r, Moe, Sp1
+GO:0061458	reproductive system development	0.0367	8.095440585872904	Btk29A, ptc, lola, fz2
+GO:0030029	actin filament-based process	0.0423	3.945848137912883	Btk29A, twi, fz, sls, Src64B, Zasp66, Moe
+GO:0007423	sensory organ development	0.0426	3.136563339028557	beat-Ia, ptc, lola, fra, fz, Ten-m, Src64B, svp, Moe
+GO:0061061	muscle structure development	0.0491	4.363127069009422	Pax, twi, lola, sls, Zasp66, Grip
