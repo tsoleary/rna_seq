@@ -220,4 +220,53 @@ write_tsv(ora_CTmin_fig, "CTmin_go_bp_fig.txt")
 write_tsv(ora_CTmax_fig, "CTmax_go_bp_fig.txt")
 
 
+# table for supplement
+setwd(here::here("cahan/results/GO_results_files"))
+
+read_tsv("Cold_DEG_ORA_030120_enrichment_results.txt") %>%
+  select(geneSet, description, FDR, enrichmentRatio, userId) %>%
+  mutate(FDR = signif(FDR, 3)) %>%
+  rename(`GO ID` = geneSet,
+         `GO category` = description, 
+         `Enrichment Ratio` = enrichmentRatio,
+         Genes = userId) %>%
+  mutate(Genes = str_replace_all(Genes, ";", ", ")) %>%
+  write_tsv(here::here("cahan/results/GO_results_files/cold_deg_ora.txt"))
+
+read_tsv("Hot_DEG_ORA_030120_enrichment_results.txt") %>%
+  select(geneSet, description, FDR, enrichmentRatio, userId) %>%
+  mutate(FDR = signif(FDR, 3)) %>%
+  rename(`GO ID` = geneSet,
+         `GO category` = description, 
+         `Enrichment Ratio` = enrichmentRatio,
+         Genes = userId) %>%
+  mutate(Genes = str_replace_all(Genes, ";", ", ")) %>%
+  write_tsv(here::here("cahan/results/GO_results_files/hot_deg_ora.txt"))
+
+
+read_tsv("CTmin_ORA_030120_enrichment_results.txt") %>%
+  select(geneSet, description, FDR, enrichmentRatio, userId) %>%
+  mutate(FDR = signif(FDR, 3)) %>%
+  rename(`GO ID` = geneSet,
+         `GO category` = description, 
+         `Enrichment Ratio` = enrichmentRatio,
+         Genes = userId) %>%
+  mutate(Genes = str_replace_all(Genes, ";", ", ")) %>%
+  write_tsv(here::here("cahan/results/GO_results_files/ctmin_ora.txt"))
+
+read_tsv("CTmax_ORA_030120_enrichment_results.txt") %>%
+  select(geneSet, description, FDR, enrichmentRatio, userId) %>%
+  mutate(FDR = signif(FDR, 3)) %>%
+  rename(`GO ID` = geneSet,
+         `GO category` = description, 
+         `Enrichment Ratio` = enrichmentRatio,
+         Genes = userId) %>%
+  mutate(Genes = str_replace_all(Genes, ";", ", ")) %>%
+  write_tsv(here::here("cahan/results/GO_results_files/ctmax_ora.txt"))
+
+
+
+### write tsv for 
+
+
 
