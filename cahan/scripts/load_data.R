@@ -23,13 +23,13 @@ gwas_tb <- read.table("ThermalBreadth/gwas.top.4.annot", header = TRUE)
 # the gwas with only 10^-5 to get effect sizes
 gwas_cold_5 <- read.table("CTmin/gwas.top.annot", header = TRUE) %>%
   dplyr::filter(AvgMixedPval < 10^-5) %>%
-  dplyr::select(ID, AvgEff) 
+  dplyr::select(ID, AvgEff, MAF) 
 gwas_hot_5 <- read.table("CTmax/gwas.top.annot", header = TRUE) %>%
   dplyr::filter(AvgMixedPval < 10^-5) %>%
-  dplyr::select(ID, AvgEff) 
+  dplyr::select(ID, AvgEff, MAF) 
 gwas_tb_5 <- read.table("ThermalBreadth/gwas.top.annot", header = TRUE) %>%
   dplyr::filter(AvgMixedPval < 10^-5) %>%
-  dplyr::select(ID, AvgEff) 
+  dplyr::select(ID, AvgEff, MAF) 
 
 # transcription factor list 
 dmel_tf <- read_delim(here::here("cahan/dmel_transcription_factors.txt"), 
