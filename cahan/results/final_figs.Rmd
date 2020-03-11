@@ -1,11 +1,20 @@
 ---
-title: <b> Sketch of the final figures </b>
+title: Sketch of the final figures
+# output:
+#   rmarkdown::html_document:
+#     theme: lumen
+#     number_sections: false
+#     toc: true
+#     toc_float: true
 output:
-  rmarkdown::html_document:
-    theme: lumen
-    number_sections: false
-    toc: true
-    toc_float: true
+  pdf_document:
+    latex_engine: xelatex
+mainfont: Arial
+fontsize: 14pt
+geometry: margin=2cm
+headerincludes:
+  - \usepackage{float}
+  - \usepackage[fontsize=20pt]{scrextend}
 ---
 
 ```{r setup, include=FALSE}
@@ -82,6 +91,8 @@ cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
 ```
 
 
+\pagebreak
+
 # **Figure 2:** Manhattan plots
 
 ```{r, fig.height = 5, fig.width = 7}
@@ -110,6 +121,9 @@ p_bottom <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c
 
 cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
 ```
+
+
+\pagebreak
 
 # **Figure 3:** DEG & GWAS integration
 
@@ -180,9 +194,24 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
                              n_auto_label = 0)
 ```
 
+
+
+\pagebreak
+
 # **Figure 4:** ORA for GWAS
 
-![](https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/go_fig_lfc_order.png)
+
+
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{/Users/tsoleary/R/rna_seq/cahan/results/GO_results_files/go_fig_lfc_order.png}
+\end{figure}
+
+Figure 1: 
+
+
+\pagebreak
+
 
 # **Table 1:** Gene counts
 
@@ -248,11 +277,14 @@ table <- full_join(t1, t2) %>%
   rename(GWAS = gwas)
 
 table %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  kable("latex", 
+        booktabs = TRUE,
+        linesep = "") %>%
+  row_spec(0, bold = TRUE, font_size = 12)
 ```
 
+
+\pagebreak
 
 # **Table 2:** Feature counts
 
@@ -276,16 +308,20 @@ comb_gwas %>%
                              feature == "Exon" ~ "Exon",
                              feature == "Start gained" ~ "Start gained")) %>%
   rename(Feature = feature) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
+  kable("latex", 
+        booktabs = TRUE,
+        linesep = "") %>%
+  row_spec(0, bold = TRUE, font_size = 12)
 ```
+
+
+\pagebreak
 
 # **Suplementary Information**
 
 ## Thermal Breadth Correlations
 
-```{r, fig.height = 3.5, fig.width = 7}
+```{r, fig.height = 6, fig.width = 7}
 my.formula <- y ~ x
 p1 <- ggplot(pheno %>%
          pivot_wider(names_from = type, values_from = temp) %>%
@@ -322,8 +358,81 @@ p2 <- ggplot(pheno %>%
              y = "Thermal Breadth (°C)") +
         theme_classic()
 
-cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+p3 <- ggplot(pheno %>%
+         pivot_wider(names_from = sex, values_from = temp) %>%
+         pivot_wider(names_from = type, values_from = c("male", "female")), 
+        aes(x = male_ctmin, y = female_ctmin)) +
+        geom_point(fill = "grey50", shape = 21) +
+        geom_smooth(method = "lm", 
+                    linetype = "dashed", 
+                    se = FALSE, formula = my.formula, color = "grey50") +
+        ggpmisc::stat_poly_eq(formula = my.formula, 
+                              aes(label = ..rr.label..),
+                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        labs(x = expression("Male" ~ CT[min] * ~ "(°C)"), 
+             y = expression("Female" ~ CT[min] * ~ "(°C)")) +
+        theme_classic()
+
+p4 <- ggplot(pheno %>%
+         pivot_wider(names_from = sex, values_from = temp) %>%
+         pivot_wider(names_from = type, values_from = c("male", "female")), 
+        aes(x = male_ctmin, y = female_ctmin)) +
+        geom_point(fill = "grey50", shape = 21) +
+        geom_smooth(method = "lm", 
+                    linetype = "dashed", 
+                    se = FALSE, formula = my.formula, color = "grey50") +
+        ggpmisc::stat_poly_eq(formula = my.formula, 
+                              aes(label = ..rr.label..),
+                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        labs(x = expression("Male" ~ CT[min] * ~ "(°C)"), 
+             y = expression("Female" ~ CT[min] * ~ "(°C)")) +
+        theme_classic()
+
+cowplot::plot_grid(p1, p2, p3, p4, nrow = 2, labels = "AUTO")
 ```
 
+\pagebreak
+
+## CTmin ORA results
+```{r}
+setwd(here::here("cahan/results/GO_results_files"))
+
+read_tsv("CTmin_ORA_030120_enrichment_results.txt") %>%
+  select(description, FDR, userId) %>%
+  mutate(FDR = signif(FDR, 3)) %>%
+  rename(`GO category` = description, Genes = userId) %>%
+  mutate(Genes = str_replace_all(Genes, ";", ", ")) %>%
+  kable("latex", 
+        booktabs = TRUE,
+        linesep = "") %>%
+  row_spec(0, bold = TRUE) %>%
+  kable_styling(font_size = 8,
+                position = "left")
+```
+
+# CTmax ORA results
+
+```{r}
+setwd(here::here("cahan/results/GO_results_files"))
+
+read_tsv("CTmax_ORA_030120_enrichment_results.txt") %>%
+  select(description, FDR, userId) %>%
+  mutate(FDR = signif(FDR, 3)) %>%
+  rename(`GO category` = description, 
+         Genes = userId) %>%
+  mutate(Genes = str_replace_all(Genes, ";", ", ")) %>%
+  kable("latex", 
+        booktabs = TRUE,
+        linesep = "") %>%
+  row_spec(0, bold = TRUE) %>%
+  kable_styling(font_size = 8,
+                position = "left")
+```
+
+\pagebreak
+
+\href{https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/Cold_DEG_ORA_030120_enrichment_results.txt}{Cold DEG ORA results}
+
+\href{https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/Hot_DEG_ORA_030120_enrichment_results.txt}{Hot DEG ORA results}
 
 
