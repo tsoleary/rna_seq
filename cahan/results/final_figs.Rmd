@@ -127,11 +127,6 @@ cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
 **Figure 2: Results of GWAS to identify polymorphisms associated with thermal tolerance.** Manhattan plots of the results from the GWAS for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>. The blue line corresponds to p < 1E-4 and the red line corresponds to p < 1E-5. The overlap of **(C)** allelic variants and **(D)** unique genes between CT<sub>min</sub> and CT<sub>max</sub> is also shown.
 
 
-
-
-**Figure 4: Expression patterns of GWAS genes within significantly over-represented GO biological process categories.**  All expression patterns are expressed relative to the 25°C control. Bolded categories indicate those also over-represented in the full DEG dataset for the corresponding temperature extreme. Bolded genes indicate significant differential gene expression (FDR < 0.01).
-
-
 # **Figure 3:** Effect size & MAF
 
 ```{r, fig.height = 4, fig.width = 6}
