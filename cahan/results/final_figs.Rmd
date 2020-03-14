@@ -129,90 +129,10 @@ cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
 
 
 
-
-# **Figure 3:** DEG & GWAS integration
-
-```{r, fig.height = 7, fig.width = 7}
-# filter the gwas so there is only the pvalues that reach the cut off level ----
-pval_cut_4 <- 10^-4
-
-gwas_cold_4 <- gwas_cold %>%
-  filter(AvgMixedPval < pval_cut_4)
-gwas_hot_4 <- gwas_hot %>%
-  filter(AvgMixedPval < pval_cut_4)
-
-# create a data.frame with all the info for the plotting later -----------------
-temp <- left_join(deg, gwas_cold_4, by = "gene", suffix = c("", ".cold"))
-total_4 <- full_join(temp, gwas_hot_4, by = "gene", suffix = c(".cold", ".hot"))
-
-# group by the significance
-deg_grouped_4 <- group_deg(total_4, pval_cut = 0.01, lfc_cut = 0)
-
-
-color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
-
-# the function from seqsetvis requires a sequential column in the data.frame
-deg_grouped_4$id <- seq_len(nrow(deg_grouped_4))
-
-deg_simple_4 <- deg_grouped_4 %>%
-  dplyr::select(gene, log2FoldChange.hot, 
-                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
-  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
-                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
-                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
-                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin_CTmax"))
-
-deg_simple_distinct_4 <- deg_simple_4 %>%
-  distinct(gene, .keep_all = TRUE)
-
-
-deg_simple_distinct_4 <- deg_simple_distinct_4 %>%
-  separate(gwas_g, into = c("gwas_g", "gwas_g2"), sep = "_") %>%
-  pivot_longer(gwas_g:gwas_g2, names_to = "type", values_to = "gwas_g", 
-               values_drop_na = TRUE)
-
-# order the levels of the factor for plotting purposes to get NS on bottom
-deg_simple_distinct_4$groupn <- as.factor(deg_simple_distinct_4$groupn)
-
-deg_simple_distinct_4$groupn <- factor(deg_simple_distinct_4$groupn, 
-                                       levels =  c("Shared: 6228",
-                                                   "Sig1 Shared: 3266", 
-                                                   "Unique: 14",
-                                                   "Sig1 Unique: 106",
-                                                   "NS: 6485"))
-
-
-plot_scatter_side_density_xy_rel(deg_simple_distinct_4, 
-                             x_ = "log2FoldChange.cold", 
-                             y_ = "log2FoldChange.hot",
-                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
-                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
-                             bg.string = "NS: 6485",
-                             bg.density.string = "Other",
-                             labs_sets_density = "Top GWAS-associated genes",
-                             id_ = "id", 
-                             set_ = "groupn", 
-                             labs_sets = "Differentially expressed\ngenes",
-                             set_density_ = "gwas_g", 
-                             sets.density.colors = c("red", "blue", "yellow"),
-                             sets.colors = color_set,
-                             n_auto_label = 0)
-```
-
-
-**Figure 3: Scatter plot of the gene expression log-fold change of heat-shock (37°C) and cold-shock (4°C) relative to the 25°C control.** The density plots indicate the density of the genes that are associated with CT<sub>min</sub> (blue) or CT<sub>max</sub> (red) relative to the log fold change expression of all other genes (gray). 
-
-
-
-
-# **Figure 4:** ORA for GWAS
-
-![](https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/go_fig_lfc_order.png)
-
 **Figure 4: Expression patterns of GWAS genes within significantly over-represented GO biological process categories.**  All expression patterns are expressed relative to the 25°C control. Bolded categories indicate those also over-represented in the full DEG dataset for the corresponding temperature extreme. Bolded genes indicate significant differential gene expression (FDR < 0.01).
 
 
-# **Figure 5:** Effect size & MAF
+# **Figure 3:** Effect size & MAF
 
 ```{r, fig.height = 4, fig.width = 6}
 
@@ -293,11 +213,93 @@ ggplot(MAF_df,
 # cowplot::plot_grid(p2, p1, nrow = 2, labels = "AUTO")
 ```
 
-**Figure 5:** Scatter plot of the minor allele frequency versus the tolerance effect size scaled by the phenotypic standard deviation ($\sigma_{p}$) for CT<sub>min</sub> and CT<sub>max</sub>. 
+**Figure 3:** Scatter plot of the minor allele frequency versus the tolerance effect size scaled by the phenotypic standard deviation ($\sigma_{p}$) for CT<sub>min</sub> and CT<sub>max</sub>. 
 
 
 Positive values correspond to increased cold tolerance or increased heat tolerance.
 
+
+
+# **Figure 4:** DEG & GWAS integration
+
+```{r, fig.height = 7, fig.width = 7}
+# filter the gwas so there is only the pvalues that reach the cut off level ----
+pval_cut_4 <- 10^-4
+
+gwas_cold_4 <- gwas_cold %>%
+  filter(AvgMixedPval < pval_cut_4)
+gwas_hot_4 <- gwas_hot %>%
+  filter(AvgMixedPval < pval_cut_4)
+
+# create a data.frame with all the info for the plotting later -----------------
+temp <- left_join(deg, gwas_cold_4, by = "gene", suffix = c("", ".cold"))
+total_4 <- full_join(temp, gwas_hot_4, by = "gene", suffix = c(".cold", ".hot"))
+
+# group by the significance
+deg_grouped_4 <- group_deg(total_4, pval_cut = 0.01, lfc_cut = 0)
+
+
+color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
+
+# the function from seqsetvis requires a sequential column in the data.frame
+deg_grouped_4$id <- seq_len(nrow(deg_grouped_4))
+
+deg_simple_4 <- deg_grouped_4 %>%
+  dplyr::select(gene, log2FoldChange.hot, 
+                log2FoldChange.cold, groupn, id, ID.hot, ID.cold) %>%
+  mutate(gwas_g = case_when(is.na(ID.hot) & is.na(ID.cold) ~ "Other",
+                            !is.na(ID.hot) & is.na(ID.cold)  ~ "CTmax",
+                            is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin",
+                            !is.na(ID.hot) & !is.na(ID.cold)  ~ "CTmin_CTmax"))
+
+deg_simple_distinct_4 <- deg_simple_4 %>%
+  distinct(gene, .keep_all = TRUE)
+
+
+deg_simple_distinct_4 <- deg_simple_distinct_4 %>%
+  separate(gwas_g, into = c("gwas_g", "gwas_g2"), sep = "_") %>%
+  pivot_longer(gwas_g:gwas_g2, names_to = "type", values_to = "gwas_g", 
+               values_drop_na = TRUE)
+
+# order the levels of the factor for plotting purposes to get NS on bottom
+deg_simple_distinct_4$groupn <- as.factor(deg_simple_distinct_4$groupn)
+
+deg_simple_distinct_4$groupn <- factor(deg_simple_distinct_4$groupn, 
+                                       levels =  c("Shared: 6228",
+                                                   "Sig1 Shared: 3266", 
+                                                   "Unique: 14",
+                                                   "Sig1 Unique: 106",
+                                                   "NS: 6485"))
+
+
+plot_scatter_side_density_xy_rel(deg_simple_distinct_4, 
+                             x_ = "log2FoldChange.cold", 
+                             y_ = "log2FoldChange.hot",
+                             labs_x = "Cold vs Ctrl (Log2 fold-change)",
+                             labs_y = "Hot vs Ctrl (Log2 fold-change)",
+                             bg.string = "NS: 6485",
+                             bg.density.string = "Other",
+                             labs_sets_density = "Top GWAS-associated genes",
+                             id_ = "id", 
+                             set_ = "groupn", 
+                             labs_sets = "Differentially expressed\ngenes",
+                             set_density_ = "gwas_g", 
+                             sets.density.colors = c("red", "blue", "yellow"),
+                             sets.colors = color_set,
+                             n_auto_label = 0)
+```
+
+
+**Figure 4: Scatter plot of the gene expression log-fold change of heat-shock (37°C) and cold-shock (4°C) relative to the 25°C control.** The density plots indicate the density of the genes that are associated with CT<sub>min</sub> (blue) or CT<sub>max</sub> (red) relative to the log fold change expression of all other genes (gray). 
+
+
+
+
+# **Figure 5:** ORA for GWAS
+
+![](https://tsoleary.github.io/rna_seq/cahan/results/GO_results_files/go_fig_lfc_order.png)
+
+**Figure 5:  Expression patterns of GWAS genes within significantly over-represented GO biological process categories.** All expression patterns are expressed relative to the 25°C control. Bolded categories indicate those also over-represented in the full DEG dataset for the corresponding temperature extreme. Bolded genes indicate significant differential gene expression at an FDR < 0.01.
 
 # **Table 1:** Gene counts
 
