@@ -129,7 +129,7 @@ cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
 
 # **Figure 3:** Effect size & MAF
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 6.5, fig.width = 5.25}
 
 x <- pheno %>%
   group_by(line_DGRP, type) %>%
@@ -149,7 +149,7 @@ MAF_df <- bind_rows(
     select(NormEff, MAF, GWAS))
 
 
-ggplot(MAF_df, 
+p1 <- ggplot(MAF_df, 
   aes(x = NormEff, y = MAF, fill = GWAS, shape = GWAS)) +
   geom_point(size = 3) +
   geom_vline(xintercept = 0) +
@@ -167,17 +167,19 @@ ggplot(MAF_df,
                     breaks = c("CTmax", "CTmin"),
                     labels = c(expression(CT[max]), expression(CT[min])))
 
-# p2 <- ggplot(MAF_df, 
-#   aes(x = NormEff, fill = GWAS)) +
-#   stat_bin(color = "grey50", position = "dodge") +
-#   geom_vline(xintercept = 0) +
-#   labs(x = expression("Tolerance effect size  x  " * sigma[p]^-1),
-#        y = "Counts") +
-#   xlim(c(-1,1)) +
-#   theme_classic(base_size = 14) +
-#   scale_fill_manual(values = c("indianred1", "lightskyblue")) +
-#   theme(legend.title = element_blank(),
-#         legend.position = c(0.9, 0.9))
+p2 <- ggplot(MAF_df,
+  aes(x = NormEff, fill = GWAS)) +
+  stat_bin(color = "grey50", position = "dodge", bins = 30) +
+  geom_vline(xintercept = 0) +
+  labs(x = expression("Tolerance effect size  x  " * sigma[p]^-1),
+       y = "Counts") +
+  xlim(c(-1,1)) +
+  theme_classic(base_size = 14) +
+  scale_fill_manual(values = c("indianred1", "lightskyblue"),
+                    breaks = c("CTmax", "CTmin"),
+                    labels = c(expression(CT[max]), expression(CT[min]))) +
+  theme(legend.title = element_blank(),
+        legend.position = c(0.9, 0.9))
 
 
 
@@ -205,7 +207,7 @@ ggplot(MAF_df,
 #         ylim(c(0,0.5)) +
 #         theme_classic()
 #
-# cowplot::plot_grid(p2, p1, nrow = 2, labels = "AUTO")
+cowplot::plot_grid(p1, p2, rel_heights = c(2, 1.625), nrow = 2, labels = "AUTO")
 ```
 
 **Figure 3:** Scatter plot of the minor allele frequency versus the tolerance effect size scaled by the phenotypic standard deviation ($\sigma_{p}$) for CT<sub>min</sub> and CT<sub>max</sub>. 
