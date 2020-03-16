@@ -38,8 +38,8 @@ keep_genes <- countsTableRound %>%
 # so that they are only genes that match the list created above
 countsTableRound <- countsTableRound %>%
   rownames_to_column("gene") %>%
-  filter(gene %in% genes_in_all$gene) %>%
-  column_to_rownames("gene")
+  filter(gene %in% keep_genes$gene) %>%
+  column_to_rownames("gene") 
 
 
 
