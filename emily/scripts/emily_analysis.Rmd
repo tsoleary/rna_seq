@@ -1,10 +1,10 @@
 ---
-title: Genome wide association study and differential gene expression of _Drosophila melanogaster_ under heat and cold stress
-author: "TS O'Leary"
+title: _Drosophila melanogaster_ 0-1 hour-old embryo heat shocks
+author: "Emily Mikucki"
 output:
   rmarkdown::html_document:
     theme: lumen
-    number_sections: true
+    number_sections: false
     toc: true
     toc_float: true
 ---
@@ -24,6 +24,197 @@ require(kableExtra)
 # source the functions and load the data
 source(here::here("functions.R"))
 source(here::here("emily/scripts/load_data.R"))
+```
+
+# **Tropical vs Temparate**
+
+## MA Plots
+
+### 25°C
+```{r}
+ggmaplot(res_25, main = "Tropical vs Temperate @ 25°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_25$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+### 32°C
+```{r}
+ggmaplot(res_32, main = "Tropical vs Temperate @ 32°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_32$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+### 34°C
+```{r}
+ggmaplot(res_34, main = "Tropical vs Temperate @ 34°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_34$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+### 36°C
+```{r}
+ggmaplot(res_36, main = "Tropical vs Temperate @ 36°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_36$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+## Genes
+
+### 25°C
+
+```{r}
+res_25 %>%
+  filter(padj < 0.05) %>%
+  select(gene, log2FoldChange, padj) %>%
+  arrange(log2FoldChange > 0, padj) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "500px")
+```
+ 
+
+### 32°C
+```{r}
+#later
+```
+
+### 34°C
+```{r}
+#later
+```
+
+### 36°C
+```{r}
+#later
+```
 
 
+# **Heat shock**
+
+## Temperate heat shock
+
+### 32°C
+```{r}
+ggmaplot(res_temp_32, main = "Temperate 32°C vs 25°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_temp_32$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+### 34°C
+```{r}
+ggmaplot(res_trop_34, main = "Temperate 34°C vs 25°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_temp_34$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+### 36°C
+```{r}
+ggmaplot(res_temp_36, main = "Temperate 36°C vs 25°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_temp_36$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+
+
+## Tropical heat shock
+
+### 32°C
+```{r}
+ggmaplot(res_trop_32, main = "Tropical 32°C vs 25°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_trop_32$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+### 34°C
+```{r}
+ggmaplot(res_trop_34, main = "Tropical 34°C vs 25°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_trop_34$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
+```
+
+### 36°C
+```{r}
+ggmaplot(res_trop_36, main = "Tropical 36°C vs 25°C",
+         fdr = 0.05, fc = 0, size = 1,
+         palette = c("#B31B21", "#1465AC", "#A6A6A680"),
+         genenames = as.vector(res_trop_36$gene),
+         legend = "top", top = 0,
+         select.top.method = "padj",
+         font.label = c("bold", 11), label.rectangle = TRUE,
+         font.legend = "bold",
+         font.main = "bold",
+         ggtheme = ggplot2::theme_minimal()) + 
+  theme(legend.text = element_text(size = 12))
 ```
