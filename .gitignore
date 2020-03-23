@@ -14,3 +14,4 @@ cahan/figures/*
 *.docx
 *.log
 emily/results/*
+emily/counts/Dm_countsMatrix.txt
