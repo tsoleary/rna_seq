@@ -123,51 +123,21 @@ dev.off()
 
 # Principle Componenet Analysis ------------------------------------------------
 
-# load norm_counts file
-setwd(directory_results)
-csv_result_file <- list.files()[grepl("norm_counts", list.files())]
-norm_counts <- read.table(csv_result_file)
+vsd <- vst(dds)
+data <- plotPCA(vsd, 
+                ntop = 16727,
+                intgroup = c("condition"), 
+                returnData = TRUE)
+percentVar <- round(100 * attr(data, "percentVar"), 1)
 
-# matrix of values
-data.matrix <- as.matrix(norm_counts)
-data.matrix <- data.matrix[apply(data.matrix, 1, var) != 0, ]
-pca <- prcomp(t(data.matrix), scale = TRUE) 
-
-# make a scree plot
-pca.var <- pca$sdev^2
-pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
-
-barplot(pca.var.per, main = "Scree Plot", 
-        xlab = "Principal Component", 
-        ylab = "Percent Variation")
-
-# now make a fancy looking plot that shows the PCs and the variation:
-pca.data <- data.frame(Sample = rownames(pca$x),
-                       X = pca$x[,1],
-                       Y = pca$x[,2])
-
-pca.data$group <- gsub("_[[:alnum:]]", "", pca.data$Sample)
-
-# plot with sample labels
-ggplot(data = pca.data, aes(x = X, y = Y, label = Sample)) +
-  geom_text() +
-  xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
-  ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
-  theme_bw() +
-  ggtitle("PCA")
-
-setwd(directory_plots)
-dev.copy(png, paste0(prefix, "_pca_text.png"))
-dev.off()
-
-# plot colored by group
-ggplot(data = pca.data, aes(x = X, y = Y, fill = group)) +
-  geom_point(pch = 21, size = 5) +
-  scale_fill_manual(values=c("skyblue", "#999999", "firebrick1")) +
-  xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
-  ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
-  theme_bw() +
-  ggtitle("PCA") 
+ggplot(data, aes(PC1, PC2, fill = condition)) +
+  geom_point(size = 4, pch = 21, alpha = 0.85, color = "grey50") +
+  xlab(paste0("PC1 (", percentVar[1], "%)")) +
+  ylab(paste0("PC2 (", percentVar[2], "%)")) +
+  scale_fill_manual(name = "Treatment",
+                    values = c("grey50", "firebrick", "skyblue"),
+                    labels = c("25°C", "37°C", "4°C")) +
+  theme_classic(base_size = 12)
 
 setwd(directory_plots)
 dev.copy(png, paste0(prefix, "_pca_colored.png"))
