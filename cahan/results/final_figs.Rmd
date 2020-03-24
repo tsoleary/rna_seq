@@ -46,7 +46,7 @@ p1 <- ggplot(pheno %>%
              aes(x = temp)) + 
         geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
         labs(x = expression(CT[min] * ~ "(°C)"),
-             y = "Counts") +
+             y = "Frequency") +
         xlim(c(0, 10)) +
         ylim(c(0, 33)) + 
         annotate("text", x = 7.5, y = 17.5, label = expression(H^2 *" = 0.25"),
@@ -60,34 +60,41 @@ p2 <- ggplot(pheno %>%
              aes(x = temp)) + 
         geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
         labs(x = expression(CT[max] * ~ "(°C)"), 
-             y = "Counts") +
+             y = "Frequency") +
         xlim(c(35, 45)) +
         ylim(c(0, 33)) +
         annotate("text", x = 42.5, y = 17.5, label = expression(H^2 *" = 0.29"),
                  size = 4) +
         theme_classic()
 
-top_row <- cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+top_row <- cowplot::plot_grid(p1, p2, nrow = 1)
 
 my.formula <- y ~ x
-p3 <- ggplot(pheno %>%
-               pivot_wider(names_from = type, values_from = temp) %>%
-               group_by(line_DGRP) %>%
-               summarize(ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+df <- pheno %>%
+        pivot_wider(names_from = type, values_from = temp) %>%
+        group_by(line_DGRP) %>%
+        summarize(ctmin = mean(ctmin), ctmax = mean(ctmax))
+
+p3 <- ggplot(df, 
              aes(x = ctmin, y = ctmax)) +
         geom_point(fill = "grey50", shape = 21) +
         geom_smooth(method = "lm", 
                     linetype = "dashed", 
                     se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = "right", label.y = "bottom") + 
+        # ggpmisc::stat_poly_eq(formula = my.formula, 
+        #                       aes(label = ..rr.label..),
+        #                       parse = TRUE, label.x = "right", label.y = "bottom") + 
+        annotate("text", x = 3, y = 40.5, 
+                 label = paste("r =", round(cor(df$ctmin, df$ctmax), 2)), 
+                 size = 4) +
         labs(x = expression(CT[min] * ~ "(°C)"), 
              y = expression(CT[max] * ~ "(°C)")) +
+        # xlim(c(0, 10)) +
+        # ylim(c(38.5, 41)) +
         theme_classic() +
         theme(plot.margin = unit(c(t = 0.25, r = 3.5, b = 0, l = 3.5), "cm"))
 
-cowplot::plot_grid(top_row, p3, nrow = 2, labels = c("", "C"))
+cowplot::plot_grid(top_row, p3, nrow = 2)
 ```
 
 **Figure 1: Distribution of thermal limits in the DGRP.** Histograms of mean phenotypes across 100 DGRP lines for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>. **(C)** Correlation between line-means of CT<sub>min</sub> and CT<sub>max</sub>.
@@ -108,7 +115,7 @@ p2 <- cowplot::ggdraw() +
                       scale = 1) +
   cowplot::draw_label("Allelic variants", y = 0.95, size = 18)#, fontface = "bold")
 
-p_top <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c("A", "C"))
+p_top <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1))
 
 
 p1 <- cowplot::ggdraw() + 
@@ -119,9 +126,9 @@ p2 <- cowplot::ggdraw() +
   cowplot::draw_image("/Users/tsoleary/R/rna_seq/cahan/plots/gwas_4_genes_venn_diagram_ct.png", scale = 1) +
   cowplot::draw_label("Genes", y = 0.95, size = 18)#, fontface = "bold")
 
-p_bottom <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1), labels = c("B", "D"))
+p_bottom <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1))
 
-cowplot::plot_grid(p_top, p_bottom, nrow = 2, labels = c("", ""))
+cowplot::plot_grid(p_top, p_bottom, nrow = 2)
 ```
 
 **Figure 2: Results of GWAS to identify polymorphisms associated with thermal tolerance.** Manhattan plots of the results from the GWAS for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>. The blue line corresponds to p < 1E-4 and the red line corresponds to p < 1E-5. The overlap of **(C)** allelic variants and **(D)** unique genes between CT<sub>min</sub> and CT<sub>max</sub> is also shown.
@@ -172,7 +179,7 @@ p2 <- ggplot(MAF_df,
   stat_bin(color = "grey50", position = "dodge", bins = 30) +
   geom_vline(xintercept = 0) +
   labs(x = expression("Tolerance effect size  x  " * sigma[p]^-1),
-       y = "Counts") +
+       y = "Frequency") +
   xlim(c(-1,1)) +
   theme_classic(base_size = 14) +
   scale_fill_manual(values = c("indianred1", "lightskyblue"),
@@ -207,7 +214,7 @@ p2 <- ggplot(MAF_df,
 #         ylim(c(0,0.5)) +
 #         theme_classic()
 #
-cowplot::plot_grid(p1, p2, rel_heights = c(2, 1.625), nrow = 2, labels = "AUTO")
+cowplot::plot_grid(p1, p2, rel_heights = c(2, 1.625), nrow = 2)
 ```
 
 **Figure 3:** Scatter plot of the minor allele frequency versus the tolerance effect size scaled by the phenotypic standard deviation ($\sigma_{p}$) for CT<sub>min</sub> and CT<sub>max</sub>. 
@@ -413,44 +420,53 @@ p1 <- ggplot(pheno %>%
              aes(x = tb)) + 
         geom_histogram(binwidth = 0.33, color = "grey", alpha = 0.75) + 
         labs(x ="Thermal Breadth (°C)",
-             y = "Counts") +
+             y = "Frequency") +
         xlim(c(30, 40)) +
         theme_classic()
 
 
-my.formula <- y ~ x
-p2 <- ggplot(pheno %>%
+df2 <- pheno %>%
          pivot_wider(names_from = type, values_from = temp) %>%
          mutate(tb = ctmax - ctmin) %>%
          select(line_DGRP, sex, tb) %>%
-         pivot_wider(names_from = sex, values_from = tb), 
+         pivot_wider(names_from = sex, values_from = tb)
+
+my.formula <- y ~ x
+p2 <- ggplot(df2, 
         aes(x = male, y = female)) +
         geom_point(fill = "grey50", shape = 21) +
         geom_smooth(method = "lm", 
                     linetype = "dashed", 
                     se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        # ggpmisc::stat_poly_eq(formula = my.formula, 
+        #                       aes(label = ..rr.label..),
+        #                       parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        annotate("text", x = 32.25, y = 37.5, 
+                 label = paste("r =", round(cor(df2$male, df2$female), 2)), 
+                 size = 4) +
         labs(x = "Male Thermal Breadth (°C)", 
              y = "Female Thermal Breadth (°C)") +
         theme_classic()
 
-
-my.formula <- y ~ x
-p3 <- ggplot(pheno %>%
+df3 <- pheno %>%
          pivot_wider(names_from = type, values_from = temp) %>%
          mutate(tb = ctmax - ctmin) %>%
          group_by(line_DGRP) %>%
-         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax)), 
+         summarize(tb = mean(tb), ctmin = mean(ctmin), ctmax = mean(ctmax))
+
+my.formula <- y ~ x
+p3 <- ggplot(df3, 
         aes(x = ctmin, y = tb)) +
         geom_point(fill = "grey50", shape = 21) +
         geom_smooth(method = "lm", 
                     linetype = "dashed", 
                     se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        # ggpmisc::stat_poly_eq(formula = my.formula, 
+        #                       aes(label = ..rr.label..),
+        #                       parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        annotate("text", x = 3, 33,
+                 label = paste("r =", round(cor(df3$ctmin, df3$tb), 2)),
+                 size = 4) +
         labs(x = expression(CT[min] * ~ "(°C)"), 
              y = "Thermal Breadth (°C)") +
         theme_classic()
@@ -466,14 +482,17 @@ p4 <- ggplot(pheno %>%
         geom_smooth(method = "lm", 
                     linetype = "dashed", 
                     se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        # ggpmisc::stat_poly_eq(formula = my.formula, 
+        #                       aes(label = ..rr.label..),
+        #                       parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        annotate("text", x = 39, y = 38, 
+                 label = paste("r =", round(cor(df3$ctmax, df3$tb), 2)), 
+                 size = 4) +
         labs(x = expression(CT[max] * ~ "(°C)"), 
              y = "Thermal Breadth (°C)") +
         theme_classic()
 
-cowplot::plot_grid(p1, p2, p3, p4, nrow = 2, labels = "AUTO")
+cowplot::plot_grid(p1, p2, p3, p4, nrow = 2)
 ```
 
 **Supplementary Figure X: (A)** Histograms of mean phenotypes across 100 DGRP lines for thermal breadth. **(B)** Correlation between sex-means for thermal breadth. Correlation between line-means of **(C)** thermal breadth and CT<sub>min</sub> and **(D)** thermal breadth and CT<sub>max</sub>.
@@ -481,37 +500,45 @@ cowplot::plot_grid(p1, p2, p3, p4, nrow = 2, labels = "AUTO")
 
 
 ```{r, fig.height = 3, fig.width = 7}
-p1 <- ggplot(pheno %>%
-         pivot_wider(names_from = sex, values_from = temp) %>%
-         pivot_wider(names_from = type, values_from = c("male", "female")), 
+df <- pheno %>%
+        pivot_wider(names_from = sex, values_from = temp) %>%
+        pivot_wider(names_from = type, values_from = c("male", "female"))
+
+p1 <- ggplot(df, 
         aes(x = male_ctmin, y = female_ctmin)) +
         geom_point(fill = "grey50", shape = 21) +
         geom_smooth(method = "lm", 
                     linetype = "dashed", 
                     se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        # ggpmisc::stat_poly_eq(formula = my.formula, 
+        #                       aes(label = ..rr.label..),
+        #                       parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        annotate("text", x = 2, y = 8,
+                 label = paste("r =",
+                               round(cor(df$male_ctmin, df$female_ctmin), 2)),
+                 size = 4) +
         labs(x = expression("Male" ~ CT[min] * ~ "(°C)"), 
              y = expression("Female" ~ CT[min] * ~ "(°C)")) +
         theme_classic()
 
-p2 <- ggplot(pheno %>%
-         pivot_wider(names_from = sex, values_from = temp) %>%
-         pivot_wider(names_from = type, values_from = c("male", "female")), 
+p2 <- ggplot(df, 
         aes(x = male_ctmax, y = female_ctmax)) +
         geom_point(fill = "grey50", shape = 21) +
         geom_smooth(method = "lm", 
                     linetype = "dashed", 
                     se = FALSE, formula = my.formula, color = "grey50") +
-        ggpmisc::stat_poly_eq(formula = my.formula, 
-                              aes(label = ..rr.label..),
-                              parse = TRUE, label.x = 0.1, label.y = 0.95) + 
+        # ggpmisc::stat_poly_eq(formula = my.formula, 
+        #                       aes(label = ..rr.label..),
+        #                       parse = TRUE, label.x = 0.1, label.y = 0.95) +
+        annotate("text", x = 39, y = 40.5,
+                 label = paste("r =",
+                               round(cor(df$male_ctmax, df$female_ctmax), 2)),
+                 size = 4) +
         labs(x = expression("Male" ~ CT[max] * ~ "(°C)"), 
              y = expression("Female" ~ CT[max] * ~ "(°C)")) +
         theme_classic()
 
-cowplot::plot_grid(p1, p2, nrow = 1, labels = "AUTO")
+cowplot::plot_grid(p1, p2, nrow = 1)
 ```
 
 **Supplementary Figure X:** Correlation between sex-means for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>.
