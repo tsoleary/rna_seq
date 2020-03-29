@@ -214,7 +214,7 @@ p2 <- ggplot(MAF_df,
 #         ylim(c(0,0.5)) +
 #         theme_classic()
 #
-cowplot::plot_grid(p1, p2, rel_heights = c(2, 1.625), nrow = 2)
+cowplot::plot_grid(p2, p1, rel_heights = c(1.625, 2), nrow = 2)
 ```
 
 **Figure 3:** Scatter plot of the minor allele frequency versus the tolerance effect size scaled by the phenotypic standard deviation ($\sigma_{p}$) for CT<sub>min</sub> and CT<sub>max</sub>. 
