@@ -7,71 +7,67 @@ require(DESeq2)
 
 # Load counts data -------------------------------------------------------------
 
-# Set working directory
-setwd(here::here("emily/counts"))
-
-# Import and round data from Salmon
-counts <- round(read.table("Dm_countsMatrix.txt", header = TRUE))
-
-# Load the metadata
-metadata <- read_delim("emily_metadata.txt", delim = "\t",
-                       col_types = cols(
-                         sampleID = col_character(),
-                         pop = col_factor(),
-                         temp = col_factor(),
-                         rep = col_factor(),
-                         region = col_factor()))
-  
-
-# Run DESeq2 -------------------------------------------------------------------
-metadata <- metadata %>%
-  mutate(group = as.factor(paste(region, temp, sep = "_")))
-
-
-dds <- DESeqDataSetFromMatrix(countData = counts,
-                              colData = metadata,
-                              design = ~ group)
-
-# Set the group to be compared against
-dds$group <- relevel(dds$group, ref = "tropical_25")
-
-# Filter out genes with few reads
-dds <- dds[rowSums(counts(dds)) > 110]
-
-# Run DESeq
-dds <- DESeq(dds)
-
-# List the results you've generated
-resultsNames(dds)
-
-res <- results(dds, contrast = c("group", "tropical_25", "tropical_36"))
-
-resdata <- merge(as.data.frame(res),
-                 as.data.frame(counts(dds, normalized = TRUE)),
-                 by = "row.names",
-                 sort = FALSE)
-names(resdata)[1] <- "gene"
-
-# Write results to file
-setwd(here::here("emily/results"))
-write.csv(resdata,
-          file = "trop_36_25_results_with_norm.csv",
-          row.names = FALSE)
+# # Set working directory
+# setwd(here::here("emily/counts"))
+# 
+# # Import and round data from Salmon
+# counts <- round(read.table("Dm_countsMatrix.txt", header = TRUE))
+# 
+# # Load the metadata
+# metadata <- read_delim("emily_metadata.txt", delim = "\t",
+#                        col_types = cols(
+#                          sampleID = col_character(),
+#                          pop = col_factor(),
+#                          temp = col_factor(),
+#                          rep = col_factor(),
+#                          region = col_factor()))
+#   
+# 
+# # Run DESeq2 -------------------------------------------------------------------
+# metadata <- metadata %>%
+#   mutate(group = as.factor(paste(region, temp, sep = "_")))
+# 
+# 
+# dds <- DESeqDataSetFromMatrix(countData = counts,
+#                               colData = metadata,
+#                               design = ~ group)
+# 
+# # Set the group to be compared against
+# dds$group <- relevel(dds$group, ref = "temperate_36")
+# 
+# # Filter out genes with few reads
+# dds <- dds[rowSums(counts(dds)) > 110]
+# 
+# # Run DESeq
+# dds <- DESeq(dds)
+# 
+# # List the results you've generated
+# resultsNames(dds)
+# 
+# res <- results(dds, 
+#                contrast = c("group", "tropical_36", "temperate_36"), 
+#                alpha = 0.05)
+# 
+# # Save an object to a file
+# setwd(here::here("emily/results"))
+# saveRDS(res, file = "trop_temp_36_results.rds")
 
 # Load DESeq2 results ----------------------------------------------------------
 setwd(here::here("emily/results"))
-res_25 <- read_csv("trop_temp_25_results_with_norm.csv")
-res_32 <- read_csv("trop_temp_32_results_with_norm.csv")
-res_34 <- read_csv("trop_temp_34_results_with_norm.csv")
-res_36 <- read_csv("trop_temp_36_results_with_norm.csv")
 
-res_temp_32 <- read_csv("temp_32_25_results_with_norm.csv")
-res_temp_34 <- read_csv("temp_34_25_results_with_norm.csv")
-res_temp_36 <- read_csv("temp_36_25_results_with_norm.csv")
+# Restore the object from the rds file that you created
+res_25 <- readRDS("trop_temp_25_results.rds")
+res_32 <- readRDS("trop_temp_32_results.rds")
+res_34 <- readRDS("trop_temp_34_results.rds")
+res_36 <- readRDS("trop_temp_36_results.rds")
 
-res_trop_32 <- read_csv("trop_32_25_results_with_norm.csv")
-res_trop_34 <- read_csv("trop_34_25_results_with_norm.csv")
-res_trop_36 <- read_csv("trop_36_25_results_with_norm.csv")
+res_temp_32 <- readRDS("temp_32_25_results.rds")
+res_temp_34 <- readRDS("temp_34_25_results.rds")
+res_temp_36 <- readRDS("temp_36_25_results.rds")
+
+res_trop_32 <- readRDS("trop_32_25_results.rds")
+res_trop_34 <- readRDS("trop_34_25_results.rds")
+res_trop_36 <- readRDS("trop_36_25_results.rds")
   
 
 
