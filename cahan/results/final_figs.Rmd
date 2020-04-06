@@ -95,6 +95,14 @@ p3 <- ggplot(df,
         theme(plot.margin = unit(c(t = 0.25, r = 3.5, b = 0, l = 3.5), "cm"))
 
 cowplot::plot_grid(top_row, p3, nrow = 2)
+
+setwd(here::here("cahan/plots"))
+ggsave("fig_1_final.tiff", 
+       units = "in", 
+       width = 7, 
+       height = 5, 
+       dpi=300, 
+       compression = 'lzw')
 ```
 
 **Figure 1: Distribution of thermal limits in the DGRP.** Histograms of mean phenotypes across 100 DGRP lines for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>. **(C)** Correlation between line-means of CT<sub>min</sub> and CT<sub>max</sub>.
@@ -129,6 +137,14 @@ p2 <- cowplot::ggdraw() +
 p_bottom <- cowplot::plot_grid(p1, p2, nrow = 1, rel_widths = c(2,1))
 
 cowplot::plot_grid(p_top, p_bottom, nrow = 2)
+
+setwd(here::here("cahan/plots"))
+ggsave("fig_2_final.tiff", 
+       units = "in", 
+       width = 7, 
+       height = 5, 
+       dpi=300, 
+       compression = 'lzw')
 ```
 
 **Figure 2: Results of GWAS to identify polymorphisms associated with thermal tolerance.** Manhattan plots of the results from the GWAS for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>. The blue line corresponds to p < 1E-4 and the red line corresponds to p < 1E-5. The overlap of **(C)** allelic variants and **(D)** unique genes between CT<sub>min</sub> and CT<sub>max</sub> is also shown.
@@ -215,6 +231,14 @@ p2 <- ggplot(MAF_df,
 #         theme_classic()
 #
 cowplot::plot_grid(p2, p1, rel_heights = c(1.625, 2), nrow = 2)
+
+setwd(here::here("cahan/plots"))
+ggsave("fig_3_final.tiff", 
+       units = "in", 
+       width = 5.25, 
+       height = 6.5, 
+       dpi=300, 
+       compression = 'lzw')
 ```
 
 **Figure 3:** Scatter plot of the minor allele frequency versus the tolerance effect size scaled by the phenotypic standard deviation ($\sigma_{p}$) for CT<sub>min</sub> and CT<sub>max</sub>. 
@@ -291,6 +315,14 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
                              sets.density.colors = c("red", "blue", "yellow"),
                              sets.colors = color_set,
                              n_auto_label = 0)
+
+setwd(here::here("cahan/plots"))
+ggsave("fig_4_final.tiff", 
+       units = "in", 
+       width = 7, 
+       height = 7, 
+       dpi=300, 
+       compression = 'lzw')
 ```
 
 
@@ -493,6 +525,15 @@ p4 <- ggplot(pheno %>%
         theme_classic()
 
 cowplot::plot_grid(p1, p2, p3, p4, nrow = 2)
+
+
+setwd(here::here("cahan/plots"))
+ggsave("sup_fig_1_final.tiff", 
+       units = "in", 
+       width = 6, 
+       height = 7, 
+       dpi=300, 
+       compression = 'lzw')
 ```
 
 **Supplementary Figure X: (A)** Histograms of mean phenotypes across 100 DGRP lines for thermal breadth. **(B)** Correlation between sex-means for thermal breadth. Correlation between line-means of **(C)** thermal breadth and CT<sub>min</sub> and **(D)** thermal breadth and CT<sub>max</sub>.
@@ -539,6 +580,15 @@ p2 <- ggplot(df,
         theme_classic()
 
 cowplot::plot_grid(p1, p2, nrow = 1)
+
+setwd(here::here("cahan/plots"))
+ggsave("sup_fig_2_final.tiff", 
+       units = "in", 
+       width = 3, 
+       height = 7, 
+       dpi=300, 
+       compression = 'lzw')
+
 ```
 
 **Supplementary Figure X:** Correlation between sex-means for **(A)** CT<sub>min</sub> and **(B)** CT<sub>max</sub>.
