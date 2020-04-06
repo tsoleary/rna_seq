@@ -584,8 +584,8 @@ cowplot::plot_grid(p1, p2, nrow = 1)
 setwd(here::here("cahan/plots"))
 ggsave("sup_fig_2_final.tiff", 
        units = "in", 
-       width = 3, 
-       height = 7, 
+       width = 7, 
+       height = 3,
        dpi=300, 
        compression = 'lzw')
 
