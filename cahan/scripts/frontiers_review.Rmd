@@ -26,68 +26,14 @@ source(here::here("functions.R"))
 source(here::here("cahan/scripts/load_data.R"))
 ```
 
-# **EMP1 < 10<sup>-4</sup>**
+
+# **EMP1 < 0.005**
 
 ## CT<sub>min</sub>
 
 ```{r}
 gwas_cold_g %>%
-  filter(EMP1 < 10^-4) %>%
-  mutate(in_original = SET %in% gwas_cold$fbgn) %>%
-  select(SET, in_original, everything()) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-## CT<sub>max</sub>
-
-```{r}
-gwas_hot_g %>%
-  filter(EMP1 < 10^-4) %>%
-  mutate(in_original = SET %in% gwas_hot$fbgn) %>%
-  select(SET, in_original, everything()) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-
-
-# **EMP1 < 10<sup>-3</sup>**
-
-## CT<sub>min</sub>
-
-```{r}
-gwas_cold_g %>%
-  filter(EMP1 < 10^-3) %>%
-  mutate(in_original = SET %in% gwas_cold$fbgn) %>%
-  select(SET, in_original, everything()) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-## CT<sub>max</sub>
-
-```{r}
-gwas_hot_g %>%
-  filter(EMP1 < 10^-3) %>%
-  mutate(in_original = SET %in% gwas_hot$fbgn) %>%
-  select(SET, in_original, everything()) %>%
-  kable() %>%
-  kable_styling("striped") %>%
-  scroll_box(width = "100%", height = "100%")
-```
-
-
-# **EMP1 < 10<sup>-2</sup>**
-
-## CT<sub>min</sub>
-
-```{r}
-gwas_cold_g %>%
-  filter(EMP1 < 10^-2) %>%
+  filter(EMP1 < 0.005) %>%
   mutate(in_original = SET %in% gwas_cold$fbgn) %>%
   select(SET, in_original, everything()) %>%
   kable() %>%
@@ -99,10 +45,107 @@ gwas_cold_g %>%
 
 ```{r}
 gwas_hot_g %>%
-  filter(EMP1 < 10^-2) %>%
+  filter(EMP1 < 0.005) %>%
   mutate(in_original = SET %in% gwas_hot$fbgn) %>%
-  select(SET, in_original, -SNPS, everything()) %>%
+  select(SET, in_original, everything()) %>%
   kable() %>%
   kable_styling("striped") %>%
   scroll_box(width = "100%", height = "500px")
+```
+
+
+# **Venn Diagrams**
+
+Overlap with 10<sup>-4</sup> cutoff original genes
+
+```{r, include = FALSE}
+comb_cold_all <- full_join(res_cold, gwas_cold, by = "gene")
+comb_hot_all <- full_join(res_hot, gwas_hot, by = "gene")
+
+
+# get only the SNPs identified in the GWAS
+comb_hot_filt <- comb_hot_all %>%
+  filter(!is.na(ID))
+
+comb_cold_filt <- comb_cold_all %>%
+  filter(!is.na(ID))
+
+
+# create a column that indicates where the snps are from
+comb_hot_filt$gwas <- "CTmax"
+comb_cold_filt$gwas <- "CTmin"
+
+comb_gwas <- dplyr::bind_rows(comb_hot_filt, comb_cold_filt)
+
+ctmin_genes <- comb_gwas %>%
+  dplyr::filter(gwas == "CTmin" & gene != "") %>%
+  dplyr::distinct(fbgn)
+ctmax_genes <- comb_gwas %>%
+  dplyr::filter(gwas == "CTmax" & gene != "") %>%
+  dplyr::distinct(fbgn)
+
+gwas_hot_g <- gwas_hot_g %>%
+  filter(EMP1 < 0.005) 
+
+gwas_cold_g <- gwas_cold_g %>%
+  filter(EMP1 < 0.005) 
+
+
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(og = ctmax_genes$fbgn, 
+                              gene = gwas_hot_g$SET),
+                          category.names = c("Original",
+                                             "Gene-based"),
+                          imagetype = "png",
+                          filename = "gwas_gene_based_hot_05_venn_diagram.png",
+                          fill = c("darkred", "red"), 
+                          alpha = 0.5,
+                          cat.pos = c(0, 0),
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("darkred", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+
+
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(og = ctmin_genes$fbgn, 
+                              gene = gwas_cold_g$SET),
+                          category.names = c("Original",
+                                             "Gene-based"),
+                          imagetype = "png",
+                          filename = "gwas_gene_based_cold_05_venn_diagram.png",
+                          fill = c("darkblue", "blue"), 
+                          alpha = 0.5,
+                          cat.pos = c(0, 0),
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("darkblue", "blue"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+## CT<sub>max</sub>
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/gwas_gene_based_hot_05_venn_diagram.png"))
+
+```
+
+## CT<sub>min</sub>
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/gwas_gene_based_cold_05_venn_diagram.png"))
 ```
