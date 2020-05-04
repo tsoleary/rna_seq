@@ -1,0 +1,49 @@
+---
+title: Frontier Reviewer Comments
+output:
+  rmarkdown::html_document:
+    theme: lumen
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+# don't show cose, warnings or messages
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+# don't make the log files for the VennDiagram package
+futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
+
+# load these required packages
+require(tidyverse)
+# require(seqsetvis)
+# require(ssvRecipes)
+require(knitr)
+require(kableExtra)
+
+# source the functions and load the data
+source(here::here("functions.R"))
+source(here::here("cahan/scripts/load_data.R"))
+```
+
+# EMP1 < 10<sup>-4</sup>
+
+## CT<sub>min</sub>
+
+```{r}
+gwas_cold_g %>%
+  filter(EMP1 < 10^-4) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+## CT<sub>max</sub>
+
+```{r}
+gwas_hot_g %>%
+  filter(EMP1 < 10^-4) %>%
+  kable() %>%
+  kable_styling("striped") %>%
+  scroll_box(width = "100%", height = "100%")
+```
+
+There are very few genes below the 10<sup>-4</sup> threshold.
