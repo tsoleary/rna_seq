@@ -267,7 +267,8 @@ total_4 <- full_join(temp, gwas_hot_4, by = "gene", suffix = c(".cold", ".hot"))
 deg_grouped_4 <- group_deg(total_4, pval_cut = 0.01, lfc_cut = 0)
 
 
-color_set <- c("goldenrod4", "goldenrod1", "coral4", "coral1", "grey50")
+color_set <- c("tan4", "tan", "coral", "darkorchid1", "grey50")
+color_set <- c("goldenrod4", "goldenrod", "coral", "darkorchid1", "grey50")
 
 # the function from seqsetvis requires a sequential column in the data.frame
 deg_grouped_4$id <- seq_len(nrow(deg_grouped_4))
@@ -317,7 +318,7 @@ plot_scatter_side_density_xy_rel(deg_simple_distinct_4,
                              n_auto_label = 0)
 
 setwd(here::here("cahan/plots"))
-ggsave("fig_4_final.tiff", 
+ggsave("fig_4_final_colors2.tiff", 
        units = "in", 
        width = 7, 
        height = 7, 
