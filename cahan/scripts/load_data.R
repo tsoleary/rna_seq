@@ -100,3 +100,12 @@ pheno <- pheno %>%
                names_to = "type",
                values_to = "temp") %>%
   separate(type, into = c("type", "sex") ,sep = "_")
+
+
+# load the new gene based gwas -------------------------------------------------
+setwd(here::here("DRGP_GWAS"))
+gwas_cold_g <- read_csv("ctmin_GWAS_gene_based.csv")
+gwas_hot_g <- read_csv("ctmax_GWAS_gene_based.csv")
+
+
+
