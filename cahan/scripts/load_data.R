@@ -15,7 +15,8 @@ deg <- full_join(res_cold, res_hot, by = "gene", suffix = c(".cold", ".hot"))
 
 # phenotypic information and the gwas results
 setwd(here::here("DRGP_GWAS"))
-pheno <- read.csv("pheno.csv")
+pheno <- read_csv("pheno.csv") %>%
+  filter(line_DGRP != 208)
 gwas_cold <- read.table("CTmin/gwas.top.4.annot", header = TRUE)
 gwas_hot <- read.table("CTmax/gwas.top.4.annot", header = TRUE)
 gwas_tb <- read.table("ThermalBreadth/gwas.top.4.annot", header = TRUE)

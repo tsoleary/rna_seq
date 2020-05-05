@@ -63,7 +63,7 @@ p2 <- ggplot(pheno %>%
              y = "Frequency") +
         xlim(c(35, 45)) +
         ylim(c(0, 33)) +
-        annotate("text", x = 42.5, y = 17.5, label = expression(H^2 *" = 0.29"),
+        annotate("text", x = 42.5, y = 17.5, label = expression(H^2 *" = 0.28"),
                  size = 4) +
         theme_classic()
 
@@ -574,7 +574,9 @@ p2 <- ggplot(df,
         #                       parse = TRUE, label.x = 0.1, label.y = 0.95) +
         annotate("text", x = 39, y = 40.5,
                  label = paste("r =",
-                               round(cor(df$male_ctmax, df$female_ctmax), 2)),
+                               format(round(cor(df$male_ctmax, 
+                                                df$female_ctmax), 2), 
+                                      nsmall = 2)),
                  size = 4) +
         labs(x = expression("Male" ~ CT[max] * ~ "(°C)"), 
              y = expression("Female" ~ CT[max] * ~ "(°C)")) +
