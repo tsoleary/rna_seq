@@ -90,6 +90,16 @@ gwas_hot_g <- gwas_hot_g %>%
 gwas_cold_g <- gwas_cold_g %>%
   filter(EMP1 < 0.005) 
 
+setwd(here::here("cahan/results"))
+gwas_cold_g %>%
+  mutate(SET = paste0("FLYBASE:", SET)) %>%
+  select(SET) %>%
+  write_delim("ctmin_gene_level.txt", delim = "\t", col_names = FALSE)
+gwas_hot_g %>%
+  mutate(SET = paste0("FLYBASE:", SET)) %>%
+  select(SET) %>%
+  write_delim("ctmax_gene_level.txt", delim = "\t", col_names = FALSE)
+
 
 setwd(here::here("cahan/plots"))
 VennDiagram::venn.diagram(x = list(og = ctmax_genes$fbgn, 
@@ -148,4 +158,173 @@ cowplot::ggdraw() +
 ```{r}
 cowplot::ggdraw() +
   cowplot::draw_image(here::here("cahan/plots/gwas_gene_based_cold_05_venn_diagram.png"))
+```
+
+# **Genes with = 1 SNP**
+
+```{r, include = FALSE}
+
+gwas_hot_g_1snp <- gwas_hot_g %>%
+  filter(EMP1 < 0.005 & ISIG == 1)
+
+gwas_cold_g_1snp <- gwas_cold_g %>%
+  filter(EMP1 < 0.005 & ISIG == 1)
+
+
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(og = ctmax_genes$fbgn, 
+                              gene = gwas_hot_g_1snp$SET),
+                          category.names = c("Original",
+                                             "Gene-based"),
+                          imagetype = "png",
+                          filename = "gwas_gene_based_hot_1snp_venn_diagram.png",
+                          fill = c("darkred", "red"), 
+                          alpha = 0.5,
+                          cat.pos = c(0, 0),
+                          label.col = c("white", "grey50", "white"), 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("darkred", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+
+
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(og = ctmin_genes$fbgn, 
+                              gene = gwas_cold_g_1snp$SET),
+                          category.names = c("Original",
+                                             "Gene-based"),
+                          imagetype = "png",
+                          filename = "gwas_gene_based_cold_1snp_venn_diagram.png",
+                          fill = c("darkblue", "blue"), 
+                          alpha = 0.5,
+                          cat.pos = c(0, 0),
+                          label.col = c("white", "grey50", "white"), 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("darkblue", "blue"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+## CT<sub>max</sub>
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/gwas_gene_based_hot_1snp_venn_diagram.png"))
+
+```
+
+## CT<sub>min</sub>
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/gwas_gene_based_cold_1snp_venn_diagram.png"))
+```
+
+
+# **Genes with > 1 SNP**
+
+```{r, include = FALSE}
+
+gwas_hot_g_2snp <- gwas_hot_g %>%
+  filter(EMP1 < 0.005 & ISIG >= 2)
+
+gwas_cold_g_2snp <- gwas_cold_g %>%
+  filter(EMP1 < 0.005 & ISIG >= 2)
+
+
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(og = ctmax_genes$fbgn, 
+                              gene = gwas_hot_g_2snp$SET),
+                          category.names = c("Original",
+                                             "Gene-based"),
+                          imagetype = "png",
+                          filename = "gwas_gene_based_hot_2snp_venn_diagram.png",
+                          fill = c("darkred", "red"), 
+                          alpha = 0.5,
+                          cat.pos = c(0, 0),
+                          label.col = c("white", "white", "grey50"), 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("darkred", "red"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+
+
+setwd(here::here("cahan/plots"))
+VennDiagram::venn.diagram(x = list(og = ctmin_genes$fbgn, 
+                              gene = gwas_cold_g_2snp$SET),
+                          category.names = c("Original",
+                                             "Gene-based"),
+                          imagetype = "png",
+                          filename = "gwas_gene_based_cold_2snp_venn_diagram.png",
+                          fill = c("darkblue", "blue"), 
+                          alpha = 0.5,
+                          cat.pos = c(0, 0),
+                          label.col = "white", 
+                          fontfamily = "serif", 
+                          fontface = "bold",
+                          cat.cex = 2,
+                          cat.dist = .1,
+                          margin = .1,
+                          cex = 2,
+                          cat.col = c("darkblue", "blue"), 
+                          cat.fontfamily = "serif",
+                          cat.fontface = "bold")
+```
+
+## CT<sub>max</sub>
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/gwas_gene_based_hot_2snp_venn_diagram.png"))
+
+```
+
+## CT<sub>min</sub>
+
+```{r}
+cowplot::ggdraw() +
+  cowplot::draw_image(here::here("cahan/plots/gwas_gene_based_cold_2snp_venn_diagram.png"))
+```
+
+<!-- # MAF v P-val -->
+
+
+```{r, eval = FALSE}
+setwd(here::here("DRGP_GWAS"))
+gwas_cold_all <- read_delim("CTmin/gwas.all.assoc", delim = " ")
+gwas_hot_all <- read_delim("CTmax/gwas.all.assoc", delim = " ")
+
+ggplot(gwas_cold_all %>%
+    mutate(MAF_bins = cut_width(MAF, width = 0.05, boundary = 0)) %>%
+      filter(AvgMixedPval < 10^-2)) +
+  geom_boxplot(aes(x = MAF_bins, y = -log10(AvgMixedPval))) +
+  theme_classic()
+
+ggplot(gwas_cold_all %>%
+    mutate(MAF_bins = cut_width(MAF, width = 0.05, boundary = 0))) +
+  geom_density(aes(x = -log10(AvgMixedPval), color = MAF_bins)) +
+  theme_classic()
+
+ggplot(gwas_cold_all %>%
+    mutate(MAF_bins = cut_width(MAF, width = 0.05, boundary = 0))) +
+  geom_histogram(aes(x = -log10(AvgMixedPval), fill = MAF_bins), position = "dodge") +
+  scale_fill_brewer(palette = 3) +
+  theme_classic()
+
+
 ```
