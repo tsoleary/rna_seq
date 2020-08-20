@@ -74,7 +74,7 @@ res_trop_36 <- readRDS("trop_36_25_results.rds")
 # GTF ----- nonsense!
 setwd("~/Downloads")
 
-x <- read_delim("dmel-all-r6.32.gtf", 
+x <- read_delim("dmel-all-r6.34.gtf", 
                 delim = "\t", 
                 col_names = c("chr", "source", "feature", "start", 
                               "end", "score", "strand", "frame", "attributes"))
@@ -97,23 +97,24 @@ x <- x %>%
   filter(transcript_id != "")
 
 
-sum(res_25$gene %in% x$transcript_id)
 
+trans_vec <- unique(rownames(res_25)[res_25$padj < 0.05])[-1]
 
 # messing with this not done --
 
-transcript_to_gene <- function (dat, gtf_dat){
+transcript_to_gene <- function (trans_vec, gtf_dat){
   gtf_dat <- gtf_dat %>%
   distinct(transcript_id, .keep_all = TRUE) %>%
     filter(transcript_id != "")
   
-  dat$transcript_symbol <- dat$gene
+  dat <- tibble::enframe(trans_vec, name = NULL, value = "transcript_id")
+  dat$gene <- dat$transcript_id
   
   for (i in 1:nrow(dat)){
-    temp <- which(dat$transcript_symbol[i] == gtf_dat$transcript_id, TRUE)
-    dat$gene <- gsub(dat$transcript_symbol[i], 
-                     gtf_dat$transcript_id[temp], 
-                     dat$transcript_symbol)
+    temp <- which(dat$transcript_id[i] == gtf_dat$transcript_id, TRUE)
+    dat$gene <- gsub(dat$transcript_id[i], 
+                     gtf_dat$gene_symbol[temp], 
+                     dat$gene)
   }
   
   return(dat$gene)
