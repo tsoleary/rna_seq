@@ -15,3 +15,4 @@ cahan/figures/*
 *.log
 emily/results/*
 emily/counts/Dm_countsMatrix.txt
+por/*.csv
