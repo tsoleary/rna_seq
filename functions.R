@@ -1146,3 +1146,115 @@ match_p_lfc <- function(dat, dat_ct, dat_deg){
 }
 
 
+
+# ------------------------------------------------------------------------------
+# Function: read_clean_gtf
+# Description: Read in and clean gtf file
+# Inputs: gtf_file
+# Outputs: gtf cleaned data frame
+
+read_clean_gtf <- function(file) {
+  # Read in the gtf
+  x <- read_delim(file, 
+                  delim = "\t", 
+                  col_names = c("chr", "source", "feature", "start", "end", 
+                                "score", "strand", "frame", "attributes"))
+  
+  # Clean up and separate the attributes file
+  x$attributes <- str_replace_all(x$attributes, "\"", "")
+  x <- x %>%
+    separate(attributes, 
+             sep = ";", 
+             into = c("gene_id", "gene_symbol", "transcript_id", 
+                      "transcript_symbol", "notes", "extra", "extraextra"))
+  # remove the name and the awkward space before
+  x$gene_id <- str_replace_all(x$gene_id, 
+                               "gene_id ", "")
+  x$gene_symbol <- str_replace_all(x$gene_symbol, 
+                                   " gene_symbol ", "")
+  x$transcript_id <- str_replace_all(x$transcript_id, 
+                                     " transcript_id ", "")
+  x$transcript_symbol <- str_replace_all(x$transcript_symbol, 
+                                         " transcript_symbol ", "")
+  
+  return(x)
+} 
+# End function -----------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
+# Function: transcript_to_gene
+# Description: convert a vector of transcripts to their gene symbols
+# Inputs: character vector of transcripts and gtf data frame
+# Outputs: gene
+
+require(tidyverse)
+
+transcript_to_gene <- function (trans_vec, gtf_dat){
+  gtf_dat <- gtf_dat %>%
+    distinct(transcript_id, .keep_all = TRUE) %>%
+    filter(transcript_id != "")
+  dat <- tibble::enframe(trans_vec, name = NULL, value = "transcript_id")
+  dat$gene <- dat$transcript_id
+  for (i in 1:nrow(dat)){
+    print(i)
+    temp <- which(dat$transcript_id[i] == gtf_dat$transcript_id, TRUE)
+    if (length(temp) == 0) {
+      gene_replace <- NA
+    } else {
+      gene_replace <- gtf_dat$gene_symbol[temp]
+    }
+    dat$gene <- gsub(dat$transcript_id[i],
+                     gene_replace,
+                     dat$gene)
+  }
+  dat_wo_na <- dat$gene[which(!is.na(dat$gene))]
+  return(dat_wo_na)
+}
+# End function -----------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
+# Function: gene_assoc_window
+# Description: Annotate with all genes associated with the specific window
+# Inputs: fst data frame and gtf data frame
+# Outputs: fst data frame with new gene_assoc column
+
+require(tidyverse)
+
+gene_assoc_window <- function(dat, gtf_dat) {
+  
+  dat$gene_assoc <- vector(mode = "character", length = nrow(dat))
+  
+  gtf_dat <- gtf_dat %>%
+    filter(feature == "gene")
+  
+  
+  for (i in 1:nrow(dat)){
+    print(i)
+    
+    # Find all genes that overlap the window in anyway
+    temp <- c( 
+      which(dat$CHR[i] == gtf_dat$chr & 
+              gtf_dat$end > dat$start[i] & 
+              gtf_dat$end < dat$end[i], TRUE),
+      which(dat$CHR[i] == gtf_dat$chr & 
+              gtf_dat$start > dat$start[i] & 
+              gtf_dat$start < dat$end[i], TRUE),
+      which(dat$CHR[i] == gtf_dat$chr & 
+              gtf_dat$start < dat$start[i] & 
+              gtf_dat$end > dat$end[i], TRUE)
+    )
+    
+    # Paste all gene symbols together with ; between. NA if there is none
+    if (is_empty(temp)){
+      dat$gene_assoc[i] <- NA
+    } else{
+      dat$gene_assoc[i] <- paste(unique(gtf_dat$gene_symbol[temp]), 
+                                 collapse = ";")
+    }
+    
+  }
+  return(dat)
+} 
+# End function -----------------------------------------------------------------
