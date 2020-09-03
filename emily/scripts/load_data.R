@@ -71,51 +71,72 @@ res_trop_36 <- readRDS("trop_36_25_results.rds")
   
 
 
-# GTF ----- nonsense!
-setwd("~/Downloads")
+# GTF downloaded from this website
+# ftp://ftp.flybase.net/releases/FB2020_03/dmel_r6.34/gtf/
 
-x <- read_delim("dmel-all-r6.34.gtf", 
-                delim = "\t", 
-                col_names = c("chr", "source", "feature", "start", 
-                              "end", "score", "strand", "frame", "attributes"))
+# ------------------------------------------------------------------------------
+# Function: read_clean_gtf
+# Description: Read in and clean gtf file
+# Inputs: gtf_file
+# Outputs: gtf cleaned data frame
 
-x$attributes <- str_replace_all(x$attributes, "\"", "")
+read_clean_gtf <- function(file) {
+  # Read in the gtf
+  x <- read_delim(file, 
+                  delim = "\t", 
+                  col_names = c("chr", "source", "feature", "start", "end", 
+                                "score", "strand", "frame", "attributes"))
+  
+  # Clean up and separate the attributes file
+  x$attributes <- str_replace_all(x$attributes, "\"", "")
+  x <- x %>%
+    separate(attributes, 
+             sep = ";", 
+             into = c("gene_id", "gene_symbol", "transcript_id", 
+                      "transcript_symbol", "notes", "extra", "extraextra"))
+  # remove the name and the awkward space before
+  x$gene_id <- str_replace_all(x$gene_id, 
+                               "gene_id ", "")
+  x$gene_symbol <- str_replace_all(x$gene_symbol, 
+                                   " gene_symbol ", "")
+  x$transcript_id <- str_replace_all(x$transcript_id, 
+                                     " transcript_id ", "")
+  x$transcript_symbol <- str_replace_all(x$transcript_symbol, 
+                                         " transcript_symbol ", "")
+  
+  return(x)
+} 
+# End function -----------------------------------------------------------------
 
-x <- x %>%
-  separate(attributes, 
-           sep = ";", 
-           into = c("gene_id", "gene_symbol", "transcript_id", 
-                    "transcript_symbol", "notes", "extra", "extraextra"))
-x$gene_id <- str_replace_all(x$gene_id, "gene_id ", "")
-x$gene_symbol <- str_replace_all(x$gene_symbol, " gene_symbol ", "")
-x$transcript_id <- str_replace_all(x$transcript_id, " transcript_id ", "")
-x$transcript_symbol <- str_replace_all(x$transcript_symbol, " transcript_symbol ", "")
 
+# ------------------------------------------------------------------------------
+# Function: transcript_to_gene
+# Description: convert a vector of transcripts to their gene symbols
+# Inputs: character vector of transcripts and gtf data frame
+# Outputs: gene
 
-x <- x %>%
-  distinct(transcript_id, .keep_all = TRUE) %>%
-  filter(transcript_id != "")
-
-
-
-trans_vec <- unique(rownames(res_25)[res_25$padj < 0.05])[-1]
-
-# messing with this not done --
+require(tidyverse)
 
 transcript_to_gene <- function (trans_vec, gtf_dat){
   gtf_dat <- gtf_dat %>%
-  distinct(transcript_id, .keep_all = TRUE) %>%
+    distinct(transcript_id, .keep_all = TRUE) %>%
     filter(transcript_id != "")
-  
   dat <- tibble::enframe(trans_vec, name = NULL, value = "transcript_id")
   dat$gene <- dat$transcript_id
-  
   for (i in 1:nrow(dat)){
+    print(i)
     temp <- which(dat$transcript_id[i] == gtf_dat$transcript_id, TRUE)
-    dat$gene <- gsub(dat$transcript_id[i], 
-                     gtf_dat$gene_symbol[temp], 
+    if (length(temp) == 0) {
+      gene_replace <- NA
+    } else {
+      gene_replace <- gtf_dat$gene_symbol[temp]
+    }
+    dat$gene <- gsub(dat$transcript_id[i],
+                     gene_replace,
                      dat$gene)
   }
-  
-  return(dat$gene)
+  dat_wo_na <- dat$gene[which(!is.na(dat$gene))]
+  return(dat_wo_na)
 }
+# End function -----------------------------------------------------------------
+
