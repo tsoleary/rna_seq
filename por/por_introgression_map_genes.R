@@ -23,11 +23,11 @@ fst_sk_snp <- read_csv(here::here("por/fst_SKxVT8_tidy.csv"))
 
 # Download and save GTF from flybase ---
 # ftp://ftp.flybase.net/releases/FB2020_03/dmel_r6.34/gtf/
-x <- read_clean_gtf("~/Downloads/dmel-all-r6.34.gtf")
+gtf_df <- read_clean_gtf("~/Downloads/dmel-all-r6.34.gtf")
 
 # Annotate 500 bp windows with overlapping genes
-fst_ch <- gene_assoc_window(fst_ch, x)
-fst_sk <- gene_assoc_window(fst_sk, x)
+fst_ch <- gene_assoc_window(fst_ch, gtf_df)
+fst_sk <- gene_assoc_window(fst_sk, gtf_df)
 
 write_csv(fst_ch, here::here("por/fst_CHxVT10_500_tidy_gene_annot.csv"))
 write_csv(fst_sk, here::here("por/fst_SKxVT8_500_tidy_gene_annot.csv"))
@@ -49,8 +49,12 @@ write_csv(fst_ch_snp, here::here("por/fst_CHxVT10_tidy_gene_annot.csv"))
 write_csv(fst_sk_snp, here::here("por/fst_SKxVT8_tidy_gene_annot.csv"))
 
 
-# Pick outliers based on a specific comparison
+# Pick outliers based on a specific comparison for sliding window Fst tables
 fst_ch_top <- fst_ch %>%
+  filter(CHvCHF > quantile(CHvCHF, 0.95)) %>%
+  filter(!is.na(gene_assoc))
+
+fst_sk_top <- fst_sk %>%
   filter(CHvCHF > quantile(CHvCHF, 0.95)) %>%
   filter(!is.na(gene_assoc))
   
@@ -70,6 +74,7 @@ fst_ch_top <- fst_ch_top %>%
 
 # Save the file as a tab delim .txt file for webgesault
 write_delim(fst_ch_top, 
-            here::here("por/fst_ch_genes_top_5_percent.txt"), 
-            delim = "/t")
+            here::here("por/fst_ch_genes_CHvCHF_top_5_percent.txt"), 
+            delim = "/t",
+            col_names = FALSE)
 
