@@ -1258,3 +1258,42 @@ gene_assoc_window <- function(dat, gtf_dat) {
   return(dat)
 } 
 # End function -----------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
+# Function: gene_assoc_snp
+# Description: Annotate with all genes associated with the snp
+# Inputs: fst data frame and gtf data frame
+# Outputs: fst data frame with new gene_assoc column
+
+require(tidyverse)
+
+gene_assoc_snp <- function(dat, gtf_dat) {
+  
+  dat$gene_assoc <- vector(mode = "character", length = nrow(dat))
+  
+  gtf_dat <- gtf_dat %>%
+    filter(feature == "gene")
+  
+  for (i in 1:nrow(dat)){
+    print(i)
+    
+    # Find all genes that overlap the window in anyway
+    temp <- c( 
+      which(dat$CHR[i] == gtf_dat$chr & 
+              gtf_dat$start < dat$BP[i] & 
+              gtf_dat$end > dat$BP[i], TRUE)
+    )
+    
+    # Paste all gene symbols together with ; between. NA if there is none
+    if (is_empty(temp)){
+      dat$gene_assoc[i] <- NA
+    } else{
+      dat$gene_assoc[i] <- paste(unique(gtf_dat$gene_symbol[temp]), 
+                                 collapse = ";")
+    }
+    
+  }
+  return(dat)
+} 
+# End function -----------------------------------------------------------------
