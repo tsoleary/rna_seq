@@ -36,6 +36,12 @@ write_csv(fst_sk, here::here("por/fst_SKxVT8_500_tidy_gene_annot.csv"))
 
 
 # Annotate snps with associated genes
+# Probably should filter the top snps before doing the gene annotation because 
+# otherwise it would take far too long.
+fst_ch_snp_top <- fst_ch_snp %>%
+  filter(CHvCHF > quantile(CHvCHF, 0.95)) %>%
+  filter(!is.na(gene_assoc))
+
 fst_ch_snp <- gene_assoc_window(fst_ch_snp, x)
 fst_sk_snp <- gene_assoc_window(fst_sk_snp, x)
 
@@ -44,11 +50,8 @@ write_csv(fst_sk_snp, here::here("por/fst_SKxVT8_tidy_gene_annot.csv"))
 
 
 # Pick outliers based on a specific comparison
-# Top fraction of outliers that you want to call significant (e.g. top 0.05)
-top_per <- 0.05
-
 fst_ch_top <- fst_ch %>%
-  filter(CHvCHF > quantile(CHvCHF, 1 - top_per)) %>%
+  filter(CHvCHF > quantile(CHvCHF, 0.95)) %>%
   filter(!is.na(gene_assoc))
   
 
@@ -65,7 +68,7 @@ fst_ch_top <- fst_ch_top %>%
                values_drop_na = TRUE) %>% 
   distinct(gene)
 
-# Save the 
+# Save the file as a tab delim .txt file for webgesault
 write_delim(fst_ch_top, 
             here::here("por/fst_ch_genes_top_5_percent.txt"), 
             delim = "/t")
