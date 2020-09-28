@@ -1213,6 +1213,36 @@ transcript_to_gene <- function (trans_vec, gtf_dat){
 }
 # End function -----------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+# Function: transcript_to_gene_df
+# Description: convert a vector of transcripts to their gene symbols
+# Inputs: character vector of transcripts and gtf data frame
+# Outputs: gene
+
+require(tidyverse)
+
+transcript_to_gene_df <- function (dat, gtf_dat){
+  gtf_dat <- gtf_dat %>%
+    distinct(transcript_id, .keep_all = TRUE) %>%
+    filter(transcript_id != "")
+
+  dat$gene <- dat$transcript_id
+  for (i in 1:nrow(dat)){
+    print(i)
+    temp <- which(dat$transcript_id[i] == gtf_dat$transcript_id, TRUE)
+    if (length(temp) == 0) {
+      gene_replace <- NA
+    } else {
+      gene_replace <- gtf_dat$gene_symbol[temp]
+    }
+    dat$gene <- gsub(dat$transcript_id[i],
+                     gene_replace,
+                     dat$gene)
+  }
+  return(dat)
+}
+# End function -----------------------------------------------------------------
+
 
 # ------------------------------------------------------------------------------
 # Function: gene_assoc_window
