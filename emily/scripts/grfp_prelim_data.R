@@ -10,12 +10,13 @@ require(DESeq2)
 source(here::here("functions.R"))
 
 # Load data
-lt_df <- read_delim("~/Downloads/lockwood_2018_LT50_data.txt", 
+lt_df <- read_delim(here::here("emily/scripts/lockwood_2018_LT50_data.txt"), 
                     delim = "\t")
 
 # LT50 Phenotype data
 
 # Figure A
+set.seed(2)
 p1 <- lt_df %>%
   filter(Region == "Tropical" | StateCountry == "Vermont_USA") %>%
   ggplot(aes(x = Region, y = Embryo_LT50, fill = Region)) +
@@ -23,13 +24,16 @@ p1 <- lt_df %>%
   geom_jitter(color = "black", fill = "grey50",
               shape = 21,
               size = 3,
+              alpha = 0.85,
               position = position_jitter(0.1)) +
-  scale_fill_manual(values = c("dodgerblue", "firebrick3")) +
+  scale_fill_manual(values = c("#DDCC77", "#CC6677")) +
   ylab(expression("Embryo LT"[50]*" (°C)")) +
   labs(title = "Embryonic\nthermal tolerance") +
   theme_classic(base_size = 18) +
   theme(legend.position = "none",
-        axis.title.x = element_blank())
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(colour="black"),
+        axis.text.y = element_text(colour = "black"))
 
 # Figure B
 ddslrtreg <- readRDS(here::here("emily/counts/ddslrtreg.rds"))
@@ -66,9 +70,9 @@ p2 <- ggplot(d, aes(x = region,
        y = "Normalized\ntrancript abundance") +
   theme_classic(base_size = 18) +
   #ylim(c(0, 800)) +
-  theme(legend.position = "none",
-        axis.title.x = element_blank()) +
   theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"),
         #legend.background = element_rect(linetype = 1, color = 1),
         legend.position = c(.3, .85),
         legend.key.height = unit(0.7, "line"),
@@ -78,9 +82,11 @@ p2 <- ggplot(d, aes(x = region,
 
 cowplot::plot_grid(p1, p2, 
                    rel_widths = c(1.5, 2), 
-                   labels = "AUTO")
+                   labels = "AUTO",
+                   label_size = 20,
+                   label_x = 0.1)
 
-ggsave(here::here("emily/scripts/grfp_fig_bs_18.png"), width = 8, height = 3.5)
+ggsave(here::here("emily/scripts/grfp_fig_bs_18.tiff"), width = 8, height = 3.5)
 
 
 # Por's informaiton
