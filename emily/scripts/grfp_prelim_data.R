@@ -27,7 +27,7 @@ p1 <- lt_df %>%
               alpha = 0.85,
               position = position_jitter(0.1)) +
   scale_fill_manual(values = c("#DDCC77", "#CC6677")) +
-  ylab(expression("Embryo LT"[50]*" (°C)")) +
+  ylab(expression("LT"[50]*" (°C)")) +
   labs(title = "Embryonic\nthermal tolerance") +
   theme_classic(base_size = 18) +
   theme(legend.position = "none",
@@ -62,12 +62,12 @@ p2 <- ggplot(d, aes(x = region,
   #             position = position_jitter(0.1)) +
   scale_fill_manual(name = "Temperature",
                      labels = c("25°C", "32°C", "34°C", "36°C"),
-                     values = RColorBrewer::brewer.pal(n = 4, name = "Paired")) +
+                     values = c("#FEE0D2", "#FC9272", "#EF3B2C", "#99000D")) +
   # scale_fill_manual(values = c("dodgerblue", "firebrick3")) +
   scale_x_discrete(limits = c("temperate", "tropical"),
                    labels = c("Temperate", "Tropical")) +
   labs(title = expression(paste(italic("Ucp4A"), " expression")), 
-       y = "Normalized\ntrancript abundance") +
+       y = "Normalized\ntranscript abundance") +
   theme_classic(base_size = 18) +
   #ylim(c(0, 800)) +
   theme(axis.title.x = element_blank(),
