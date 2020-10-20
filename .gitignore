@@ -18,3 +18,4 @@ emily/counts/Dm_countsMatrix.txt
 por/*.csv
 por/*.txt
 emily/counts/*.rds
+*.gtf
