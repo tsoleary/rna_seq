@@ -1266,14 +1266,14 @@ gene_assoc_window <- function(dat, gtf_dat) {
     # Find all genes that overlap the window in anyway
     temp <- c( 
       which(dat$CHR[i] == gtf_dat$chr & 
-              gtf_dat$end > dat$start[i] & 
-              gtf_dat$end < dat$end[i], TRUE),
+              gtf_dat$end >= dat$start[i] & 
+              gtf_dat$end <= dat$end[i], TRUE),
       which(dat$CHR[i] == gtf_dat$chr & 
-              gtf_dat$start > dat$start[i] & 
-              gtf_dat$start < dat$end[i], TRUE),
+              gtf_dat$start >= dat$start[i] & 
+              gtf_dat$start <= dat$end[i], TRUE),
       which(dat$CHR[i] == gtf_dat$chr & 
-              gtf_dat$start < dat$start[i] & 
-              gtf_dat$end > dat$end[i], TRUE)
+              gtf_dat$start <= dat$start[i] & 
+              gtf_dat$end >= dat$end[i], TRUE)
     )
     
     # Paste all gene symbols together with ; between. NA if there is none
@@ -1300,30 +1300,173 @@ require(tidyverse)
 
 gene_assoc_snp <- function(dat, gtf_dat) {
   
+  # Initialize a column to store the gene associations
   dat$gene_assoc <- vector(mode = "character", length = nrow(dat))
   
-  gtf_dat <- gtf_dat %>%
-    filter(feature == "gene")
+  # Loop through each row of the dataframe individually
+  pb <- progress::progress_bar$new(total = nrow(dat))
   
   for (i in 1:nrow(dat)){
-    print(i)
+    # Print the row just to watch the progress
+    pb$tick()
     
     # Find all genes that overlap the window in anyway
     temp <- c( 
-      which(dat$CHR[i] == gtf_dat$chr & 
-              gtf_dat$start < dat$BP[i] & 
-              gtf_dat$end > dat$BP[i], TRUE)
+      which(dat$CHR[i] == gtf_dat$chr &  
+              gtf_dat$start <= dat$BP[i] & 
+              gtf_dat$end >= dat$BP[i], TRUE)
     )
     
     # Paste all gene symbols together with ; between. NA if there is none
     if (is_empty(temp)){
       dat$gene_assoc[i] <- NA
     } else{
-      dat$gene_assoc[i] <- paste(unique(gtf_dat$gene_symbol[temp]), 
-                                 collapse = ";")
+      x <- gtf_dat[temp, ]
+      
+      # Split the df based on gene_symbol
+      y <- x %>% 
+        group_split(gene_symbol)
+      
+      # Initialize an empty object to store the string
+      genes_feature_str <- NULL
+      
+      # Loop through each gene
+      for (j in length(y)){
+        # Get the gene and feature information. Features separated by a comma
+        gene_str <- unique(y[[j]]$gene_symbol)
+        feature_str <- paste(unique(y[[j]]$feature), 
+                             collapse = ",") # maybe add something to get the heirachy of features later
+        # Paste the gene symbol to the associated features separated by a semicolon
+        gene_feature_str <- paste(gene_str, feature_str, sep = ";")
+        
+        # Paste the genes together separated by a 
+        genes_feature_str <- c(genes_feature_str, gene_feature_str)
+      }
+      
+      dat$gene_assoc[i] <- paste(genes_feature_str, 
+                                 collapse = "|")
+      
     }
     
   }
   return(dat)
 } 
 # End function -----------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# Function: get_feature_info
+# Description: description
+# Inputs: input_description
+# Outputs: output_description
+
+require(tidyverse)
+
+get_feature_info <- function(chr, bp){
+  
+  # Find the rows that are within the start - end range of each feature
+  temp <- c( 
+    which(chr == gtf_dat$chr &  
+            gtf_dat$start <= bp & 
+            gtf_dat$end >= bp, TRUE)
+  )
+  
+  # Paste all gene symbols together with ; between. NA if there is none
+  if (is_empty(temp)){
+    features <- NA
+  } else{
+    x <- gtf_dat[temp, ]
+    
+    # Split the df based on gene_symbol
+    y <- x %>% 
+      group_split(gene_symbol)
+    
+    # Initialize an empty object to store the string
+    genes_feature_str <- NULL
+    
+    # Loop through each gene
+    for (j in length(y)){
+      # Get the gene and feature information. Features separated by a comma
+      gene_str <- unique(y[[j]]$gene_symbol)
+      feature_str <- paste(unique(y[[j]]$feature), 
+                           collapse = ",") # maybe add something to get the heirachy of features later
+      # Paste the gene symbol to the associated features separated by a semicolon
+      gene_feature_str <- paste(gene_str, feature_str, sep = ";")
+      
+      # Paste the genes together separated by a 
+      genes_feature_str <- c(genes_feature_str, gene_feature_str)
+      
+    }
+    
+    
+    features <- paste(genes_feature_str, collapse = "|")
+    
+  }
+  return(features)
+}
+# End function -----------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
+# Function: gene_assoc_snp_pmap
+# Description: Annotate with all genes associated with the snp
+# Inputs: fst data frame and gtf data frame
+# Outputs: fst data frame with new gene_assoc column
+
+require(tidyverse)
+
+gene_assoc_snp_pmap <- function(dat, gtf_dat) {
+    
+  dat$gene_assoc <- pmap_chr(list(dat$CHR, dat$BP), get_feature_info)
+
+  return(dat)
+} 
+# End function -----------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
+# Function: gtf_up_down_stream_annot
+# Description: description
+# Inputs: input_description
+# Outputs: output_description
+
+gtf_up_down_stream_annot <- function(gtf_df, bp_up = 1000, bp_down = bp_up) {
+
+  ####WATCH OUT FOR THE STRANDEDNESS!!! need to fix this
+  
+  gtf_up_pos <- gtf_df %>%
+    filter(feature == "gene", strand == "+") %>%
+    mutate(end = start - 1,
+           start = start - bp_up - 1,
+           feature = "upstream")
+  
+  gtf_down_pos <- gtf_df %>%
+    filter(feature == "gene", strand == "+") %>%
+    mutate(start = end + 1,
+           end = end + bp_down + 1,
+           feature = "downstream")
+  
+  gtf_up_neg <- gtf_df %>%
+    filter(feature == "gene", strand == "-") %>%
+    mutate(end = start - 1,
+           start = start - bp_down - 1,
+           feature = "downstream")
+  
+  gtf_down_neg <- gtf_df %>%
+    filter(feature == "gene", strand == "-") %>%
+    mutate(start = end + 1,
+           end = end + bp_up + 1,
+           feature = "upstream")
+  
+  gtf_df <- bind_rows(gtf_down_pos, 
+                      gtf_up_pos,
+                      gtf_down_neg, 
+                      gtf_up_neg,
+                      gtf_df)
+  
+  return(gtf_df)
+} 
+
+# End function -----------------------------------------------------------------
+
+
+
