@@ -1430,8 +1430,6 @@ gene_assoc_snp_pmap <- function(dat, gtf_dat) {
 # Outputs: output_description
 
 gtf_up_down_stream_annot <- function(gtf_df, bp_up = 1000, bp_down = bp_up) {
-
-  ####WATCH OUT FOR THE STRANDEDNESS!!! need to fix this
   
   gtf_up_pos <- gtf_df %>%
     filter(feature == "gene", strand == "+") %>%
@@ -1461,7 +1459,8 @@ gtf_up_down_stream_annot <- function(gtf_df, bp_up = 1000, bp_down = bp_up) {
                       gtf_up_pos,
                       gtf_down_neg, 
                       gtf_up_neg,
-                      gtf_df)
+                      gtf_df) %>% 
+    arrange(desc(chr), start)
   
   return(gtf_df)
 } 
