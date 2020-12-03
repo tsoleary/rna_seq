@@ -62,18 +62,38 @@ df_to_mat <- function(dat) {
 # End function -----------------------------------------------------------------
 
 
+
+
 # ------------------------------------------------------------------------------
 # Function: run_fisher
 # Description: run fisher exact test on a data.frame 
 # Inputs: data.frame with a geno column
 # Outputs: matrix with geno as the rownames
 
-run_fisher <- function(dat) {
+run_fisher_exact <- function(dat) {
   p_val <- tryCatch(fisher.test(df_to_mat(dat), 
-                       alternative = "two.sided")$p.value, 
+                                alternative = "two.sided", 
+                                workspace = 2000000)$p.value, 
                     error = function(err) NA)
   
   return(p_val)
 }
 # End function -----------------------------------------------------------------
 
+
+# ------------------------------------------------------------------------------
+# Function: run_fisher_MC
+# Description: run fisher exact test on a data.frame 
+# Inputs: data.frame with a geno column
+# Outputs: matrix with geno as the rownames
+
+run_fisher_MC <- function(dat, reps = 1000000) {
+  p_val <- tryCatch(fisher.test(df_to_mat(dat), 
+                                alternative = "two.sided", 
+                                simulate.p.value = TRUE,
+                                B = reps)$p.value, 
+                    error = function(err) NA)
+  
+  return(p_val)
+}
+# End function -----------------------------------------------------------------

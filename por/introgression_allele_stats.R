@@ -63,15 +63,47 @@ df$allele_rec_cross_pooled_df <- map(df$allele_count_df,
 # Each individually
 df$fish_pval_all <- map_dbl(df$allele_count_df, 
                             run_fisher)
-# There are a lot of errors
-sum(is.na(df$fish_pval_all))/length(df$fish_pval_all)
-# Yikes! That is a bunch of NA's! ~ 70% end in error!
-# The others comparisons below don't have any errors!
+
+df$fish_pval_all <- map_dbl(df$allele_count_df, 
+                            run_fisher_MC)
 
 
-for (i in 1:nrow(df)){
-  df$fisher_for[i] <- run_fisher(df$allele_count_df[[i]])
+for (i in 1:40){
+  print(i)
+  tictoc::tic()
+  df$fisher_for_exact[i] <- run_fisher_exact(df$allele_count_df[[i]])
+  tictoc::toc()
+  tictoc::tic()
+  df$fisher_for_MC_10000[i] <- run_fisher_MC(df$allele_count_df[[i]], 
+                                         reps = 10000)
+  tictoc::toc()
+  tictoc::tic()
+  df$fisher_for_MC_100000[i] <- run_fisher_MC(df$allele_count_df[[i]], 
+                                         reps = 100000)
+  tictoc::toc()
+  tictoc::tic()
+  df$fisher_for_MC_1000000[i] <- run_fisher_MC(df$allele_count_df[[i]], 
+                                         reps = 1000000)
+  tictoc::toc()
+  tictoc::tic()
+  df$fisher_for_MC_10000000[i] <- run_fisher_MC(df$allele_count_df[[i]], 
+                                               reps = 10000000)
+  tictoc::toc()
 }
+
+x <- df[1:40, ] %>% 
+  select(chr, pos, contains("for_exact"), 21:24) %>%
+  pivot_longer(contains("for_"), 
+               names_to = "test", 
+               values_to = "pval") %>%
+  group_by(chr, pos) %>%
+  mutate(delta_pval = pval - pval[test == "fisher_for_exact"]) %>%
+  ungroup(chr, pos) %>%
+  group_by(test) %>%
+  summarize(sum_abs_delta_pval = sum(abs(delta_pval), na.rm = TRUE)) %>%
+  mutate(pval_ind_off = sum_abs_delta_pval/40)
+
+
 
 # Pooled: hybrid v parental
 df$fish_pval_hy_par <- map_dbl(df$allele_pooled_df, 
