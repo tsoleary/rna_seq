@@ -13,7 +13,7 @@
 
 chunkify <- function(df, r_chunk = 1000) {
   
-  chunk  <- rep(1:ceiling(nrow(df)/r_chunk), each = r_chunk)[1:n]
+  chunk  <- rep(1:ceiling(nrow(df)/r_chunk), each = r_chunk)[1:nrow(df)]
   
   return(split(df, chunk))
 } 
