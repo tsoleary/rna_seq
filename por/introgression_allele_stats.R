@@ -38,12 +38,14 @@ df <- bind_rows(df)
 
 # Adjust the p-values with Benjamini-Hochberg correction -----------------------
 
+df <- df %>%
+        filter(!is.na(arc_freq_ttest_pval))
 
-df$fish_pval_pw_comb_padj <- p.adjust(df$fish_pval_pw_comb, 
-                                       method = "BH", 
-                                       n = nrow(df))
+df$arc_freq_ttest_padj <- p.adjust(df$arc_freq_ttest_pval, 
+                                   method = "BH", 
+                                   n = nrow(df))
 
 
 
 # Save final output as a rds file -----
-saveRDS(df, here::here("por/introgression_25JAN2021.rds"))
+saveRDS(df, here::here("por/introgression_SK_VT8_25JAN2021_na_rm.rds"))
