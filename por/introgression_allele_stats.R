@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # Por's Introgression data - Stats on allele freqs bw replicates and VT
-# December 07, 2020
+# January 25, 2020
 # TS O'Leary
 # ------------------------------------------------------------------------------
 
@@ -22,35 +22,12 @@ for (i in 1:length(df)){
   
   # Tidy the data -----
   df[[i]] <- tidy_allele_df(df[[i]])
-  
-  
-  # Pooling allele counts across groups -----
-  
-  # Create another nested data.frame from the allele counts that pools 
-  # all replicates together to be compared to the VT background
-  df[[i]]$allele_pooled_df <- map(df[[i]]$allele_count_df, 
-                                  pool_alleles_all)
-  
-  # Create another nested data.frame from the allele counts that pools 
-  # all replicates of the specific reciprocal cross -- ditches the VT parental
-  df[[i]]$allele_rec_cross_pooled_df <- map(df[[i]]$allele_count_df, 
-                                            pool_alleles_rec_cross)
-  
-  
-  # Run the statistical tests ----
-  
-  # Individual pairwise Fisher tests sum-of-logs combined p-value
-  df[[i]]$fish_pval_pw_comb <- map_dbl(df[[i]]$allele_count_df, 
-                                       run_fisher_pw_comb)
-  
-  # Pooled: hybrid v parental
-  df[[i]]$fish_pval_hy_par <- map_dbl(df[[i]]$allele_pooled_df, 
-                                      run_fisher_exact)
-  
-  # Pooled: reciprocal cross (e.g. SKF v VT8F)
-  df[[i]]$fish_pval_rcross <- map_dbl(df[[i]]$allele_rec_cross_pooled_df, 
-                                      run_fisher_exact)
 
+  # Calculate the p-value for all the One sample t-tests on arcsine transformed 
+  # allele frequencies
+  df[[i]]$arc_freq_ttest_pval <- map_dbl(df[[i]]$allele_count_df, 
+                                         arc_freq_ttest)
+  
   tictoc::toc()
 }
 
@@ -66,14 +43,7 @@ df$fish_pval_pw_comb_padj <- p.adjust(df$fish_pval_pw_comb,
                                        method = "BH", 
                                        n = nrow(df))
 
-df$fish_pval_hy_par_padj <- p.adjust(df$fish_pval_hy_par, 
-                                       method = "BH", 
-                                       n = nrow(df))
-
-df$fish_pval_rcross_padj <- p.adjust(df$fish_pval_rcross, 
-                                       method = "BH", 
-                                       n = nrow(df))
 
 
 # Save final output as a rds file -----
-saveRDS(df, here::here("por/introgression_df_fisher_whole_genome.rds"))
+saveRDS(df, here::here("por/introgression_25JAN2021.rds"))

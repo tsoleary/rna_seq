@@ -184,3 +184,36 @@ run_fisher_pw_comb <- function(dat, background = "VT8") {
   return(p_comb)
 } 
 # End function -----------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------------------------
+# Function: arc_freq_ttest
+# Description: One sample t-test on arcsine transformed allele frequencies
+# Inputs: data.frame with geno column with the maj and min alleles, 
+#         and a background to compare it to
+# Outputs: p-value
+
+arc_freq_ttest <- function(dat, background = "VT8") {
+  # Calculate the major allele frequency
+  dat$freqs <- dat$maj / (dat$maj + dat$min)
+  
+  # Arcsine transform the major allele frequency
+  dat$arc_freqs <- 2*asin(sqrt(dat$freqs))
+  
+  # Get the rows of the data frame that match and don't match the background 
+  # arcsine transformed allele frequency that you are comparing them to
+  r_background <- which(dat$geno == background)
+  r_other <- which(dat$geno != background)
+  
+  # Run the statistical tests ----
+  pval <- tryCatch(t.test(dat$arc_freqs[r_other], 
+                          mu = dat$arc_freqs[r_background], 
+                          alternative = "two.sided")$p.value,
+                   error = function(err) NA)
+  
+  return(pval)
+} 
+
+
+# End function -----------------------------------------------------------------
