@@ -214,5 +214,28 @@ z <- df_sig %>%
   filter(n >= 2) %>%
   select(gene, heat) %>%
   group_by(gene) %>%
-  summarise(groups = paste(sort(unique(heat)), collapse = ", ")) 
+  summarise(groups = paste(sort(unique(heat)), collapse = ",")) %>%
+  arrange(groups)
+
+z_shr <- z %>%
+  filter(str_detect(groups, "36,adult") == TRUE)
+
+uni_36 <- df_36 %>%
+  filter(padj < 0.05) %>%
+  filter(log2FoldChange > 0) %>%
+  filter(!(gene %in% z_shr$gene))
+
+uni_adult <- df_f %>%
+  filter(padj < 0.05) %>%
+  filter(log2FoldChange > 0) %>%
+  filter(!(gene %in% z_shr$gene))
+
+write_tsv(as.data.frame(unique(z_shr$gene)),
+          here::here("emily/results/shared_embryo_36_adult_up_genes.txt"))
+
+write_tsv(as.data.frame(unique(uni_36$gene)),
+          here::here("emily/results/unique_embryo_36_up_genes.txt"))
+
+write_tsv(as.data.frame(unique(uni_adult$gene)),
+          here::here("emily/results/unique_adult_up_genes.txt"))
 ```
