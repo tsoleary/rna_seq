@@ -1,5 +1,5 @@
 ---
-title: "Comparing the Heat Shock Repsonse in embryos and adults?"
+title: "Comparing the transcriptional response to Heat Shock in embryos and adults"
 author: "Thomas O'Leary"
 output:
   rmarkdown::html_document:
