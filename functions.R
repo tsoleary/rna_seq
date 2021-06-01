@@ -1209,7 +1209,7 @@ transcript_to_gene <- function (trans_vec, gtf_dat){
                      dat$gene)
   }
   dat_wo_na <- dat$gene[which(!is.na(dat$gene))]
-  return(dat_wo_na)
+  return(dat)
 }
 # End function -----------------------------------------------------------------
 
