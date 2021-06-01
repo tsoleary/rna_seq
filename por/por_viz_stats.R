@@ -62,7 +62,7 @@ z_manhat <- df %>%
 manhattan(z_manhat, 
           chr = "CHR", 
           bp = "pos", 
-          p = "fish_pval_pw_comb_padj", 
+          p = "arc_freq_ttest_padj", 
           chrlabs = chromosomes, 
           snp = "rc",
           suggestiveline = FALSE,
