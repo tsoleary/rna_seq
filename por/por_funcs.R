@@ -37,8 +37,9 @@ tidy_allele_df <- function(dat) {
     separate(geno_allele, 
              into = c("geno", "major_minor"), 
              sep = "_") %>%
-    # Remove SK parent bc we won't use it down stream
+    # Remove SK & CH parents bc we won't use it down stream
     filter(geno != "SK") %>%
+    filter(geno != "CH") %>%
     # Separate out the specific allele count from the total
     separate(allele_frac, 
              into = c("count", "total"), 
@@ -54,6 +55,37 @@ tidy_allele_df <- function(dat) {
                 names_from = "major_minor") %>%
     # Nest all that in a data.frame so that each row is back to a single loci!
     nest(allele_count_df = c(geno, maj, min))
+} 
+# End function -----------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
+# Function: tidy_vt_allele_df
+# Description: tidy the allele count df into nested df for fisher tests
+# Inputs: data.frame from Por's allele count output
+# Outputs: tidy nested data.frame for fisher tests
+
+tidy_vt_alleles <- function(dat) {
+  dat %>%
+    mutate(sk_vt.count = case_when(sk.maj.allele == vt8.maj.allele ~ sk_sk.maj.count,
+                                   sk.maj.allele != vt8.maj.allele ~ sk_cov - sk_sk.maj.count)) %>%
+    # Pivot the data frame to long format to separate out type of allele 
+    # and count from total
+    pivot_longer(contains(c("_cov", "_vt.count")), 
+                 names_to = "type", 
+                 values_to = "count") %>%
+    # Separate out the "genotype" from the allele typle
+    separate(type, 
+             into = c("geno", "type"), 
+             sep = "_") %>%
+    # Flip it back wider so that genotype, major, and minor allele counts have
+    # their own column each
+    pivot_wider(values_from = "count", 
+                names_from = "type") %>%
+    # Calculate the allele frequency of the VT major allele
+    mutate(vt_freq = vt.count / cov)
+    # # Nest all that in a data.frame so that each row is back to a single loci!
+    # nest(allele_count_df = c(geno, cov, vt.count, vt_freq))
 } 
 # End function -----------------------------------------------------------------
 
@@ -194,20 +226,18 @@ run_fisher_pw_comb <- function(dat, background = "VT8") {
 #         and a background to compare it to
 # Outputs: p-value
 
-arc_freq_ttest <- function(dat, background = "VT8") {
-  # Calculate the major allele frequency
-  dat$freqs <- dat$maj / (dat$maj + dat$min)
-  
-  # Arcsine transform the major allele frequency
-  dat$arc_freqs <- 2*asin(sqrt(dat$freqs))
+arc_freq_ttest <- function(dat, background = "vt8", rm_tropical =  "sk") {
   
   # Get the rows of the data frame that match and don't match the background 
   # arcsine transformed allele frequency that you are comparing them to
   r_background <- which(dat$geno == background)
-  r_other <- which(dat$geno != background)
+  r_introgress <- which(dat$geno != background & dat$geno != rm_tropical)
+  
+  # Arcsine transform the major allele frequency
+  dat$arc_freqs <- 2*asin(sqrt(dat$vt_freq))
   
   # Run the statistical tests ----
-  pval <- tryCatch(t.test(dat$arc_freqs[r_other], 
+  pval <- tryCatch(t.test(dat$arc_freqs[r_introgress], 
                           mu = dat$arc_freqs[r_background], 
                           alternative = "two.sided")$p.value,
                    error = function(err) NA)
