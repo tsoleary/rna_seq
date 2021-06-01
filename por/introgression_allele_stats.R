@@ -9,7 +9,7 @@ require(tidyverse)
 source(here::here("por/por_funcs.R"))
 
 # Load data
-df_messy <- read_delim("~/Downloads/SKxVT8_3rep_rc", 
+df_messy <- read_delim("~/Downloads/rawCount_chxvt10_tidy_allchr.txt", 
                        delim = "\t")
 
 # Split it into chunks
@@ -45,7 +45,16 @@ df$arc_freq_ttest_padj <- p.adjust(df$arc_freq_ttest_pval,
                                    method = "BH", 
                                    n = nrow(df))
 
+df$arc_freq_ttest_padj_bonf <- p.adjust(df$arc_freq_ttest_pval, 
+                                   method = "bonferroni", 
+                                   n = nrow(df))
 
+y <- df %>%
+  filter(arc_freq_ttest_padj_bonf < 0.05) 
+saveRDS(df, here::here("por/introgression_SK_VT8_25JAN2021.rds"))
 
 # Save final output as a rds file -----
-saveRDS(df, here::here("por/introgression_SK_VT8_25JAN2021_na_rm.rds"))
+saveRDS(df, here::here("por/introgression_CH_VT10_25JAN2021.rds"))
+
+df <- readRDS(here::here("por/introgression_SK_VT8_25JAN2021_na_rm.rds")
+
