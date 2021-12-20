@@ -113,6 +113,7 @@ gene_assoc_snp <- function(dat, gtf_dat) {
 df_vt8 <- read_csv("por/vt8x_hampel_sigsnps.csv")
 df_vt10 <- read_csv("por/vt10x_hampel_sigsnps.csv")
 df_overlap <- read_csv("por/overlapSNP.csv")
+df_12 <- read_csv("por/all12reps_sigsnps.csv")
 
 
 # Load most current gtf genome annotation with corresponding release ---
@@ -123,6 +124,7 @@ gtf_df <- read_clean_gtf("dmel-all-r6.39.gtf")
 df_vt8 <- gene_assoc_snp(df_vt8, gtf_df)
 df_vt10 <- gene_assoc_snp(df_vt10, gtf_df)
 df_overlap <- gene_assoc_snp(df_overlap, gtf_df)
+df_12 <- gene_assoc_snp(df_12, gtf_df)
 
 # Clean up the gene annotations
 df_vt8 <- df_vt8 %>%
@@ -134,8 +136,12 @@ df_vt10 <- df_vt10 %>%
 df_overlap <- df_overlap %>%
   separate(gene_assoc, into = c("gene", "info"), sep = ";") 
 
+df_12 <- df_12 %>%
+  separate(gene_assoc, into = c("gene", "info"), sep = ";") 
+
 # Save annotations
 write_csv(df_vt8, "por/vt8x_hampel_sigsnps_genes.csv")
 write_csv(df_vt10, "por/vt10x_hampel_sigsnps_genes.csv")
 write_csv(df_overlap, "por/overlapSNPS_genes.csv")
+write_csv(df_12, "por/all12reps_sigsnps_genes.csv")
 
