@@ -119,6 +119,7 @@ df_12 <- read_csv("por/all12reps_sigsnps.csv")
 # Load most current gtf genome annotation with corresponding release ---
 # ftp://ftp.flybase.org/genomes/dmel/current/gtf/
 gtf_df <- read_clean_gtf("dmel-all-r6.39.gtf")
+gtf_df <- read_clean_gtf(R.utils::gunzip("~/Downloads/dmel-all-r6.44.gtf.gz"))
 
 # Annotate the genes and features associated with each snp
 df_vt8 <- gene_assoc_snp(df_vt8, gtf_df)
